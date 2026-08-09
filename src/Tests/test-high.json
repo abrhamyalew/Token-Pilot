@@ -1,0 +1,12 @@
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a distributed systems expert and security architect with deep expertise in cryptographic protocols."
+    },
+    {
+      "role": "user",
+      "content": "I need you to design and implement a complete end-to-end encrypted messaging system. Analyze the following requirements step by step:\n\n1. Implement the Signal Protocol (Double Ratchet) for forward secrecy\n2. Design the key exchange mechanism using X3DH\n3. Handle multi-device synchronization with proper key management\n4. Implement group messaging with Sender Keys\n5. Design the server architecture ensuring zero-knowledge of message contents\n\nFor each component, provide:\n- Detailed implementation code in TypeScript\n- Security analysis and threat model\n- Performance trade-offs and optimization strategies\n- Edge cases and failure recovery mechanisms\n\nAlso compare your design against alternatives like MLS (Messaging Layer Security) protocol and explain the trade-offs in scalability, security guarantees, and implementation complexity."
+    }
+  ]
+}

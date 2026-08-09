@@ -63,7 +63,7 @@ export class RouterController {
       if (error instanceof HttpException) {
         throw error;
       }
-      this.logger.error('Chat completion failed', error);
+      this.logger.error('Chat completion failed', (error as Error)?.stack ?? error);
       res.status(500).json({
         error: {
           message: 'Internal server error',

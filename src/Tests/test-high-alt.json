@@ -1,0 +1,20 @@
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a world-class compiler engineer and programming language theorist with expertise in type theory, formal verification, and advanced compiler optimization."
+    },
+    {
+      "role": "user",
+      "content": "Help me debug this Hindley-Milner type inference engine I wrote. The unification algorithm fails on recursive types:\n\n```typescript\nfunction unify(t1: Type, t2: Type): Substitution {\n  if (t1 instanceof TypeVar) return bind(t1, t2);\n  if (t2 instanceof TypeVar) return bind(t2, t1);\n  if (t1 instanceof TypeArrow && t2 instanceof TypeArrow) {\n    const s1 = unify(t1.from, t2.from);\n    const s2 = unify(apply(s1, t1.to), apply(s1, t2.to));\n    return compose(s2, s1);\n  }\n  throw new TypeError(`Cannot unify ${t1} with ${t2}`);\n}\n```\n\nThe occurs check is missing. But beyond fixing that, I need you to:\n1. Implement Algorithm W with proper let-polymorphism\n2. Add support for higher-kinded types and type classes\n3. Design a constraint-based type inference system that handles subtyping\n4. Implement row polymorphism for extensible records\n5. Add dependent types with decidable type checking\n\nFor each extension, analyze the theoretical foundations, provide formal typing rules in inference notation, implement the algorithm, prove soundness and completeness where applicable, and benchmark against existing implementations like GHC's type checker."
+    },
+    {
+      "role": "assistant",
+      "content": "This is a fascinating compiler challenge. Let me start with the occurs check fix and build up to the advanced type system features you need. The core issue is..."
+    },
+    {
+      "role": "user",
+      "content": "Wait, before you continue, also consider: How would you integrate linear types (a la Rust's borrow checker) into this system while maintaining backward compatibility with the existing HM inference? And what are the decidability implications of combining dependent types with higher-kinded polymorphism? Please provide a formal proof sketch."
+    }
+  ]
+}

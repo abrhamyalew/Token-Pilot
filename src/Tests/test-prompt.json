@@ -1,0 +1,12 @@
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a senior software architect."
+    },
+    {
+      "role": "user",
+      "content": "Analyze the trade-offs between optimistic locking and pessimistic locking for concurrent inventory management in a high-traffic e-commerce system. Provide step by step reasoning with implementation examples and explain which approach you recommend."
+    }
+  ]
+}

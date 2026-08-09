@@ -24,8 +24,8 @@ async function bootstrap() {
 
   logger.log(`Token Pilot gateway running on http://localhost:${port}`);
   logger.log(`POST /v1/chat/completions | OpenAI-compatible endpoint`);
-  logger.log(`GET  /health              | Health check`);
-  logger.log(`GET  /v1/models           | Available models/tiers`);
+  logger.log(`GET  /health`);
+  logger.log(`GET  /v1/models`);
 }
 
 bootstrap();

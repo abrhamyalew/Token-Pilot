@@ -36,11 +36,11 @@ const models: Record<string, ModelConfig> = {
     maxTokens: 128_000,               // 128K max output, 1M context window
   },
   // Legacy models kept for reference / future config swapping
-  'gemini-2.0-flash': {
+  'gemini-3.6-flash': {
     provider: 'google',
     inputCostPer1kTokens: 0.0,
     outputCostPer1kTokens: 0.0,
-    maxTokens: 8_192,
+    maxTokens: 65_536,                // 65K max output, 1M context window
   },
 };
 
@@ -48,9 +48,9 @@ const models: Record<string, ModelConfig> = {
 
 const tiers: Record<Tier, TierConfig> = {
   low:      { model: 'llama-3.3-70b-versatile',      provider: 'groq' },
-  medium:   { model: 'deepseek-v4-flash',   provider: 'deepseek' },
-  high:     { model: 'gpt-5.5-pro',         provider: 'openai' },
-  high_alt: { model: 'claude-opus-4-8',     provider: 'anthropic' },
+  medium:   { model: 'gemini-3.6-flash',              provider: 'google' },
+  high:     { model: 'gpt-5.5-pro',                   provider: 'openai' },
+  high_alt: { model: 'claude-opus-4-8',               provider: 'anthropic' },
 };
 
 // ─── Lookup Functions ───────────────────────────────────────────────────────

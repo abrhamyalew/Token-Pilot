@@ -14,7 +14,9 @@ export class ClassifierService {
    */
   classify(messages: ChatMessage[]): ClassifierResult {
     const promptText = this.extractPromptText(messages);
-    const features = extractFeatures(promptText);
+    const hasSystemPrompt = messages.some((m) => m.role === 'system');
+    const turnCount = messages.filter((m) => m.role === 'user' || m.role === 'assistant').length;
+    const features = extractFeatures(promptText, hasSystemPrompt, turnCount);
     const { tier, score, confidence } = scorePrompt(features);
 
     this.logger.debug(

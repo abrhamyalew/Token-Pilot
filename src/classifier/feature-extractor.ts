@@ -46,7 +46,11 @@ const DOMAIN_TERMS = [
 
 // ─── Extractor ──────────────────────────────────────────────────────────────
 
-export function extractFeatures(prompt: string): PromptFeatures {
+export function extractFeatures(
+  prompt: string,
+  hasSystemPrompt: boolean = false,
+  multiTurnCount: number = 1,
+): PromptFeatures {
   const lower = prompt.toLowerCase();
   const words = prompt.split(/\s+/).filter((w) => w.length > 0);
   const sentences = prompt.split(/[.!?]+/).filter((s) => s.trim().length > 0);
@@ -84,6 +88,8 @@ export function extractFeatures(prompt: string): PromptFeatures {
     constraintCount,
     structuralDepth,
     domainTermDensity,
+    systemPrompt: hasSystemPrompt,
+    multiTurnCount,
   };
 }
 

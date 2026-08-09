@@ -15,6 +15,8 @@ export interface PromptFeatures {
   constraintCount: number;
   structuralDepth: number;
   domainTermDensity: number;
+  systemPrompt: boolean;
+  multiTurnCount: number;
 }
 
 export interface ClassifierResult {
@@ -37,6 +39,8 @@ export interface ClassifierWeights {
   constraintCount: number;
   structuralDepth: number;
   domainTermDensity: number;
+  systemPrompt: number;
+  multiTurnCount: number;
 }
 
 /** Tier boundary thresholds */
