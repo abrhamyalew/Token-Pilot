@@ -12,6 +12,8 @@ import { MockAdapter } from './mock.adapter';
 import { GroqAdapter } from './groq.adapter';
 import { GoogleAdapter } from './google.adapter';
 import { OpenAIAdapter } from './openai.adapter';
+import { DeepSeekAdapter } from './deepseek.adapter';
+import { AnthropicAdapter } from './anthropic.adapter';
 import { getTierConfig } from '../shared/cost-registry';
 import { Tier } from '../shared/types';
 
@@ -25,12 +27,16 @@ export class ProviderRegistryService {
     private readonly groqAdapter: GroqAdapter,
     private readonly googleAdapter: GoogleAdapter,
     private readonly openaiAdapter: OpenAIAdapter,
+    private readonly deepseekAdapter: DeepSeekAdapter,
+    private readonly anthropicAdapter: AnthropicAdapter,
   ) {
     this.adapters = new Map<string, ProviderAdapter>([
       ['mock', this.mockAdapter],
       ['groq', this.groqAdapter],
       ['google', this.googleAdapter],
       ['openai', this.openaiAdapter],
+      ['deepseek', this.deepseekAdapter],
+      ['anthropic', this.anthropicAdapter],
     ]);
   }
 

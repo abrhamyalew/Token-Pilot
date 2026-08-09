@@ -22,10 +22,10 @@ async function bootstrap() {
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
 
-  logger.log(`🚀 Token Pilot gateway running on http://localhost:${port}`);
-  logger.log(`📡 POST /v1/chat/completions — OpenAI-compatible endpoint`);
-  logger.log(`❤️  GET  /health              — Health check`);
-  logger.log(`📋 GET  /v1/models            — Available models/tiers`);
+  logger.log(`Token Pilot gateway running on http://localhost:${port}`);
+  logger.log(`POST /v1/chat/completions | OpenAI-compatible endpoint`);
+  logger.log(`GET  /health              | Health check`);
+  logger.log(`GET  /v1/models           | Available models/tiers`);
 }
 
 bootstrap();

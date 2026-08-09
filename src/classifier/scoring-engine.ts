@@ -28,8 +28,9 @@ export const DEFAULT_WEIGHTS: ClassifierWeights = {
 };
 
 export const DEFAULT_THRESHOLDS: ClassifierThresholds = {
-  lowMax: 0.35,
-  mediumMax: 0.65,
+  lowMax: 0.30,
+  mediumMax: 0.55,
+  highMax: 0.80,
 };
 
 // ─── Scoring ────────────────────────────────────────────────────────────────
@@ -78,14 +79,17 @@ export function scorePrompt(
     tier = 'low';
   } else if (score <= thresholds.mediumMax) {
     tier = 'medium';
-  } else {
+  } else if (score <= thresholds.highMax) {
     tier = 'high';
+  } else {
+    tier = 'high_alt';
   }
 
   // Confidence: distance from nearest boundary (further = more confident)
   const distToLow = Math.abs(score - thresholds.lowMax);
   const distToMed = Math.abs(score - thresholds.mediumMax);
-  const minDist = Math.min(distToLow, distToMed);
+  const distToHigh = Math.abs(score - thresholds.highMax);
+  const minDist = Math.min(distToLow, distToMed, distToHigh);
   const confidence = Math.min(0.5 + minDist * 2, 1.0);
 
   return { tier, score, confidence };

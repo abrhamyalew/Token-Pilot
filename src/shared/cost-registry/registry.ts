@@ -11,38 +11,46 @@ import { Tier, ModelConfig, TierConfig } from '../types';
 // ─── Model Pricing ──────────────────────────────────────────────────────────
 
 const models: Record<string, ModelConfig> = {
-  'llama-3.3-70b-versatile': {
+  'llama-3.3-70b': {
     provider: 'groq',
-    inputCostPer1kTokens: 0.0,
-    outputCostPer1kTokens: 0.0,
-    maxTokens: 8192,
+    inputCostPer1kTokens: 0.0,        // Free tier (paid: $0.59/1M = $0.00059/1K)
+    outputCostPer1kTokens: 0.0,       // Free tier (paid: $0.79/1M = $0.00079/1K)
+    maxTokens: 32_768,                // 32K max output, 128K context window
   },
+  'deepseek-v4-flash': {
+    provider: 'deepseek',
+    inputCostPer1kTokens: 0.000_14,   // $0.14/1M tokens
+    outputCostPer1kTokens: 0.000_28,  // $0.28/1M tokens
+    maxTokens: 384_000,               // 384K max output, 1M context window
+  },
+  'gpt-5.5-pro': {
+    provider: 'openai',
+    inputCostPer1kTokens: 0.03,       // $30.00/1M tokens
+    outputCostPer1kTokens: 0.18,      // $180.00/1M tokens
+    maxTokens: 128_000,               // 128K max output, 1.05M context window
+  },
+  'claude-opus-4-8': {
+    provider: 'anthropic',
+    inputCostPer1kTokens: 0.005,      // $5.00/1M tokens
+    outputCostPer1kTokens: 0.025,     // $25.00/1M tokens
+    maxTokens: 128_000,               // 128K max output, 1M context window
+  },
+  // Legacy models kept for reference / future config swapping
   'gemini-2.0-flash': {
     provider: 'google',
     inputCostPer1kTokens: 0.0,
     outputCostPer1kTokens: 0.0,
-    maxTokens: 8192,
-  },
-  'gpt-4o': {
-    provider: 'openai',
-    inputCostPer1kTokens: 2.5,
-    outputCostPer1kTokens: 10.0,
-    maxTokens: 16384,
-  },
-  'gpt-4o-mini': {
-    provider: 'openai',
-    inputCostPer1kTokens: 0.15,
-    outputCostPer1kTokens: 0.6,
-    maxTokens: 16384,
+    maxTokens: 8_192,
   },
 };
 
 // ─── Tier → Model Mapping ───────────────────────────────────────────────────
 
 const tiers: Record<Tier, TierConfig> = {
-  low:    { model: 'llama-3.3-70b-versatile', provider: 'groq' },
-  medium: { model: 'gemini-2.0-flash',        provider: 'google' },
-  high:   { model: 'gpt-4o',                  provider: 'openai' },
+  low:      { model: 'llama-3.3-70b',      provider: 'groq' },
+  medium:   { model: 'deepseek-v4-flash',   provider: 'deepseek' },
+  high:     { model: 'gpt-5.5-pro',         provider: 'openai' },
+  high_alt: { model: 'claude-opus-4-8',     provider: 'anthropic' },
 };
 
 // ─── Lookup Functions ───────────────────────────────────────────────────────

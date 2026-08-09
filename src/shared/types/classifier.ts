@@ -2,7 +2,7 @@
  * Classifier types — prompt feature extraction and tier assignment.
  */
 
-export type Tier = 'low' | 'medium' | 'high';
+export type Tier = 'low' | 'medium' | 'high' | 'high_alt';
 
 export interface PromptFeatures {
   tokenCount: number;
@@ -43,4 +43,5 @@ export interface ClassifierWeights {
 export interface ClassifierThresholds {
   lowMax: number;
   mediumMax: number;
+  highMax: number;
 }
