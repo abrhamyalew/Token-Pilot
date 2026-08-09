@@ -11,7 +11,7 @@ import { Tier, ModelConfig, TierConfig } from '../types';
 // ─── Model Pricing ──────────────────────────────────────────────────────────
 
 const models: Record<string, ModelConfig> = {
-  'llama-3.3-70b': {
+  'llama-3.3-70b-versatile': {
     provider: 'groq',
     inputCostPer1kTokens: 0.0,        // Free tier (paid: $0.59/1M = $0.00059/1K)
     outputCostPer1kTokens: 0.0,       // Free tier (paid: $0.79/1M = $0.00079/1K)
@@ -47,7 +47,7 @@ const models: Record<string, ModelConfig> = {
 // ─── Tier → Model Mapping ───────────────────────────────────────────────────
 
 const tiers: Record<Tier, TierConfig> = {
-  low:      { model: 'llama-3.3-70b',      provider: 'groq' },
+  low:      { model: 'llama-3.3-70b-versatile',      provider: 'groq' },
   medium:   { model: 'deepseek-v4-flash',   provider: 'deepseek' },
   high:     { model: 'gpt-5.5-pro',         provider: 'openai' },
   high_alt: { model: 'claude-opus-4-8',     provider: 'anthropic' },
