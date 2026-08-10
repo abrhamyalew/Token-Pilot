@@ -9,12 +9,14 @@ export interface PromptFeatures {
   sentenceCount: number;
   avgSentenceLength: number;
   questionCount: number;
-  codeBlockPresent: boolean;
+  codeBlockPresent: number;
   reasoningKeywords: number;
   simpleKeywords: number;
   constraintCount: number;
   structuralDepth: number;
   domainTermDensity: number;
+  domainHitCount: number;
+  formalLanguageScore: number;
   systemPrompt: boolean;
   multiTurnCount: number;
 }
@@ -39,6 +41,8 @@ export interface ClassifierWeights {
   constraintCount: number;
   structuralDepth: number;
   domainTermDensity: number;
+  domainHitCount: number;
+  formalLanguageScore: number;
   systemPrompt: number;
   multiTurnCount: number;
 }

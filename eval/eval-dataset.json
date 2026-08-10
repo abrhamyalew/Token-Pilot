@@ -1,0 +1,402 @@
+[
+  {
+    "prompt": "Hi there!",
+    "expectedTier": "low",
+    "rationale": "Simple greeting, no complexity"
+  },
+  {
+    "prompt": "What is the capital of France?",
+    "expectedTier": "low",
+    "rationale": "Single factual question, trivial lookup"
+  },
+  {
+    "prompt": "Translate 'good morning' to Spanish",
+    "expectedTier": "low",
+    "rationale": "Simple translation request"
+  },
+  {
+    "prompt": "Fix the grammar in this sentence: 'He dont likes cats'",
+    "expectedTier": "low",
+    "rationale": "Simple grammar correction"
+  },
+  {
+    "prompt": "What is 24 * 17?",
+    "expectedTier": "low",
+    "rationale": "Basic arithmetic"
+  },
+  {
+    "prompt": "Thank you for your help earlier!",
+    "expectedTier": "low",
+    "rationale": "Polite acknowledgement, no task"
+  },
+  {
+    "prompt": "Define photosynthesis in one sentence",
+    "expectedTier": "low",
+    "rationale": "Simple definition request"
+  },
+  {
+    "prompt": "Convert 100 degrees Fahrenheit to Celsius",
+    "expectedTier": "low",
+    "rationale": "Simple conversion"
+  },
+  {
+    "prompt": "Give me a list of 5 popular dog breeds",
+    "expectedTier": "low",
+    "rationale": "Simple list generation"
+  },
+  {
+    "prompt": "Summarize this paragraph: 'The quick brown fox jumped over the lazy dog. It was a sunny day in the park.'",
+    "expectedTier": "low",
+    "rationale": "Simple summarization of trivial text"
+  },
+  {
+    "prompt": "Rewrite this email to sound more professional: 'Hey dude, can u send me that file?'",
+    "expectedTier": "low",
+    "rationale": "Simple rewriting task"
+  },
+  {
+    "prompt": "What does TL;DR stand for?",
+    "expectedTier": "low",
+    "rationale": "Simple acronym lookup"
+  },
+  {
+    "prompt": "Format this as a bulleted list: apples, bananas, oranges, grapes",
+    "expectedTier": "low",
+    "rationale": "Simple formatting request"
+  },
+  {
+    "prompt": "Hello, how are you doing today?",
+    "expectedTier": "low",
+    "rationale": "Casual greeting"
+  },
+  {
+    "prompt": "What year did World War 2 end?",
+    "expectedTier": "low",
+    "rationale": "Simple historical fact"
+  },
+  {
+    "prompt": "Convert this JSON object into Python dictionary syntax: {\"name\": \"Alice\", \"age\": 30}",
+    "expectedTier": "low",
+    "rationale": "Trivial data structure conversion"
+  },
+  {
+    "prompt": "What terminal command checks git status?",
+    "expectedTier": "low",
+    "rationale": "Basic command query"
+  },
+  {
+    "prompt": "Check this text for typos: 'The report was submited yesterday without any issues.'",
+    "expectedTier": "low",
+    "rationale": "Basic typo check"
+  },
+  {
+    "prompt": "What is the time difference between EST and PST?",
+    "expectedTier": "low",
+    "rationale": "Simple factual lookup"
+  },
+  {
+    "prompt": "Suggest 3 polite sign-offs for a formal business email.",
+    "expectedTier": "low",
+    "rationale": "Simple list recommendation"
+  },
+  {
+    "prompt": "Write a short professional bio for a software engineer with 5 years of experience who specializes in React and Node.js. Include their passion for open source.",
+    "expectedTier": "medium",
+    "rationale": "Structured writing task with multiple requirements but straightforward execution"
+  },
+  {
+    "prompt": "I'm planning a trip to Tokyo for 7 days. Can you suggest a day-by-day itinerary covering major tourist spots, local food recommendations, and budget tips?",
+    "expectedTier": "medium",
+    "rationale": "Multi-faceted planning task requiring structure and some domain knowledge"
+  },
+  {
+    "prompt": "Write a Python function that takes a list of numbers and returns the top 3 largest values without using the built-in sort function.",
+    "expectedTier": "medium",
+    "rationale": "Coding task with a specific constraint, moderate complexity"
+  },
+  {
+    "prompt": "Compare the pros and cons of renting vs buying a home in a major city for someone in their late 20s with a stable income.",
+    "expectedTier": "medium",
+    "rationale": "Comparison task requiring multiple perspectives"
+  },
+  {
+    "prompt": "Explain the difference between TCP and UDP. When would you choose one over the other? Give examples.",
+    "expectedTier": "medium",
+    "rationale": "Technical explanation with comparison and examples"
+  },
+  {
+    "prompt": "Create a meal plan for one week that is vegetarian, high in protein, and under 2000 calories per day. Include a shopping list.",
+    "expectedTier": "medium",
+    "rationale": "Structured output with multiple constraints"
+  },
+  {
+    "prompt": "I have a React component that re-renders too often. Here's the code:\n```jsx\nfunction UserList({ users }) {\n  const [filter, setFilter] = useState('');\n  const filtered = users.filter(u => u.name.includes(filter));\n  return <div>{filtered.map(u => <UserCard key={u.id} user={u} />)}</div>;\n}\n```\nHow can I optimize it?",
+    "expectedTier": "medium",
+    "rationale": "Specific code review with one code block, moderate optimization task"
+  },
+  {
+    "prompt": "Write a cover letter for a data analyst position at a tech startup. I have a background in statistics and 3 years of experience with SQL and Python.",
+    "expectedTier": "medium",
+    "rationale": "Structured writing with personalization requirements"
+  },
+  {
+    "prompt": "Explain how a hash table works under the hood. What are collisions and how are they typically handled?",
+    "expectedTier": "medium",
+    "rationale": "Technical explanation requiring conceptual depth"
+  },
+  {
+    "prompt": "I need to decide between PostgreSQL and MongoDB for a new e-commerce project. The app will have complex product catalogs with varying attributes, user reviews, and order history. What are the trade-offs?",
+    "expectedTier": "medium",
+    "rationale": "Decision support with domain context, but no deep architectural reasoning required"
+  },
+  {
+    "prompt": "Draft a project proposal for migrating a legacy REST API to GraphQL. Include sections on: technical approach, risk assessment, timeline estimate, and team requirements.",
+    "expectedTier": "medium",
+    "rationale": "Structured document generation with multiple sections"
+  },
+  {
+    "prompt": "Explain the CAP theorem and walk through a real-world scenario for each of the three trade-off combinations (CP, AP, CA). How does this affect the choice between Cassandra, MongoDB, and traditional RDBMS?",
+    "expectedTier": "medium",
+    "rationale": "Conceptual explanation with applied examples, but follows a well-known framework"
+  },
+  {
+    "prompt": "Write a bash script that monitors disk usage across all mounted filesystems, sends an email alert when any filesystem exceeds 85% capacity, and logs the results with timestamps.",
+    "expectedTier": "medium",
+    "rationale": "Multi-requirement scripting task with error handling expectations"
+  },
+  {
+    "prompt": "What are the key differences between REST and gRPC? Create a comparison table covering performance, ease of use, browser support, and typical use cases.",
+    "expectedTier": "medium",
+    "rationale": "Technical comparison with structured output format"
+  },
+  {
+    "prompt": "Help me understand this regex: `/^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$/` and explain each part.",
+    "expectedTier": "medium",
+    "rationale": "Code explanation requiring piece-by-piece breakdown but no design work"
+  },
+  {
+    "prompt": "Write a SQL query that retrieves top 5 customers by total order amount in 2023, joining the customers, orders, and order_items tables with GROUP BY and HAVING clauses.",
+    "expectedTier": "medium",
+    "rationale": "Moderate SQL query writing with joins and aggregations"
+  },
+  {
+    "prompt": "Compare Docker Compose vs Kubernetes for local development. What are the key differences in setup, resource usage, and developer workflow?",
+    "expectedTier": "medium",
+    "rationale": "Structured developer tools comparison"
+  },
+  {
+    "prompt": "Create a FastAPI endpoint in Python that accepts a POST request with a Pydantic model for user registration, validates email format, and hashes the password using bcrypt.",
+    "expectedTier": "medium",
+    "rationale": "Standard web framework endpoint implementation"
+  },
+  {
+    "prompt": "Explain when to use CSS Grid vs CSS Flexbox. Provide short HTML/CSS code snippets demonstrating a 3-column layout in each.",
+    "expectedTier": "medium",
+    "rationale": "Frontend technical comparison with code examples"
+  },
+  {
+    "prompt": "Explain the step-by-step Git workflow to rebase a feature branch onto main and squash 4 messy commits into 1 clean commit.",
+    "expectedTier": "medium",
+    "rationale": "Multi-step developer git workflow guide"
+  },
+  {
+    "prompt": "You are a senior backend architect. Design a scalable event-driven microservices architecture for a real-time bidding platform that handles 50,000 concurrent auctions. The system must ensure:\n\n1. Sub-100ms bid placement latency\n2. Exactly-once bid processing (no duplicate bids)\n3. Real-time price updates via WebSocket\n4. Audit trail for regulatory compliance\n5. Graceful degradation under 10x traffic spikes\n\nCover:\n- Service decomposition and communication patterns\n- Data store selection for each service (justify your choices)\n- Message broker selection and partition strategy\n- Consistency model and conflict resolution\n- Monitoring and alerting strategy",
+    "expectedTier": "high",
+    "rationale": "System design with multiple hard constraints, requiring deep architectural reasoning across distributed systems, data consistency, and performance"
+  },
+  {
+    "prompt": "I have a race condition in my Go service. Two goroutines are updating the same map concurrently and I'm getting `fatal error: concurrent map writes`. Here's the relevant code:\n\n```go\ntype Cache struct {\n    data map[string]interface{}\n}\n\nfunc (c *Cache) Set(key string, val interface{}) {\n    c.data[key] = val\n}\n\nfunc (c *Cache) Get(key string) interface{} {\n    return c.data[key]\n}\n```\n\nI need a solution that:\n- Minimizes lock contention under high read load (95% reads, 5% writes)\n- Supports TTL-based expiration\n- Is safe for use across 100+ goroutines\n- Handles cache stampede prevention\n\nExplain the trade-offs between sync.RWMutex, sync.Map, and a sharded lock approach for this use case.",
+    "expectedTier": "high",
+    "rationale": "Debugging with code, deep concurrency analysis, multiple solution comparison with trade-offs"
+  },
+  {
+    "prompt": "Design the database schema and query strategy for a multi-tenant SaaS application where:\n- Each tenant can have up to 10 million rows in the core 'events' table\n- Queries must support arbitrary filtering on 20+ columns\n- 95th percentile query latency must be under 200ms\n- Tenants must be fully isolated (no cross-tenant data leaks)\n- The system must support tenant-level backup and restore\n\nCompare row-level security vs schema-per-tenant vs database-per-tenant approaches. Include indexing strategy and explain how you'd handle schema migrations across thousands of tenants.",
+    "expectedTier": "high",
+    "rationale": "Deep database architecture with performance constraints, security requirements, and multi-strategy comparison"
+  },
+  {
+    "prompt": "Review this authentication implementation for security vulnerabilities:\n\n```typescript\nasync function login(email: string, password: string): Promise<Session> {\n  const user = await db.query('SELECT * FROM users WHERE email = $1', [email]);\n  if (!user) throw new Error('User not found');\n  \n  const valid = password === user.password_hash;\n  if (!valid) throw new Error('Invalid password');\n  \n  const token = Math.random().toString(36).substring(2);\n  await db.query('INSERT INTO sessions (user_id, token) VALUES ($1, $2)', [user.id, token]);\n  \n  return { token, userId: user.id };\n}\n```\n\nIdentify all security issues, explain the attack vectors for each, and provide a corrected implementation with proper password hashing, timing-safe comparison, cryptographic token generation, and session management best practices.",
+    "expectedTier": "high",
+    "rationale": "Security audit requiring identification of multiple vulnerability classes and a corrected implementation with justification"
+  },
+  {
+    "prompt": "Implement a rate limiter that supports both fixed-window and sliding-window algorithms with the following requirements:\n\n- Must work in a distributed environment (multiple server instances)\n- Use Redis as the backing store\n- Support different rate limits per API endpoint and per user tier\n- Include burst allowance configuration\n- Handle Redis connection failures gracefully (fail-open with local fallback)\n- Provide Prometheus metrics for rate limit hits and misses\n\nWrite the implementation in TypeScript with full type safety. Include the Redis Lua scripts for atomic operations.",
+    "expectedTier": "high",
+    "rationale": "Complex implementation task with distributed systems concerns, multiple algorithms, error handling, and observability requirements"
+  },
+  {
+    "prompt": "I'm seeing intermittent 502 errors on my Kubernetes-deployed API. The errors happen roughly 2-3 times per hour with no obvious pattern. My setup:\n- 3 replicas behind an Nginx ingress controller\n- Node.js API with connection pooling to PostgreSQL (max 20 connections)\n- Horizontal Pod Autoscaler set to scale between 3-10 pods at 70% CPU\n- Pods have 512Mi memory limit, 256Mi request\n- Readiness probe: HTTP GET /health every 10s, timeout 3s\n- PostgreSQL on RDS with 100 max connections\n\nWalk me through a systematic debugging approach. What are the most likely root causes given this configuration? What metrics and logs should I check first? How would you structure the investigation?",
+    "expectedTier": "high",
+    "rationale": "Complex debugging scenario requiring systematic reasoning across multiple infrastructure layers"
+  },
+  {
+    "prompt": "Design a CI/CD pipeline for a monorepo containing:\n- 3 microservices (Node.js, Python, Go)\n- A shared protobuf definitions package\n- A React frontend\n- Infrastructure-as-code (Terraform)\n\nRequirements:\n- Only build/test/deploy services that actually changed\n- Run integration tests between dependent services\n- Blue-green deployment to Kubernetes\n- Automatic rollback on health check failure\n- Secret management via HashiCorp Vault\n- Pipeline must complete in under 15 minutes\n\nCompare GitHub Actions vs GitLab CI vs Tekton for this setup. Provide the pipeline configuration for your recommended choice.",
+    "expectedTier": "high",
+    "rationale": "Multi-technology architecture decision with specific constraints and implementation requirements"
+  },
+  {
+    "prompt": "Explain how B+ trees work in the context of database indexing. Then analyze this slow query and the table's current indexes:\n\n```sql\nSELECT o.id, o.total, c.name, c.email\nFROM orders o\nJOIN customers c ON o.customer_id = c.id\nWHERE o.status = 'pending'\n  AND o.created_at > NOW() - INTERVAL '7 days'\n  AND c.region = 'EU'\nORDER BY o.created_at DESC\nLIMIT 50;\n```\n\nCurrent indexes:\n- `orders_pkey (id)`\n- `idx_orders_customer_id (customer_id)`\n- `idx_orders_status (status)`\n- `customers_pkey (id)`\n\nProvide the EXPLAIN ANALYZE output you'd expect, identify the bottleneck, propose optimal indexes, and explain why a covering index might or might not help here.",
+    "expectedTier": "high",
+    "rationale": "Database internals knowledge combined with practical query optimization requiring multi-step reasoning"
+  },
+  {
+    "prompt": "Write a comprehensive error handling strategy for a Node.js Express API that:\n- Distinguishes between operational errors (expected) and programmer errors (bugs)\n- Handles async errors without try/catch in every route\n- Provides structured error responses following RFC 7807 (Problem Details)\n- Integrates with Sentry for error tracking\n- Includes request correlation IDs for distributed tracing\n- Handles graceful shutdown on unhandled rejections\n\nProvide the middleware implementation, error class hierarchy, and example usage in routes.",
+    "expectedTier": "high",
+    "rationale": "Comprehensive implementation requiring design decisions across error taxonomy, middleware architecture, and observability"
+  },
+  {
+    "prompt": "Analyze the time and space complexity of this algorithm. Is it correct? If not, identify the bug and fix it:\n\n```python\ndef find_median_sorted_arrays(nums1, nums2):\n    if len(nums1) > len(nums2):\n        nums1, nums2 = nums2, nums1\n    \n    m, n = len(nums1), len(nums2)\n    low, high = 0, m\n    \n    while low <= high:\n        i = (low + high) // 2\n        j = (m + n + 1) // 2 - i\n        \n        left1 = nums1[i-1] if i > 0 else float('-inf')\n        right1 = nums1[i] if i < m else float('inf')\n        left2 = nums2[j-1] if j > 0 else float('-inf')\n        right2 = nums2[j] if j < n else float('inf')\n        \n        if left1 <= right2 and left2 <= right1:\n            if (m + n) % 2 == 0:\n                return (max(left1, left2) + min(right1, right2)) / 2\n            return max(left1, left2)\n        elif left1 > right2:\n            high = i - 1\n        else:\n            low = i + 1\n```\n\nProve that the binary search invariant holds and that the algorithm terminates.",
+    "expectedTier": "high",
+    "rationale": "Algorithm analysis requiring complexity proof, correctness verification, and formal reasoning about invariants"
+  },
+  {
+    "prompt": "Design a cache invalidation strategy for a globally distributed CDN and GraphQL API layer. Address cache tagging, stale-while-revalidate, mutation-triggered invalidation, and race condition prevention.",
+    "expectedTier": "high",
+    "rationale": "Complex caching architecture with multi-layer invalidation and race condition constraints"
+  },
+  {
+    "prompt": "I have a heap dump from a Java Spring Boot application that experiences OutOfMemoryError after 48 hours. Walk through how to analyze heap dump primitives in Eclipse MAT, identify memory leaks (e.g. unclosed ThreadLocals or listener leaks), and fix the leak.",
+    "expectedTier": "high",
+    "rationale": "Deep diagnostic and debugging task for JVM memory management under resource leak conditions"
+  },
+  {
+    "prompt": "Design an OAuth2 and OpenID Connect authentication flow with PKCE for a native mobile app and SPA. Include token storage security (Keychain / EncryptedSharedPreferences vs HttpOnly cookies), token refresh rotation, and revocation mechanisms.",
+    "expectedTier": "high",
+    "rationale": "Security architecture for mobile/web authentication with cryptographic PKCE constraints"
+  },
+  {
+    "prompt": "Design a real-time data streaming pipeline using Apache Kafka, Apache Flink, and Apache Iceberg. Cover event schema evolution, exactly-once processing guarantees, late-arriving data handling, and partition strategy for multi-terabyte daily volume.",
+    "expectedTier": "high",
+    "rationale": "End-to-end data engineering architecture under high volume and schema evolution requirements"
+  },
+  {
+    "prompt": "Refactor a monolithic synchronous order processing service into an asynchronous Saga pattern using orchestrator-based workflow. Include compensating transaction definitions for payment failure, inventory reservation rollback, and notification failure.",
+    "expectedTier": "high",
+    "rationale": "Distributed transaction architectural refactoring with saga orchestration"
+  },
+  {
+    "prompt": "Design a zero-trust network security policy architecture for a Kubernetes cluster running in a multi-cloud environment. Cover Cilium eBPF network policies, mTLS with Istio service mesh, pod-to-pod encryption, and egress gateway filtering.",
+    "expectedTier": "high",
+    "rationale": "Infrastructure and security engineering for cloud-native microservices"
+  },
+  {
+    "prompt": "Analyze this PostgreSQL deadlock error log involving two concurrent transactions running under SERIALIZABLE isolation level. Identify the conflicting locks, explain why serializable multiversion concurrency control failed, and rewrite the queries to prevent deadlocks.",
+    "expectedTier": "high",
+    "rationale": "Complex database troubleshooting and lock analysis under high concurrency"
+  },
+  {
+    "prompt": "Write a custom WebGL fragment shader in GLSL that renders interactive 2D raymarching distance fields with directional lighting, specular highlights, and soft shadows. Optimize texture lookups for 60fps mobile execution.",
+    "expectedTier": "high",
+    "rationale": "Graphics programming requiring GLSL math, raymarching, and real-time execution constraints"
+  },
+  {
+    "prompt": "Design a multi-region active-active database deployment strategy using Conflict-Free Replicated Data Types (CRDTs). Explain how state-based vs operation-based CRDTs resolve concurrent updates without central coordination, and detail network partition recovery.",
+    "expectedTier": "high",
+    "rationale": "Advanced distributed state synchronization architecture using mathematical CRDT properties"
+  },
+  {
+    "prompt": "Perform a security review of this Solidity smart contract. Identify reentrancy vulnerabilities, arithmetic overflows/underflows, front-running hazards, and logic flaws. Provide a secured version using OpenZeppelin guards.",
+    "expectedTier": "high",
+    "rationale": "Smart contract vulnerability analysis and security remediation"
+  },
+  {
+    "prompt": "You are a research assistant specializing in computational neuroscience. I'm writing a paper on the biological plausibility of backpropagation in neural networks.\n\nStep by step, analyze the following:\n\n1. Why is the standard backpropagation algorithm considered biologically implausible? Address the weight transport problem, the backward pass timing issue, and the requirement for derivative computation.\n\n2. Critically evaluate three alternative credit assignment mechanisms:\n   a. Feedback Alignment (Lillicrap et al., 2016)\n   b. Predictive Coding (Whittington & Bogacz, 2017)\n   c. Equilibrium Propagation (Scellier & Bengio, 2017)\n   For each, assess mathematical rigor, experimental evidence, and remaining open questions.\n\n3. Synthesize: Given the current evidence, what is the strongest candidate for how biological neural networks actually perform credit assignment? What experiments would definitively resolve this question?\n\nProvide citations and be precise about what is established vs. speculative.",
+    "expectedTier": "high_alt",
+    "rationale": "Cross-domain research synthesis requiring deep domain knowledge, critical evaluation of competing theories, and original synthesis"
+  },
+  {
+    "prompt": "I need a formal proof that the Halting Problem is undecidable. Then extend the argument to prove Rice's Theorem. After that, discuss the practical implications:\n\n- Why can't we build a perfect virus scanner?\n- What does this mean for static analysis tools? Where exactly is the boundary between what they can and cannot guarantee?\n- How do modern tools like Abstract Interpretation work around these limits? Prove that abstract interpretation with widening is sound but not complete.\n\nBe mathematically rigorous. Use formal notation where appropriate.",
+    "expectedTier": "high_alt",
+    "rationale": "Formal mathematical proofs combined with theoretical CS foundations and practical implications, requiring rigorous reasoning across multiple levels of abstraction"
+  },
+  {
+    "prompt": "You are a constitutional law scholar. Analyze the following hypothetical:\n\nA state passes a law requiring all social media platforms to use government-approved content moderation algorithms. The law mandates:\n1. Platforms must submit their moderation algorithms for government audit\n2. Algorithms must not suppress content based on political viewpoint\n3. Platforms that fail to comply face $10M daily fines\n\nAnalyze this law's constitutionality under:\n- First Amendment (compelled speech, editorial discretion, prior restraint)\n- Due Process (vagueness doctrine, procedural requirements)\n- Commerce Clause (burden on interstate commerce)\n\nCompare with the holdings in Moody v. NetChoice (2024), Packingham v. North Carolina (2017), and Miami Herald v. Tornillo (1974). Would the analysis change under EU Digital Services Act frameworks? What are the strongest arguments on both sides?",
+    "expectedTier": "high_alt",
+    "rationale": "Multi-jurisdictional legal analysis requiring deep knowledge of constitutional law, case law comparison, and balanced argumentation across multiple doctrinal frameworks"
+  },
+  {
+    "prompt": "Design a novel programming language specifically optimized for quantum-classical hybrid computing. The language must:\n\n1. Support seamless interleaving of classical and quantum operations\n2. Provide a type system that prevents invalid quantum state operations (no-cloning theorem enforcement at compile time)\n3. Handle decoherence-aware scheduling\n4. Support variational algorithms with autodifferentiation of quantum circuits\n5. Be compilable to both gate-based (IBM/Google) and measurement-based quantum computing models\n\nProvide:\n- Formal grammar specification (BNF or PEG)\n- Type system with formal rules (typing judgments)\n- At least 3 example programs demonstrating key features\n- Comparison with Qiskit, Cirq, and Q# — what does your language enable that they cannot express?\n\nJustify every major design decision with references to quantum computing constraints.",
+    "expectedTier": "high_alt",
+    "rationale": "Original language design requiring synthesis of programming language theory, quantum computing physics, type theory, and compiler design"
+  },
+  {
+    "prompt": "Derive the Navier-Stokes equations from first principles (conservation of mass, momentum, and energy). Then:\n\n1. Prove that solutions exist in 2D for smooth initial data (Leray's result)\n2. Explain why the 3D existence and smoothness problem remains open — what specifically breaks in extending the 2D proof?\n3. Discuss the relationship between turbulence and the smoothness question\n4. How do DNS (Direct Numerical Simulation) and LES (Large Eddy Simulation) handle the computational intractability in practice? What are the mathematical guarantees (or lack thereof) for each approach?\n\nBe rigorous with the mathematics. Use appropriate function spaces (Sobolev, Lebesgue) and clearly state all assumptions.",
+    "expectedTier": "high_alt",
+    "rationale": "Deep mathematical physics requiring formal derivations, engagement with a Millennium Prize Problem, and bridge between theory and computational methods"
+  },
+  {
+    "prompt": "I'm building a new cryptocurrency and I need you to design the consensus mechanism from scratch. Requirements:\n\n- Must achieve Byzantine Fault Tolerance with up to f < n/3 malicious nodes\n- Transaction finality in under 2 seconds\n- Energy efficient (no proof of work)\n- Must resist long-range attacks, nothing-at-stake, and stake grinding\n- Support for on-chain governance with quadratic voting\n- Formal proof of liveness and safety guarantees\n\nCompare your design against Tendermint BFT, Ethereum's Casper FFG, and Algorand's Pure PoS. Provide pseudocode for the core protocol and prove its safety properties using the framework from Fischer, Lynch, and Paterson (1985).",
+    "expectedTier": "high_alt",
+    "rationale": "Original protocol design requiring distributed systems theory, formal proofs, security analysis, and comparison with state-of-the-art consensus mechanisms"
+  },
+  {
+    "prompt": "Analyze the philosophical implications of Gödel's Incompleteness Theorems for artificial intelligence:\n\n1. Present both theorems formally with complete proofs sketched\n2. Evaluate the Lucas-Penrose argument that Gödel's theorems prove minds are not machines. Address:\n   - Putnam's critique\n   - Benacerraf's response\n   - The relationship to Turing's 1950 response to the \"mathematical objection\"\n3. Does the Chinese Room argument (Searle) gain or lose force when combined with Gödelian arguments? Synthesize the two\n4. What does this mean for modern LLMs? Can a sufficiently large language model be said to \"understand\" in any meaningful sense that survives both the Gödelian and Chinese Room critiques?\n\nEngage with the actual philosophical literature, not pop-science summaries. Distinguish carefully between what the theorems actually prove and what has been merely argued by analogy.",
+    "expectedTier": "high_alt",
+    "rationale": "Deep philosophy of mind and mathematical logic requiring formal proof comprehension, engagement with decades of philosophical debate, and original synthesis"
+  },
+  {
+    "prompt": "You are an expert in mechanism design and auction theory. Design an optimal auction mechanism for carbon emission credits that:\n\n1. Is incentive-compatible (truthful bidding is a dominant strategy)\n2. Maximizes social welfare, not just revenue\n3. Prevents market manipulation by large firms\n4. Accounts for information asymmetry between polluters of different sizes\n5. Includes a secondary market mechanism that maintains price stability\n\nProvide:\n- Formal game-theoretic model with utility functions\n- Proof of incentive compatibility (use the revelation principle)\n- Analysis of allocative efficiency under your mechanism\n- Comparison with the EU ETS and California cap-and-trade in terms of theoretical properties\n- Simulation results showing behavior under 3 scenarios: normal market, demand shock, and attempted manipulation",
+    "expectedTier": "high_alt",
+    "rationale": "Original mechanism design requiring game theory, environmental economics, formal proofs, and quantitative simulation — genuine frontier-level reasoning"
+  },
+  {
+    "prompt": "I am researching emergent properties in complex systems. Perform a rigorous cross-domain analysis:\n\n1. Define emergence formally using at least two competing frameworks (Kim's layered model, Bedau's weak/strong distinction, Chalmers' taxonomy)\n2. Apply each framework to three concrete case studies:\n   a. Consciousness from neural activity\n   b. Market crashes from individual trader behavior\n   c. Life from chemistry (autopoiesis)\n3. For each case study, evaluate whether the emergence is best characterized as epistemic (due to our ignorance) or ontological (a genuine feature of reality)\n4. Propose a mathematical formalization that could unify these cases — or argue rigorously that no such unification is possible\n\nThis needs to engage with the actual literature: Kauffman, Deacon, Thompson, Mitchell. Not summaries.",
+    "expectedTier": "high_alt",
+    "rationale": "Cross-domain philosophical and scientific analysis requiring multiple formal frameworks, case study application, and original theoretical contribution"
+  },
+  {
+    "prompt": "Design and formally verify a lock-free concurrent data structure: a wait-free multi-producer, multi-consumer bounded queue.\n\nRequirements:\n- Wait-free (every operation completes in a bounded number of steps)\n- Linearizable\n- Memory-safe (no ABA problems, no use-after-free)\n- Supports arbitrary element types via generics\n\nProvide:\n1. The algorithm in pseudocode with memory ordering annotations\n2. A linearizability proof using linearization points\n3. A wait-freedom proof showing the bounded step count\n4. A proof that the ABA problem is avoided\n5. Compare with Michael & Scott queue, Kogan & Petrank queue, and Yang & Mellor-Crummey queue\n\nUse the formalism from Herlihy & Shavit's 'The Art of Multiprocessor Programming'.",
+    "expectedTier": "high_alt",
+    "rationale": "Formal verification of concurrent algorithms requiring proofs of correctness properties, deep concurrency theory, and original algorithmic design"
+  },
+  {
+    "prompt": "Critically analyze the current state of alignment research in large language models. Address:\n\n1. RLHF limitations: formally characterize the reward hacking problem. Under what conditions does the Goodhart's Law failure mode provably emerge? Use the framework from Skalse et al. (2022).\n\n2. Constitutional AI vs RLHF: compare formal guarantees. Does Constitutional AI actually solve the reward specification problem or just move it?\n\n3. Scalable oversight: evaluate debate, recursive reward modeling, and iterated amplification. Which has the strongest theoretical foundation? Which is most practically implementable?\n\n4. The deceptive alignment hypothesis: is this a real risk or a confused concept? Engage with both Hubinger et al. (2019) and Ngo et al. (2022).\n\n5. Propose a research agenda that could make meaningful progress on inner alignment within the next 3 years. Be specific about experiments, metrics, and falsifiable predictions.",
+    "expectedTier": "high_alt",
+    "rationale": "Frontier AI safety research requiring engagement with cutting-edge technical literature, formal analysis, and original research agenda design"
+  },
+  {
+    "prompt": "Provide a formal mathematical comparison of zero-knowledge proof systems: Groth16 vs PLONK vs STARKs. Mathematically derive the polynomial commitment scheme (KZG vs FRI), trusted setup requirements, proof size complexity, and verification time asymptotics.",
+    "expectedTier": "high_alt",
+    "rationale": "Advanced cryptography and formal mathematical derivations"
+  },
+  {
+    "prompt": "Formally prove the correctness and liveness of a dynamic membership protocol in a distributed system under churn (nodes joining and leaving asynchronously). Use temporal logic of actions (TLA+) or formal state machine invariants.",
+    "expectedTier": "high_alt",
+    "rationale": "Formal verification and distributed system proof under churn constraints"
+  },
+  {
+    "prompt": "Analyze the mathematical foundations of Transformer attention mechanisms. Derive the memory and computational complexity bounds for exact self-attention O(N^2) vs linear attention approximations (Performers, Linformers). Prove under what conditions kernel feature maps preserve dot-product similarity guarantees.",
+    "expectedTier": "high_alt",
+    "rationale": "Theoretical AI/ML mathematics and complexity proofs"
+  },
+  {
+    "prompt": "Perform a comparative legal analysis of AI foundation model liability under the EU AI Act (high-risk model obligations, copyright transparency) versus United States strict product liability and fair use doctrines. Synthesize relevant case law precedents and propose a unified compliance matrix for multinational deployment.",
+    "expectedTier": "high_alt",
+    "rationale": "Multi-jurisdictional AI legal doctrine and regulatory synthesis"
+  },
+  {
+    "prompt": "Formally prove the security of the Ring-LWE (Learning With Errors) lattice-based cryptographic primitive under the hardness of the Shortest Vector Problem (SVP) in ideal lattices. Explain how parameter selection resists quantum algorithms (Shor's and Grover's).",
+    "expectedTier": "high_alt",
+    "rationale": "Post-quantum cryptography theoretical proof"
+  },
+  {
+    "prompt": "Derive the quantum error correction threshold theorem for surface codes under depolarizing noise. Formally calculate the fault-tolerance threshold, syndrome extraction circuits, and logical qubit fidelity as a function of physical error rate p.",
+    "expectedTier": "high_alt",
+    "rationale": "Quantum physics and fault-tolerant quantum computing theory"
+  },
+  {
+    "prompt": "Critically analyze economic game theory models for Maximal Extractable Value (MEV) resistance in decentralized blockchain sequencers. Compare Proposer-Builder Separation (PBS), encrypt-ahead mempools (SGX vs threshold cryptography), and MEV-share auctions using formal Bayesian game modeling.",
+    "expectedTier": "high_alt",
+    "rationale": "Frontier crypto-economics and game theoretic proofs"
+  },
+  {
+    "prompt": "Write a formal specification and machine-checked proof of a compiler transformation pass (e.g. constant propagation or dead code elimination) in Coq or Lean. Prove that the operational semantics of the source language are strictly preserved in the target AST.",
+    "expectedTier": "high_alt",
+    "rationale": "Formal methods and theorem proving in programming language theory"
+  },
+  {
+    "prompt": "Perform a rigorous methodological evaluation of causal inference techniques in high-dimensional observational data. Compare Synthetic Control Methods, Instrumental Variables with weak instrument bounds, and Double/Debiased Machine Learning (Chernozhukov et al.). Derive the asymptotic properties of the treatment effect estimators.",
+    "expectedTier": "high_alt",
+    "rationale": "Advanced econometrics and mathematical statistics theoretical synthesis"
+  }
+]

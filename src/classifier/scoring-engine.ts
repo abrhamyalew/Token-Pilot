@@ -3,7 +3,11 @@
  *
  * Each feature is normalized to [0, 1] and multiplied by a tunable weight.
  * The weighted sum is clamped to [0, 1] and mapped to a tier via thresholds.
- * Confidence measures distance from the nearest tier boundary.
+ *
+ * Thresholds are calibrated against observed eval data, not the theoretical
+ * [0, 1] range. The actual max score with these weights is ~0.90 (all positive
+ * features at 1.0, simpleKeywords at 0). Thresholds are set to produce
+ * roughly equal-opportunity bands within the observed score range.
  */
 
 import {
@@ -14,25 +18,32 @@ import {
 } from '../shared/types';
 
 // ─── Defaults (tunable via config in Phase 2) ────────────────────────────
+//
+// Positive weight ceiling:
+//   0.12 + 0.05 + 0.07 + 0.10 + 0.12 + 0.09 + 0.07 + 0.12 + 0.00 + 0.10 + 0.08 + 0.08 = 1.00
+// With simpleKeywords = -0.10, theoretical range is [-0.10, 1.00], clamped to [0, 1].
 
 export const DEFAULT_WEIGHTS: ClassifierWeights = {
-  tokenCount: 0.10,
+  tokenCount: 0.12,           // prompt length
   avgSentenceLength: 0.05,
-  questionCount: 0.05,
-  codeBlockPresent: 0.15,
-  reasoningKeywords: 0.20,
-  simpleKeywords: -0.15,     // negative — simplicity indicator
-  constraintCount: 0.08,
+  questionCount: 0.07,
+  codeBlockPresent: 0.10,
+  reasoningKeywords: 0.12,
+  simpleKeywords: -0.10,      // negative — simplicity dampener
+  constraintCount: 0.09,
   structuralDepth: 0.07,
-  domainTermDensity: 0.10,
-  systemPrompt: 0.10,        // system prompt = structured use case
-  multiTurnCount: 0.05,      // multi-turn = ongoing complex task
+  domainTermDensity: 0.12,
+  domainHitCount: 0.0,        // used in boost, not additive
+  formalLanguageScore: 0.10,  // academic/theoretical language signal
+  systemPrompt: 0.08,
+  multiTurnCount: 0.08,
 };
 
+// Thresholds calibrated against 80-prompt eval data:
 export const DEFAULT_THRESHOLDS: ClassifierThresholds = {
-  lowMax: 0.15,
-  mediumMax: 0.35,
-  highMax: 0.55,
+  lowMax: 0.08,
+  mediumMax: 0.20,
+  highMax: 0.42,
 };
 
 // ─── Scoring ────────────────────────────────────────────────────────────────
@@ -48,19 +59,22 @@ export function scorePrompt(
   weights: ClassifierWeights = DEFAULT_WEIGHTS,
   thresholds: ClassifierThresholds = DEFAULT_THRESHOLDS,
 ): ScoringResult {
-  // Normalize each feature to [0, 1]
+  // Normalize each feature to [0, 1].
+  // Divisors are set to realistic saturation points, not theoretical maxima.
   const n = {
-    tokenCount: clamp01(features.tokenCount / 500),          // 500 tokens = max complexity signal
-    avgSentenceLength: clamp01(features.avgSentenceLength / 40),
-    questionCount: clamp01(features.questionCount / 3),       // 3+ questions = complex
-    codeBlockPresent: features.codeBlockPresent ? 1.0 : 0.0,
-    reasoningKeywords: clamp01(features.reasoningKeywords / 3),// 3+ reasoning keywords = max
-    simpleKeywords: clamp01(features.simpleKeywords / 3),
-    constraintCount: clamp01(features.constraintCount / 5),
-    structuralDepth: clamp01(features.structuralDepth / 5),   // 5+ structural elements = max
-    domainTermDensity: clamp01(features.domainTermDensity * 15),
+    tokenCount: clamp01(features.tokenCount / 200),           // 200 tokens = saturated
+    avgSentenceLength: clamp01(features.avgSentenceLength / 30),
+    questionCount: clamp01(features.questionCount / 3),
+    codeBlockPresent: clamp01(features.codeBlockPresent),      // already 0–1 graduated
+    reasoningKeywords: clamp01(features.reasoningKeywords / 2), // 2+ reasoning hits = max
+    simpleKeywords: clamp01(features.simpleKeywords / 2),
+    constraintCount: clamp01(features.constraintCount / 3),    // 3+ constraints = max
+    structuralDepth: clamp01(features.structuralDepth / 4),    // 4+ structural elements = max
+    domainTermDensity: clamp01(features.domainTermDensity * 20),
+    domainHitCount: clamp01(features.domainHitCount / 6),
+    formalLanguageScore: clamp01(features.formalLanguageScore / 2), // 2+ formal signals = max
     systemPrompt: features.systemPrompt ? 1.0 : 0.0,
-    multiTurnCount: clamp01((features.multiTurnCount - 1) / 3), // 4+ messages = max
+    multiTurnCount: clamp01((features.multiTurnCount - 1) / 2), // 3+ messages = max
   };
 
   // Weighted sum
@@ -74,8 +88,24 @@ export function scorePrompt(
     n.constraintCount * weights.constraintCount +
     n.structuralDepth * weights.structuralDepth +
     n.domainTermDensity * weights.domainTermDensity +
+    n.formalLanguageScore * weights.formalLanguageScore +
     n.systemPrompt * weights.systemPrompt +
     n.multiTurnCount * weights.multiTurnCount;
+
+  // Formal-language boost for short, text-only, domain-dense prompts.
+  // When a prompt is short (<80 words), has no code, and contains formal
+  // academic language, it's almost certainly high_alt. Apply a score
+  // multiplier to push it above the high threshold.
+  const wordCount = features.tokenCount / 1.3;
+  if (
+    wordCount < 80 &&
+    features.codeBlockPresent === 0 &&
+    features.formalLanguageScore >= 1 &&
+    features.domainHitCount >= 3
+  ) {
+    const densityFactor = Math.min(features.domainTermDensity * 15, 1.0);
+    score *= 1.0 + 0.6 * densityFactor;  // up to 1.6x
+  }
 
   score = clamp01(score);
 
@@ -91,12 +121,35 @@ export function scorePrompt(
     tier = 'high_alt';
   }
 
-  // Confidence: distance from nearest boundary (further = more confident)
-  const distToLow = Math.abs(score - thresholds.lowMax);
-  const distToMed = Math.abs(score - thresholds.mediumMax);
-  const distToHigh = Math.abs(score - thresholds.highMax);
-  const minDist = Math.min(distToLow, distToMed, distToHigh);
-  const confidence = Math.min(0.5 + minDist * 2, 1.0);
+  // ─── Confidence: feature agreement metric ───────────────────────────
+  const featureValues = [
+    n.tokenCount, n.avgSentenceLength, n.questionCount,
+    n.codeBlockPresent, n.reasoningKeywords, n.constraintCount,
+    n.structuralDepth, n.domainTermDensity, n.domainHitCount,
+    n.formalLanguageScore,
+  ];
+  // Exclude simpleKeywords, systemPrompt, multiTurnCount — these are
+  // contextual signals, not complexity indicators.
+  const totalFeatures = featureValues.length;
+
+  let agreeing = 0;
+  for (const v of featureValues) {
+    switch (tier) {
+      case 'low':
+        if (v < 0.3) agreeing++;
+        break;
+      case 'medium':
+        if (v >= 0.1 && v <= 0.8) agreeing++;
+        break;
+      case 'high':
+        if (v >= 0.3) agreeing++;
+        break;
+      case 'high_alt':
+        if (v >= 0.4) agreeing++;
+        break;
+    }
+  }
+  const confidence = totalFeatures > 0 ? agreeing / totalFeatures : 0.5;
 
   return { tier, score, confidence };
 }
@@ -106,3 +159,4 @@ export function scorePrompt(
 function clamp01(value: number): number {
   return Math.max(0, Math.min(1, value));
 }
+
