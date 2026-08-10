@@ -17,6 +17,7 @@ import {
   ProviderChatRequest,
   ProviderChatResponse,
 } from './provider.interface';
+import { validateByokKey } from './byok-validator';
 
 @Injectable()
 export class AnthropicAdapter implements ProviderAdapter {
@@ -39,6 +40,11 @@ export class AnthropicAdapter implements ProviderAdapter {
 
     if (!byokKey && !serverKey) {
       return this.estimateOnly(request);
+    }
+
+    // Validate BYOK key format before constructing a client
+    if (byokKey) {
+      validateByokKey('anthropic', byokKey);
     }
 
     this.logger.debug(`Anthropic chat: model=${request.model} byok=${!!byokKey}`);
@@ -109,6 +115,11 @@ export class AnthropicAdapter implements ProviderAdapter {
         usage: estimate.usage,
       };
       return;
+    }
+
+    // Validate BYOK key format before constructing a client
+    if (byokKey) {
+      validateByokKey('anthropic', byokKey);
     }
 
     this.logger.debug(`Anthropic stream: model=${request.model} byok=${!!byokKey}`);

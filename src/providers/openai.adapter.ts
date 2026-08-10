@@ -17,6 +17,7 @@ import {
   ProviderChatRequest,
   ProviderChatResponse,
 } from './provider.interface';
+import { validateByokKey } from './byok-validator';
 
 @Injectable()
 export class OpenAIAdapter implements ProviderAdapter {
@@ -40,6 +41,11 @@ export class OpenAIAdapter implements ProviderAdapter {
 
     if (!byokKey && !serverKey) {
       return this.estimateOnly(request);
+    }
+
+    // Validate BYOK key format before constructing a client
+    if (byokKey) {
+      validateByokKey('openai', byokKey);
     }
 
     this.logger.debug(`OpenAI chat: model=${request.model} byok=${!!byokKey}`);
@@ -108,6 +114,11 @@ export class OpenAIAdapter implements ProviderAdapter {
         usage: estimate.usage,
       };
       return;
+    }
+
+    // Validate BYOK key format before constructing a client
+    if (byokKey) {
+      validateByokKey('openai', byokKey);
     }
 
     this.logger.debug(`OpenAI stream: model=${request.model} byok=${!!byokKey}`);
