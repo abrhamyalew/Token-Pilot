@@ -21,6 +21,7 @@ import {
 import { Request, Response } from 'express';
 import { RouterService } from './router.service';
 import { RateLimiterGuard } from '../rate-limiter/rate-limiter.guard';
+import { ApiKeyGuard } from '../auth/api-key.guard';
 import { ProviderRegistryService } from '../providers/provider-registry.service';
 import { ChatRequest, TokenUsage } from '../shared/types';
 import { getAllTiers, getAllModels } from '../shared/cost-registry';
@@ -39,7 +40,7 @@ export class RouterController {
    * Supports both streaming (SSE) and non-streaming responses.
    */
   @Post('v1/chat/completions')
-  @UseGuards(RateLimiterGuard)
+  @UseGuards(ApiKeyGuard, RateLimiterGuard)
   async chatCompletions(
     @Body() body: ChatRequest,
     @Req() req: Request,

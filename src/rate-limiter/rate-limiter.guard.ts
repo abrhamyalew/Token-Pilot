@@ -26,11 +26,11 @@ export class RateLimiterGuard implements CanActivate {
     const req = context.switchToHttp().getRequest<Request>();
     const res = context.switchToHttp().getResponse<Response>();
 
-    // Extract client IP (supports proxies via X-Forwarded-For)
-    const ip =
-      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ??
-      req.ip ??
-      'unknown';
+    // Use Express's req.ip which respects the app's trust-proxy setting.
+    // When trust proxy is configured correctly (in main.ts), req.ip returns
+    // the real client IP from X-Forwarded-For. When not configured, it
+    // returns the direct socket address — preventing spoofing via headers.
+    const ip = req.ip ?? req.socket?.remoteAddress ?? 'unknown';
 
     const { allowed, remaining, resetAt } = this.rateLimiter.check(ip);
 

@@ -16,7 +16,7 @@ export type Database = PostgresJsDatabase<typeof schema>;
       useFactory: (config: ConfigService): Database => {
         const connectionString = config.getOrThrow<string>('DATABASE_URL');
         const client = postgres(connectionString, {
-          max: 5, // connection pool size — keep small for free tier
+          max: 5,
           idle_timeout: 20,
           connect_timeout: 10,
         });
