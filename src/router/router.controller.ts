@@ -23,6 +23,7 @@ import { RouterService } from './router.service';
 import { RateLimiterGuard } from '../rate-limiter/rate-limiter.guard';
 import { ApiKeyGuard } from '../auth/api-key.guard';
 import { ProviderRegistryService } from '../providers/provider-registry.service';
+import { ChatRequestValidationPipe } from './chat-request-validation.pipe';
 import { ChatRequest, TokenUsage } from '../shared/types';
 import { getAllTiers, getAllModels } from '../shared/cost-registry';
 
@@ -42,19 +43,11 @@ export class RouterController {
   @Post('v1/chat/completions')
   @UseGuards(ApiKeyGuard, RateLimiterGuard)
   async chatCompletions(
-    @Body() body: ChatRequest,
+    @Body(ChatRequestValidationPipe) body: ChatRequest,
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<void> {
     try {
-      // Validate request
-      if (!body.messages || body.messages.length === 0) {
-        throw new HttpException(
-          { error: { message: 'messages is required and must not be empty' } },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
       if (body.stream) {
         await this.handleStream(body, res);
       } else {
@@ -183,6 +176,10 @@ export class RouterController {
       result.finalize(collectedContent, lastUsage);
     } catch (error) {
       this.logger.error('Streaming error', error);
+
+      // Log the failed stream to request_logs
+      result.finalize(collectedContent, lastUsage, error as Error);
+
       // Try to write an error event before ending
       try {
         res.write(

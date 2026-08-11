@@ -20,6 +20,7 @@ import { ClassifierService } from '../classifier/classifier.service';
 import { ProviderRegistryService } from '../providers/provider-registry.service';
 import { RequestLoggerService, LogEntry } from '../logger/logger.service';
 import { CostCalculatorService } from '../logger/cost-calculator.service';
+import { ProviderChatResponse } from '../providers/provider.interface';
 
 // ─── Response Types ─────────────────────────────────────────────────────────
 
@@ -33,9 +34,14 @@ export interface StreamRouteResult {
   classification: ClassifierResult;
   model: string;
   provider: string;
-  /** Call after streaming finishes to log the request */
-  finalize: (collectedContent: string, usage: TokenUsage | null) => void;
+  /** Call after streaming finishes to log the request. Pass error if stream failed. */
+  finalize: (collectedContent: string, usage: TokenUsage | null, error?: Error) => void;
 }
+
+// ─── Constants ──────────────────────────────────────────────────────────────
+
+const MAX_RETRIES = 1;
+const RETRY_DELAY_MS = 500;
 
 // ─── Service ────────────────────────────────────────────────────────────────
 
@@ -64,7 +70,7 @@ export class RouterService {
     const { adapter, model, provider } =
       this.providerRegistry.getAdapterForTier(classification.tier);
 
-    // 3. Call provider
+    // 3. Call provider with retry
     const providerRequest = {
       ...request,
       model,
@@ -72,7 +78,31 @@ export class RouterService {
       stream: false,
     };
 
-    const result = await adapter.chat(providerRequest);
+    const promptText = request.messages.map((m) => m.content).join('\n');
+
+    let result: ProviderChatResponse;
+    try {
+      result = await this.callWithRetry(
+        () => adapter.chat(providerRequest),
+        provider,
+      );
+    } catch (error) {
+      // Log the failed request before re-throwing
+      const latencyMs = Date.now() - startTime;
+      this.logAsync({
+        promptText,
+        classification,
+        model,
+        provider,
+        usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
+        latencyMs,
+        status: 'error',
+        errorMessage: (error as Error)?.message ?? String(error),
+        errorStack: (error as Error)?.stack,
+      });
+      throw error;
+    }
+
     const latencyMs = Date.now() - startTime;
 
     // 4. Calculate costs
@@ -96,7 +126,6 @@ export class RouterService {
     result.response.routing = routing;
 
     // 6. Log asynchronously
-    const promptText = request.messages.map((m) => m.content).join('\n');
     this.logAsync({
       promptText,
       classification,
@@ -138,8 +167,26 @@ export class RouterService {
     const stream = adapter.chatStream(providerRequest);
 
     // 4. Finalize callback — called by the controller after streaming ends
-    const finalize = (collectedContent: string, usage: TokenUsage | null) => {
+    const finalize = (collectedContent: string, usage: TokenUsage | null, error?: Error) => {
       const latencyMs = Date.now() - startTime;
+      const promptText = request.messages.map((m) => m.content).join('\n');
+
+      if (error) {
+        // Log failed stream
+        this.logAsync({
+          promptText,
+          classification,
+          model,
+          provider,
+          usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
+          latencyMs,
+          status: 'error',
+          errorMessage: error.message ?? String(error),
+          errorStack: error.stack,
+        });
+        return;
+      }
+
       const finalUsage = usage ?? {
         prompt_tokens: this.estimateTokens(
           request.messages.map((m) => m.content).join(' '),
@@ -150,7 +197,6 @@ export class RouterService {
       finalUsage.total_tokens =
         finalUsage.prompt_tokens + finalUsage.completion_tokens;
 
-      const promptText = request.messages.map((m) => m.content).join('\n');
       this.logAsync({
         promptText,
         classification,
@@ -165,6 +211,37 @@ export class RouterService {
     return { stream, classification, model, provider, finalize };
   }
 
+  // ─── Private Helpers ────────────────────────────────────────────────────
+
+  /**
+   * Call a provider function with retry logic.
+   * Retries up to MAX_RETRIES times with a fixed delay between attempts.
+   */
+  private async callWithRetry<T>(
+    fn: () => Promise<T>,
+    providerName: string,
+  ): Promise<T> {
+    let lastError: Error | undefined;
+
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        return await fn();
+      } catch (error) {
+        lastError = error as Error;
+        this.logger.warn(
+          `Provider "${providerName}" failed (attempt ${attempt + 1}/${MAX_RETRIES + 1}): ${lastError.message}`,
+        );
+
+        if (attempt < MAX_RETRIES) {
+          await this.delay(RETRY_DELAY_MS);
+        }
+      }
+    }
+
+    // All retries exhausted
+    throw lastError;
+  }
+
   /**
    * Fire-and-forget log — never blocks the response.
    */
@@ -176,5 +253,9 @@ export class RouterService {
 
   private estimateTokens(text: string): number {
     return Math.ceil(text.split(/\s+/).filter((w) => w.length > 0).length * 1.3);
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

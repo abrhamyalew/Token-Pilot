@@ -22,6 +22,8 @@ export interface LogEntry {
   status: 'success' | 'error' | 'escalated';
   escalatedFrom?: string;
   escalationReason?: string;
+  errorMessage?: string;
+  errorStack?: string;
 }
 
 @Injectable()
@@ -44,13 +46,21 @@ export class RequestLoggerService {
         entry.usage.completion_tokens,
       );
 
+      const features: Record<string, unknown> = {
+        ...(entry.classification.features as any),
+      };
+      if (entry.errorMessage) {
+        features._error = entry.errorMessage;
+        features._errorStack = entry.errorStack;
+      }
+
       const record: NewRequestLog = {
         promptText: entry.promptText,
         promptLength: entry.usage.prompt_tokens,
         tier: entry.classification.tier,
         classifier: entry.classification.classifier,
         confidence: entry.classification.confidence,
-        features: entry.classification.features as any,
+        features: features as any,
         provider: entry.provider,
         model: entry.model,
         inputTokens: entry.usage.prompt_tokens,
