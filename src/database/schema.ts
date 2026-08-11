@@ -14,7 +14,6 @@ import {
   integer,
   real,
   jsonb,
-  date,
   index,
 } from 'drizzle-orm/pg-core';
 
@@ -56,19 +55,7 @@ export const requestLogs = pgTable(
     index('idx_logs_provider').on(table.provider),
   ],
 );
-
-export const dailyStats = pgTable('daily_stats', {
-  date: date('date').primaryKey(),
-  totalRequests: integer('total_requests').notNull().default(0),
-  totalActualCost: real('total_actual_cost').notNull().default(0),
-  totalFrontierCost: real('total_frontier_cost').notNull().default(0),
-  totalSavings: real('total_savings').notNull().default(0),
-  tierBreakdown: jsonb('tier_breakdown').notNull().default({}),
-  avgLatencyMs: integer('avg_latency_ms').notNull().default(0),
-});
-
 // Type helpers for insert/select
 export type RequestLog = typeof requestLogs.$inferSelect;
 export type NewRequestLog = typeof requestLogs.$inferInsert;
-export type DailyStat = typeof dailyStats.$inferSelect;
-export type NewDailyStat = typeof dailyStats.$inferInsert;
+

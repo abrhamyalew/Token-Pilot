@@ -6,6 +6,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { v4 as uuid } from 'uuid';
 import { ChatChunk } from '../shared/types';
+import { estimateTokens } from '../shared/token-estimator';
 import {
   ProviderAdapter,
   ProviderChatRequest,
@@ -21,10 +22,10 @@ export class MockAdapter implements ProviderAdapter {
     this.logger.debug(`Mock chat: model=${request.model}`);
     const content = this.generateResponse(request);
 
-    const promptTokens = this.estimateTokens(
+    const promptTokens = estimateTokens(
       request.messages.map((m) => m.content).join(' '),
     );
-    const completionTokens = this.estimateTokens(content);
+    const completionTokens = estimateTokens(content);
 
     return {
       response: {
@@ -81,10 +82,10 @@ export class MockAdapter implements ProviderAdapter {
     }
 
     // Final chunk with usage
-    const promptTokens = this.estimateTokens(
+    const promptTokens = estimateTokens(
       request.messages.map((m) => m.content).join(' '),
     );
-    const completionTokens = this.estimateTokens(content);
+    const completionTokens = estimateTokens(content);
 
     yield {
       id,
@@ -120,9 +121,7 @@ export class MockAdapter implements ProviderAdapter {
     );
   }
 
-  private estimateTokens(text: string): number {
-    return Math.ceil(text.split(/\s+/).length * 1.3);
-  }
+
 
   private sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));

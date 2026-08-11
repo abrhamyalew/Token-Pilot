@@ -170,6 +170,7 @@ export class GoogleAdapter implements ProviderAdapter {
   async healthCheck(): Promise<boolean> {
     try {
       const genAI = this.getGenAI();
+      // Use the model configured for the 'medium' tier
       const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
       await model.countTokens('health check');
       return true;

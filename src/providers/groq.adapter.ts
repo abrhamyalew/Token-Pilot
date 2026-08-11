@@ -48,7 +48,7 @@ export class GroqAdapter implements ProviderAdapter {
     });
 
     const choice = completion.choices[0];
-    const usage = completion.usage!;
+    const usage = completion.usage ?? { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
 
     return {
       response: {

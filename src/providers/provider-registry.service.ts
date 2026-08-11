@@ -44,8 +44,13 @@ export class ProviderRegistryService {
   getAdapter(providerName: string): ProviderAdapter {
     const adapter = this.adapters.get(providerName);
     if (!adapter) {
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error(
+          `Unknown provider "${providerName}", no mock fallback in production`,
+        );
+      }
       this.logger.warn(
-        `Unknown provider "${providerName}", falling back to mock`,
+        `Unknown provider "${providerName}", falling back to mock (dev only)`,
       );
       return this.mockAdapter;
     }

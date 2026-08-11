@@ -21,6 +21,7 @@ import { ProviderRegistryService } from '../providers/provider-registry.service'
 import { RequestLoggerService, LogEntry } from '../logger/logger.service';
 import { CostCalculatorService } from '../logger/cost-calculator.service';
 import { ProviderChatResponse } from '../providers/provider.interface';
+import { estimateTokens } from '../shared/token-estimator';
 
 // ─── Response Types ─────────────────────────────────────────────────────────
 
@@ -71,10 +72,14 @@ export class RouterService {
       this.providerRegistry.getAdapterForTier(classification.tier);
 
     // 3. Call provider with retry
+    const requestedMaxTokens = request.max_tokens ?? this.MAX_DEMO_TOKENS;
+    const effectiveMaxTokens = Math.min(requestedMaxTokens, this.MAX_DEMO_TOKENS);
+    const wasCapped = requestedMaxTokens > this.MAX_DEMO_TOKENS;
+
     const providerRequest = {
       ...request,
       model,
-      max_tokens: Math.min(request.max_tokens ?? this.MAX_DEMO_TOKENS, this.MAX_DEMO_TOKENS),
+      max_tokens: effectiveMaxTokens,
       stream: false,
     };
 
@@ -121,6 +126,8 @@ export class RouterService {
       frontier_cost: costs.frontierCost,
       savings: costs.savings,
       latency_ms: latencyMs,
+      max_tokens_applied: effectiveMaxTokens,
+      max_tokens_capped: wasCapped,
     };
 
     result.response.routing = routing;
@@ -188,10 +195,10 @@ export class RouterService {
       }
 
       const finalUsage = usage ?? {
-        prompt_tokens: this.estimateTokens(
+        prompt_tokens: estimateTokens(
           request.messages.map((m) => m.content).join(' '),
         ),
-        completion_tokens: this.estimateTokens(collectedContent),
+        completion_tokens: estimateTokens(collectedContent),
         total_tokens: 0,
       };
       finalUsage.total_tokens =
@@ -249,10 +256,6 @@ export class RouterService {
     this.requestLogger.log(entry).catch((err) => {
       this.logger.error('Background log failed', err);
     });
-  }
-
-  private estimateTokens(text: string): number {
-    return Math.ceil(text.split(/\s+/).filter((w) => w.length > 0).length * 1.3);
   }
 
   private delay(ms: number): Promise<void> {

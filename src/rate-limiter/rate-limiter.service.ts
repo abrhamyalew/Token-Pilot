@@ -7,7 +7,7 @@
  * Phase 2 upgrade: move to Redis or a distributed store for multi-instance.
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 interface RateBucket {
@@ -15,12 +15,15 @@ interface RateBucket {
   resetAt: number;
 }
 
+const CLEANUP_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+
 @Injectable()
-export class RateLimiterService {
+export class RateLimiterService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RateLimiterService.name);
   private readonly buckets = new Map<string, RateBucket>();
   private readonly maxRequests: number;
   private readonly windowMs: number;
+  private cleanupTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(config: ConfigService) {
     this.maxRequests = config.get<number>('RATE_LIMIT_MAX', 10);
@@ -28,6 +31,19 @@ export class RateLimiterService {
     this.logger.log(
       `Rate limiter: ${this.maxRequests} requests per ${this.windowMs / 1000}s`,
     );
+  }
+
+  onModuleInit(): void {
+    this.cleanupTimer = setInterval(() => this.cleanup(), CLEANUP_INTERVAL_MS);
+    this.logger.log(`Cleanup scheduled every ${CLEANUP_INTERVAL_MS / 1000}s`);
+  }
+
+  onModuleDestroy(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+      this.cleanupTimer = null;
+      this.logger.log('Cleanup timer cleared');
+    }
   }
 
   /**
@@ -62,8 +78,8 @@ export class RateLimiterService {
   }
 
   /**
-   * Periodically clean up expired buckets to prevent memory leaks.
-   * Called automatically every 5 minutes.
+   * Clean up expired buckets to prevent memory leaks.
+   * Runs automatically every 5 minutes via setInterval.
    */
   cleanup(): void {
     const now = Date.now();
@@ -79,3 +95,4 @@ export class RateLimiterService {
     }
   }
 }
+

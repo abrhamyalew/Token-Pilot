@@ -7,13 +7,14 @@ RUN npm ci --ignore-scripts
 COPY . .
 RUN npm run build
 
-# Production stage
+# Production stage — only production dependencies
 FROM node:20-alpine
 
 WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm ci --omit=dev --ignore-scripts
+
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./
 
 ENV NODE_ENV=production
 EXPOSE 3000

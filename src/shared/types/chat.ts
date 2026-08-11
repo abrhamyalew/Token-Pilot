@@ -67,4 +67,9 @@ export interface RoutingMetadata {
   frontier_cost: number;
   savings: number;
   latency_ms: number;
+  /** The max_tokens value actually used (may be less than requested) */
+  max_tokens_applied: number;
+  /** True if the requested max_tokens was capped to the demo limit */
+  max_tokens_capped: boolean;
 }
+

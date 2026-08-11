@@ -184,7 +184,16 @@ export class AnthropicAdapter implements ProviderAdapter {
 
   async healthCheck(): Promise<boolean> {
     try {
-      this.getClient();
+      const key = this.config.get<string>('ANTHROPIC_API_KEY');
+      if (!key) {
+        return false;
+      }
+      // Lightweight API call — count tokens to verify the key is valid
+      const client = this.getClient();
+      await client.messages.countTokens({
+        model: 'claude-sonnet-4-20250514',
+        messages: [{ role: 'user', content: 'health check' }],
+      });
       return true;
     } catch {
       return false;

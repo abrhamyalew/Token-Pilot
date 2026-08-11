@@ -12,9 +12,9 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { extractFeatures } from '../src/classifier/feature-extractor';
-import { scorePrompt } from '../src/classifier/scoring-engine';
-import { Tier } from '../src/shared/types/classifier';
+import { extractFeatures } from '../../classifier/feature-extractor';
+import { scorePrompt } from '../../classifier/scoring-engine';
+import { Tier } from '../../shared/types/classifier';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
