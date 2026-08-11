@@ -164,7 +164,7 @@ describe('ChatRequestValidationPipe', () => {
   it('should return OpenAI-compatible error shape', () => {
     try {
       pipe.transform({ messages: [] } as ChatRequest);
-      fail('Should have thrown');
+      throw new Error('Should have thrown');
     } catch (e) {
       const response = (e as HttpException).getResponse() as any;
       expect(response.error).toBeDefined();
