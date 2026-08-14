@@ -1,0 +1,36 @@
+.page { padding: var(--space-10) 0 var(--space-16); }
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: var(--space-8);
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.title { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: var(--space-1); }
+.subtitle { font-size: 0.875rem; color: var(--color-text-muted); }
+
+.previewBadge {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  background: rgba(245,158,11,0.08);
+  border: 1px solid rgba(245,158,11,0.2);
+  font-size: 0.8rem;
+  color: var(--color-warning);
+  white-space: nowrap;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.col { display: flex; flex-direction: column; gap: var(--space-6); }
+
+@media (max-width: 900px) {
+  .grid { grid-template-columns: 1fr; }
+}
