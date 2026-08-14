@@ -20,5 +20,11 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "types": ["node", "vitest/globals"]
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "web",
+    "packages"
+  ]
 }

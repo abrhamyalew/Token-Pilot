@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { RouterController } from './router.controller';
 import { RouterService } from './router.service';
+import { StatsController } from './stats.controller';
 import { ClassifierModule } from '../classifier/classifier.module';
 import { ProvidersModule } from '../providers/providers.module';
 import { LoggerModule } from '../logger/logger.module';
@@ -9,7 +10,8 @@ import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [ClassifierModule, ProvidersModule, LoggerModule, RateLimiterModule, AuthModule],
-  controllers: [RouterController],
+  controllers: [RouterController, StatsController],
   providers: [RouterService],
 })
 export class RouterModule {}
+
