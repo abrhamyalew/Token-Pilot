@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import type { RoutingMetadata } from '@/lib/hooks/useChat';
 import styles from './CostComparison.module.css';
 
@@ -12,52 +11,55 @@ export function CostComparison({ metadata }: Props) {
   const { actualCost, frontierCost, savings, savingsPercent, latencyMs } = metadata;
 
   const formatCost = (c: number) =>
-    c === 0 ? 'Free' : `$${c.toFixed(6)}`;
+    c === 0 ? '$0.00 (Free)' : `$${c.toFixed(6)}`;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay: 0.1 }}
-      className={`card glow-border ${styles.container}`}
-    >
+    <div className={`card ${styles.container}`}>
+      {/* Header */}
       <div className={styles.header}>
-        <span className={styles.title}>Cost Comparison</span>
-        <span className={styles.savingsBadge}>
-          🎉 {savingsPercent.toFixed(0)}% saved
+        <span className={styles.title}>Cost Delta</span>
+        <span className="tier-badge low">
+          {savingsPercent.toFixed(0)}% cost reduction
         </span>
       </div>
 
+      {/* 2-Column Comparison Grid */}
       <div className={styles.grid}>
+        {/* Routed Cost */}
         <div className={styles.costBox}>
-          <span className={styles.costLabel}>This request</span>
-          <span className={`${styles.costValue} ${styles.cheap}`}>
+          <span className={styles.costLabel}>Routed model</span>
+          <div className={`${styles.costValue} mono`}>
             {formatCost(actualCost)}
-          </span>
-          <span className={styles.costModel}>{metadata.model}</span>
+          </div>
+          <span className={`${styles.costModel} mono`}>{metadata.model}</span>
         </div>
 
-        <div className={styles.vsLabel}>vs</div>
-
+        {/* Frontier Cost */}
         <div className={styles.costBox}>
-          <span className={styles.costLabel}>GPT-4o would cost</span>
-          <span className={`${styles.costValue} ${styles.expensive}`}>
+          <span className={styles.costLabel}>Frontier baseline (GPT-4o)</span>
+          <div className={`${styles.costValue} ${styles.frontierValue} mono`}>
             {formatCost(frontierCost)}
-          </span>
-          <span className={styles.costModel}>gpt-4o</span>
+          </div>
+          <span className={`${styles.costModel} mono`}>gpt-4o</span>
         </div>
       </div>
 
-      {savings > 0 && (
-        <div className={styles.savingsRow}>
-          <span className={styles.savingsText}>
-            You saved <strong>${savings.toFixed(6)}</strong> on this request
-          </span>
-          <span className={styles.latency}>
-            {latencyMs.toLocaleString()}ms latency
-          </span>
+      {/* Summary Footer */}
+      <div className={styles.footer}>
+        <div className={styles.savingsSummary}>
+          {savings > 0 ? (
+            <span>
+              Net saved: <strong className="mono">${savings.toFixed(6)}</strong>
+            </span>
+          ) : (
+            <span>Frontier reasoning required</span>
+          )}
         </div>
-      )}
-    </motion.div>
+
+        <div className={styles.latencyText}>
+          <span className="mono">{latencyMs}ms</span> latency
+        </div>
+      </div>
+    </div>
   );
 }

@@ -14,10 +14,10 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 const TIER_MODEL_MAP = {
-  low:      { model: 'llama-3.3-70b',    provider: 'Groq',   cost: 'Free' },
-  medium:   { model: 'gemini-2.0-flash', provider: 'Google', cost: 'Free' },
-  high:     { model: 'gpt-4o',           provider: 'OpenAI', cost: '$0.0025/1K in' },
-  high_alt: { model: 'claude-3-5-sonnet',provider: 'Anthropic', cost: '$0.003/1K in' },
+  low:      { model: 'llama-3.3-70b-versatile', provider: 'Groq',      cost: 'Free tier' },
+  medium:   { model: 'gemini-3.6-flash',         provider: 'Google AI', cost: 'Free tier' },
+  high:     { model: 'gpt-5.5-pro',              provider: 'OpenAI',    cost: '$0.0300 / 1K in' },
+  high_alt: { model: 'claude-opus-4-8',          provider: 'Anthropic', cost: '$0.0050 / 1K in' },
 };
 
 export default async function ConfigPage() {
@@ -26,25 +26,30 @@ export default async function ConfigPage() {
   return (
     <div className={styles.page}>
       <div className="container">
+        {/* Header */}
         <div className={styles.header}>
-          <div>
-            <h1 className={styles.title}>Configuration</h1>
-            <p className={styles.subtitle}>Inspect routing rules, classifier weights, and tier boundaries</p>
+          <div className={styles.headerText}>
+            <h1 className={`${styles.title} serif-heading`}>Routing Configuration</h1>
+            <p className={styles.subtitle}>
+              Parameters and weights governing complexity classification, tier cutoffs, and provider connectivity.
+            </p>
           </div>
-          <div className={styles.previewBadge}>
-            👁 Preview Mode — changes run against shared classifier
+
+          <div className={styles.previewTag}>
+            <span>Simulator Mode</span>
           </div>
         </div>
 
+        {/* 2-Column Bento Layout */}
         <div className={styles.grid}>
-          {/* Left column */}
+          {/* Left Column */}
           <div className={styles.col}>
             <TierModelEditor tiers={TIER_MODEL_MAP} />
             <ThresholdSliders />
             <ProviderHealth health={health} />
           </div>
 
-          {/* Right column */}
+          {/* Right Column */}
           <div className={styles.col}>
             <WeightSliders />
           </div>

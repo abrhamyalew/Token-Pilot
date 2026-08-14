@@ -7,12 +7,13 @@ export interface HealthState {
   providers?: Record<string, boolean>;
 }
 
-export function useHealth(pollIntervalMs = 60000) {
-  const [health, setHealth] = useState<HealthState | null>(null);
-  const [loading, setLoading] = useState(true);
+export function useHealth(initialHealth: HealthState | null = null, pollIntervalMs = 60000) {
+  const [health, setHealth] = useState<HealthState | null>(initialHealth);
+  const [loading, setLoading] = useState(initialHealth === null);
 
   const fetchHealth = useCallback(async () => {
     try {
+      setLoading(true);
       const res = await fetch('/api/health');
       if (res.ok) {
         const data = await res.json();
@@ -28,12 +29,42 @@ export function useHealth(pollIntervalMs = 60000) {
   }, []);
 
   useEffect(() => {
-    fetchHealth();
-    if (pollIntervalMs > 0) {
-      const timer = setInterval(fetchHealth, pollIntervalMs);
-      return () => clearInterval(timer);
+    let active = true;
+
+    async function load() {
+      try {
+        const res = await fetch('/api/health');
+        if (active) {
+          if (res.ok) {
+            const data = await res.json();
+            setHealth(data);
+          } else {
+            setHealth({ status: 'degraded' });
+          }
+        }
+      } catch {
+        if (active) setHealth(null);
+      } finally {
+        if (active) setLoading(false);
+      }
     }
-  }, [fetchHealth, pollIntervalMs]);
+
+    if (initialHealth === null) {
+      load();
+    }
+
+    if (pollIntervalMs > 0) {
+      const interval = setInterval(load, pollIntervalMs);
+      return () => {
+        active = false;
+        clearInterval(interval);
+      };
+    }
+
+    return () => {
+      active = false;
+    };
+  }, [initialHealth, pollIntervalMs]);
 
   return { health, loading, refetch: fetchHealth };
 }

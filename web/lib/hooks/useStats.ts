@@ -29,12 +29,46 @@ export function useStats(refreshIntervalMs = 30000) {
   }, []);
 
   useEffect(() => {
-    fetchAll();
-    if (refreshIntervalMs > 0) {
-      const interval = setInterval(fetchAll, refreshIntervalMs);
-      return () => clearInterval(interval);
+    let active = true;
+
+    async function load() {
+      try {
+        const [sumRes, recRes, timeRes] = await Promise.all([
+          fetch('/api/stats/summary').then((r) => (r.ok ? r.json() : null)),
+          fetch('/api/stats/recent?limit=25').then((r) => (r.ok ? r.json() : [])),
+          fetch('/api/stats/timeseries?days=7').then((r) => (r.ok ? r.json() : [])),
+        ]);
+        if (active) {
+          setSummary(sumRes);
+          setRecent(recRes);
+          setTimeseries(timeRes);
+          setError(null);
+        }
+      } catch (err: unknown) {
+        if (active) {
+          setError((err as Error).message ?? 'Failed to load stats');
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
     }
-  }, [fetchAll, refreshIntervalMs]);
+
+    load();
+
+    if (refreshIntervalMs > 0) {
+      const interval = setInterval(load, refreshIntervalMs);
+      return () => {
+        active = false;
+        clearInterval(interval);
+      };
+    }
+
+    return () => {
+      active = false;
+    };
+  }, [refreshIntervalMs]);
 
   return { summary, recent, timeseries, loading, error, refetch: fetchAll };
 }

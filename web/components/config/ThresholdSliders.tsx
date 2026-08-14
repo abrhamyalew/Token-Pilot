@@ -19,17 +19,10 @@ const DEFAULT_THRESHOLDS = {
 };
 
 const TEST_PROMPTS = [
-  { label: 'Simple', prompt: 'Translate this word to Spanish: apple' },
-  { label: 'Moderate', prompt: 'Write a regex to match email addresses according to RFC 5322.' },
-  { label: 'Complex', prompt: 'Analyze the trade-offs of Raft vs Paxos in distributed systems with high network partition rates.' },
+  { label: 'Regex SemVer validator', prompt: 'Write a regular expression to validate semantic version numbers according to SemVer 2.0.' },
+  { label: 'Async concurrency queue', prompt: 'Write a TypeScript async queue with concurrency limits, retry backoff, and error callbacks.' },
+  { label: 'Distributed consensus analysis', prompt: 'Analyze the trade-offs of Raft vs Paxos in distributed systems with high network partition rates.' },
 ];
-
-const TIER_COLORS: Record<string, string> = {
-  low: '#22c55e',
-  medium: '#f59e0b',
-  high: '#ef4444',
-  high_alt: '#a855f7',
-};
 
 export function ThresholdSliders({ initialThresholds = DEFAULT_THRESHOLDS }: Props) {
   const [thresholds, setThresholds] = useState(initialThresholds);
@@ -54,29 +47,86 @@ export function ThresholdSliders({ initialThresholds = DEFAULT_THRESHOLDS }: Pro
     };
   });
 
+  const lowPct = Math.max(5, thresholds.lowMax * 100);
+  const medPct = Math.max(5, (thresholds.mediumMax - thresholds.lowMax) * 100);
+  const highPct = Math.max(5, (thresholds.highMax - thresholds.mediumMax) * 100);
+  const altPct = Math.max(5, (1 - thresholds.highMax) * 100);
+
   return (
     <div className={`card ${styles.container}`}>
+      {/* Header */}
       <div className={styles.header}>
         <div>
-          <span className={styles.title}>Tier Threshold Boundaries</span>
-          <p className={styles.subtitle}>Adjust score cutoffs between model tiers</p>
+          <span className={styles.title}>Threshold Boundaries</span>
+          <p className={styles.subtitle}>Calibrate complexity cutoff boundaries across model tiers</p>
         </div>
+
         <button
           type="button"
           className="btn btn-ghost"
           onClick={reset}
-          style={{ fontSize: '0.75rem', padding: '4px 10px' }}
+          style={{ fontSize: '0.75rem', padding: '3px 8px' }}
         >
           Reset
         </button>
       </div>
 
+      {/* Spectrum Bar */}
+      <div className={styles.spectrumSection}>
+        <div className={styles.spectrum}>
+          <div
+            className={styles.spectrumSegment}
+            style={{
+              width: `${lowPct}%`,
+              background: 'var(--tier-low-bg)',
+              color: 'var(--tier-low-text)',
+              borderRight: '1px solid var(--tier-low-border)',
+            }}
+          >
+            <span>LOW (≤{thresholds.lowMax.toFixed(2)})</span>
+          </div>
+          <div
+            className={styles.spectrumSegment}
+            style={{
+              width: `${medPct}%`,
+              background: 'var(--tier-medium-bg)',
+              color: 'var(--tier-medium-text)',
+              borderRight: '1px solid var(--tier-medium-border)',
+            }}
+          >
+            <span>MED (≤{thresholds.mediumMax.toFixed(2)})</span>
+          </div>
+          <div
+            className={styles.spectrumSegment}
+            style={{
+              width: `${highPct}%`,
+              background: 'var(--tier-high-bg)',
+              color: 'var(--tier-high-text)',
+              borderRight: '1px solid var(--tier-high-border)',
+            }}
+          >
+            <span>HIGH (≤{thresholds.highMax.toFixed(2)})</span>
+          </div>
+          <div
+            className={styles.spectrumSegment}
+            style={{
+              width: `${altPct}%`,
+              background: 'var(--tier-alt-bg)',
+              color: 'var(--tier-alt-text)',
+            }}
+          >
+            <span>HIGH-ALT</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Sliders */}
       <div className={styles.sliders}>
         {/* Low Max */}
         <div className={styles.sliderRow}>
           <div className={styles.sliderLabel}>
-            <span>Low Tier Cutoff (Score ≤ Low Max)</span>
-            <span className="mono" style={{ color: 'var(--color-tier-low)' }}>
+            <span>Low Cutoff (≤ Low Max)</span>
+            <span className="mono" style={{ color: 'var(--tier-low-text)', fontWeight: 600 }}>
               {thresholds.lowMax.toFixed(2)}
             </span>
           </div>
@@ -96,14 +146,14 @@ export function ThresholdSliders({ initialThresholds = DEFAULT_THRESHOLDS }: Pro
         {/* Medium Max */}
         <div className={styles.sliderRow}>
           <div className={styles.sliderLabel}>
-            <span>Medium Tier Cutoff (Score ≤ Medium Max)</span>
-            <span className="mono" style={{ color: 'var(--color-tier-medium)' }}>
+            <span>Medium Cutoff (≤ Med Max)</span>
+            <span className="mono" style={{ color: 'var(--tier-medium-text)', fontWeight: 600 }}>
               {thresholds.mediumMax.toFixed(2)}
             </span>
           </div>
           <input
             type="range"
-            min={0.5}
+            min={thresholds.lowMax + 0.05}
             max={0.85}
             step={0.01}
             value={thresholds.mediumMax}
@@ -117,15 +167,15 @@ export function ThresholdSliders({ initialThresholds = DEFAULT_THRESHOLDS }: Pro
         {/* High Max */}
         <div className={styles.sliderRow}>
           <div className={styles.sliderLabel}>
-            <span>High Tier Cutoff (Score ≤ High Max → High, &gt; High Max → High Alt)</span>
-            <span className="mono" style={{ color: 'var(--color-tier-high)' }}>
+            <span>High Cutoff (≤ High Max → High-Alt)</span>
+            <span className="mono" style={{ color: 'var(--tier-high-text)', fontWeight: 600 }}>
               {thresholds.highMax.toFixed(2)}
             </span>
           </div>
           <input
             type="range"
-            min={0.8}
-            max={0.99}
+            min={thresholds.mediumMax + 0.05}
+            max={0.98}
             step={0.01}
             value={thresholds.highMax}
             onChange={(e) =>
@@ -136,68 +186,17 @@ export function ThresholdSliders({ initialThresholds = DEFAULT_THRESHOLDS }: Pro
         </div>
       </div>
 
-      {/* Visual tier spectrum bar */}
-      <div className={styles.spectrum}>
-        <div
-          className={styles.spectrumSegment}
-          style={{
-            flex: thresholds.lowMax,
-            background: 'rgba(34, 197, 94, 0.25)',
-            borderRight: '2px solid var(--color-tier-low)',
-          }}
-        >
-          LOW (≤ {thresholds.lowMax.toFixed(2)})
-        </div>
-        <div
-          className={styles.spectrumSegment}
-          style={{
-            flex: thresholds.mediumMax - thresholds.lowMax,
-            background: 'rgba(245, 158, 11, 0.25)',
-            borderRight: '2px solid var(--color-tier-medium)',
-          }}
-        >
-          MEDIUM (≤ {thresholds.mediumMax.toFixed(2)})
-        </div>
-        <div
-          className={styles.spectrumSegment}
-          style={{
-            flex: thresholds.highMax - thresholds.mediumMax,
-            background: 'rgba(239, 68, 68, 0.25)',
-            borderRight: '2px solid var(--color-tier-high)',
-          }}
-        >
-          HIGH (≤ {thresholds.highMax.toFixed(2)})
-        </div>
-        <div
-          className={styles.spectrumSegment}
-          style={{
-            flex: 1 - thresholds.highMax,
-            background: 'rgba(168, 85, 247, 0.25)',
-          }}
-        >
-          ALT
-        </div>
-      </div>
-
-      {/* Live impact preview */}
+      {/* Live Simulation Previews */}
       <div className={styles.preview}>
-        <span className={styles.previewTitle}>Impact on Sample Prompts</span>
+        <span className={styles.previewTitle}>Live Previews</span>
         <div className={styles.previewRows}>
           {previews.map(({ label, score, tier }) => (
             <div key={label} className={styles.previewRow}>
               <span className={styles.previewLabel}>{label}</span>
               <span className="mono" style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
-                score {score.toFixed(3)}
+                {score.toFixed(3)}
               </span>
-              <span
-                className="tier-badge"
-                style={{
-                  color: TIER_COLORS[tier],
-                  background: `${TIER_COLORS[tier]}18`,
-                }}
-              >
-                {tier}
-              </span>
+              <span className={`tier-badge ${tier}`}>{tier}</span>
             </div>
           ))}
         </div>

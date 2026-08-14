@@ -1,19 +1,28 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Nav } from '@/components/shared/Nav';
 
+export const viewport: Viewport = {
+  themeColor: '#FBFBFA',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  colorScheme: 'light',
+};
+
 export const metadata: Metadata = {
   title: {
-    default: 'Token Pilot — Intelligent LLM Router',
-    template: '%s | Token Pilot',
+    default: 'Token Pilot — Intelligent Prompt Router',
+    template: '%s — Token Pilot',
   },
   description:
-    'Token Pilot classifies prompt complexity and routes requests to the cheapest capable model — saving up to 80% on LLM API costs.',
-  keywords: ['LLM router', 'AI cost optimization', 'prompt classification', 'GPT-4 alternative'],
+    'Token Pilot classifies prompt complexity and routes requests to the lowest-cost capable model.',
+  keywords: ['LLM router', 'prompt classification', 'cost optimization', 'model routing'],
   openGraph: {
-    title: 'Token Pilot — Intelligent LLM Router',
-    description: 'Save up to 80% on LLM API costs with intelligent prompt routing.',
+    title: 'Token Pilot — Intelligent Prompt Router',
+    description: 'Classify prompt complexity and route to cost-effective models.',
     type: 'website',
+    siteName: 'Token Pilot',
   },
 };
 

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import Link from 'next/link';
 import { getStatsSummary, getRecentRequests, getTimeseries } from '@/lib/api';
 import { HeroMetrics } from '@/components/dashboard/HeroMetrics';
 import { SavingsChart } from '@/components/dashboard/SavingsChart';
@@ -9,11 +10,10 @@ import { RequestTable } from '@/components/dashboard/RequestTable';
 import styles from './page.module.css';
 
 export const metadata: Metadata = {
-  title: 'Dashboard',
-  description: 'Real-time analytics — cost savings, tier distribution, and request history.',
+  title: 'Routing Analytics',
+  description: 'Real-time overview of prompt classification volume, cost savings, and tier utilization.',
 };
 
-// Revalidate every 30 seconds
 export const revalidate = 30;
 
 export default async function DashboardPage() {
@@ -28,31 +28,35 @@ export default async function DashboardPage() {
   return (
     <div className={styles.page}>
       <div className="container">
-        {/* Page header */}
+        {/* Header */}
         <div className={styles.header}>
-          <div>
-            <h1 className={styles.title}>Dashboard</h1>
+          <div className={styles.headerText}>
+            <h1 className={`${styles.title} serif-heading`}>Routing Analytics</h1>
             <p className={styles.subtitle}>
-              Live analytics — refreshes every 30 seconds
+              Aggregate statistics on classification volume, financial savings, and model distribution.
             </p>
           </div>
-          {summary && (
-            <div className={styles.refreshBadge}>
-              ISR · 30s cache
+
+          <div className={styles.headerActions}>
+            <div className={styles.refreshTag}>
+              <span>Auto-refresh · 30s</span>
             </div>
-          )}
+            <Link href="/" className="btn btn-ghost" style={{ fontSize: '0.8rem', padding: '5px 12px' }}>
+              Open Playground
+            </Link>
+          </div>
         </div>
 
         {noData ? (
           <EmptyState />
         ) : (
-          <>
-            {/* Hero metrics */}
-            <Suspense fallback={<div className="skeleton" style={{ height: 120 }} />}>
+          <div className={styles.dashboardContent}>
+            {/* Hero Metrics Bento Grid */}
+            <Suspense fallback={<div style={{ height: 96, background: 'var(--color-bg-subtle)', borderRadius: 'var(--radius-md)' }} />}>
               {summary && <HeroMetrics summary={summary} />}
             </Suspense>
 
-            {/* Charts row 1: Savings Over Time & Tier Donut */}
+            {/* Charts Row: Timeseries & Tier Donut */}
             <div className={styles.chartsRow}>
               <div className={styles.chartMain}>
                 <SavingsChart data={timeseries} />
@@ -62,14 +66,14 @@ export default async function DashboardPage() {
               </div>
             </div>
 
-            {/* Charts row 2: Latency distribution */}
-            <div style={{ marginBottom: 'var(--space-6)' }}>
+            {/* Latency Comparison */}
+            <div className={styles.latencyRow}>
               <LatencyBars requests={recent} />
             </div>
 
-            {/* Request table */}
+            {/* Requests Table */}
             <RequestTable requests={recent} />
-          </>
+          </div>
         )}
       </div>
     </div>
@@ -78,12 +82,14 @@ export default async function DashboardPage() {
 
 function EmptyState() {
   return (
-    <div className={styles.emptyState}>
-      <div className={styles.emptyIcon}>📊</div>
-      <h2>No data yet</h2>
-      <p>
-        Go to the <a href="/">Playground</a> and submit a few prompts — they&apos;ll appear here.
+    <div className={`card ${styles.emptyState}`}>
+      <h2 className={`${styles.emptyTitle} serif-heading`}>No request data recorded</h2>
+      <p className={styles.emptyDesc}>
+        Submit prompts in the Playground to generate telemetry logs, financial comparisons, and tier distribution curves.
       </p>
+      <Link href="/" className="btn btn-primary">
+        Go to Playground
+      </Link>
     </div>
   );
 }

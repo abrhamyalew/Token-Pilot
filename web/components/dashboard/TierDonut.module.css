@@ -1,9 +1,84 @@
-.container { padding: var(--space-5); }
-.header { margin-bottom: var(--space-2); }
+.container {
+  padding: var(--space-4);
+  background: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-1);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border-subtle);
+  gap: var(--space-2);
+}
+
 .title {
-  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  font-size: 0.775rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  color: var(--color-text-primary);
+  letter-spacing: 0.01em;
+}
+
+.totalBadge {
+  font-size: 0.7rem;
   color: var(--color-text-muted);
+}
+
+.chartWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: var(--space-1) 0;
+}
+
+.legendList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.legendRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+}
+
+.legendLeft {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.legendLabel {
+  color: var(--color-text-secondary);
+}
+
+.legendPct {
+  font-size: 0.725rem;
+  color: var(--color-text-muted);
+}
+
+.empty {
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
 }

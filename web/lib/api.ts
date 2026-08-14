@@ -68,8 +68,13 @@ export async function getTimeseries(days = 7): Promise<TimeseriesPoint[]> {
   return fetchGateway<TimeseriesPoint[]>(`/api/stats/timeseries?days=${days}`);
 }
 
-export async function getHealth(): Promise<{ status: string; providers: Record<string, boolean> }> {
-  return fetchGateway('/health');
+export interface HealthResponse {
+  status: string;
+  providers: Record<string, boolean>;
+}
+
+export async function getHealth(): Promise<HealthResponse> {
+  return fetchGateway<HealthResponse>('/health');
 }
 
 /** Returns the base gateway URL for client-side SSE streaming */

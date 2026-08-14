@@ -7,62 +7,91 @@
   align-items: flex-start;
   justify-content: space-between;
   margin-bottom: var(--space-8);
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.headerText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin-bottom: var(--space-1);
+  font-size: clamp(2rem, 3.8vw, 2.75rem);
+  color: var(--color-text-primary);
 }
 
 .subtitle {
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
 }
 
-.refreshBadge {
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.refreshTag {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.725rem;
   color: var(--color-text-muted);
-  padding: var(--space-1) var(--space-3);
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+}
+
+.dashboardContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
 }
 
 .chartsRow {
   display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: var(--space-6);
-  margin-bottom: var(--space-6);
+  grid-template-columns: 1fr 320px;
+  gap: var(--space-5);
 }
 
-.chartMain { min-width: 0; }
-.chartSide { min-width: 0; }
+.chartMain {
+  min-width: 0;
+}
 
+.chartSide {
+  min-width: 0;
+}
+
+.latencyRow {
+  width: 100%;
+}
+
+/* Empty State */
 .emptyState {
   text-align: center;
-  padding: var(--space-16) 0;
+  padding: var(--space-16) var(--space-6);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-3);
+  max-width: 520px;
+  margin: var(--space-8) auto;
 }
 
-.emptyIcon {
-  font-size: 3rem;
-  opacity: 0.5;
+.emptyTitle {
+  font-size: 1.5rem;
+  color: var(--color-text-primary);
 }
 
-.emptyState h2 {
+.emptyDesc {
   color: var(--color-text-secondary);
-}
-
-.emptyState p {
-  color: var(--color-text-muted);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
 }
 
 @media (max-width: 900px) {
-  .chartsRow { grid-template-columns: 1fr; }
+  .chartsRow {
+    grid-template-columns: 1fr;
+  }
 }

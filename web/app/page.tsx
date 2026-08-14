@@ -13,27 +13,22 @@ export default function PlaygroundPage() {
 
   return (
     <div className={styles.page}>
-      {/* Hero section */}
+      {/* Editorial Hero */}
       <section className={styles.hero}>
         <div className={styles.heroContent}>
-          <div className={styles.heroBadge}>
-            <span className="status-dot online" />
-            <span>Live Demo — No signup required</span>
-          </div>
-          <h1 className={`${styles.heroTitle} gradient-text`}>
-            Route any prompt to the<br />cheapest capable model
+          <h1 className={`${styles.heroTitle} serif-heading`}>
+            Intelligent Prompt Routing
           </h1>
+
           <p className={styles.heroDesc}>
-            Token Pilot classifies prompt complexity in milliseconds using a 12-signal
-            feature vector and routes to the most cost-effective LLM — saving up to 80%
-            vs always using frontier models.
+            Evaluate prompt complexity in sub-5ms across a 12-signal heuristic vector. Route basic queries to high-throughput free models and reserve frontier models for multi-step reasoning.
           </p>
         </div>
       </section>
 
-      {/* Main content */}
+      {/* Main Grid */}
       <div className={`container ${styles.content}`}>
-        {/* Left: Input + response */}
+        {/* Left Column */}
         <div className={styles.left}>
           <PromptInput
             onSubmit={send}
@@ -42,13 +37,15 @@ export default function PlaygroundPage() {
           />
 
           {state.status !== 'idle' && (
-            <button
-              type="button"
-              className={`btn btn-ghost ${styles.resetBtn}`}
-              onClick={reset}
-            >
-              ↺ Reset
-            </button>
+            <div className={styles.toolbar}>
+              <button
+                type="button"
+                className={`btn btn-ghost ${styles.resetBtn}`}
+                onClick={reset}
+              >
+                Clear input
+              </button>
+            </div>
           )}
 
           {state.metadata && (
@@ -62,25 +59,31 @@ export default function PlaygroundPage() {
           />
         </div>
 
-        {/* Right: Routing viz */}
+        {/* Right Column: Routing Pipeline & Benchmark Examples */}
         <div className={styles.right}>
           <RoutingViz status={state.status} metadata={state.metadata} />
 
-          {/* Example prompts */}
           {state.status === 'idle' && (
-            <div className={`card ${styles.examples}`}>
-              <p className={styles.examplesTitle}>Try an example</p>
-              {EXAMPLE_PROMPTS.map((ex) => (
-                <button
-                  key={ex.label}
-                  type="button"
-                  className={styles.exampleBtn}
-                  onClick={() => send(ex.prompt)}
-                >
-                  <span className={`tier-badge ${ex.tier}`}>{ex.tier}</span>
-                  <span>{ex.label}</span>
-                </button>
-              ))}
+            <div className={`card ${styles.benchmarksCard}`}>
+              <div className={styles.benchmarksHeader}>
+                <span className={styles.benchmarksTitle}>Benchmark Scenarios</span>
+              </div>
+              <div className={styles.benchmarkList}>
+                {EXAMPLE_PROMPTS.map((ex) => (
+                  <button
+                    key={ex.label}
+                    type="button"
+                    className={styles.benchmarkBtn}
+                    onClick={() => send(ex.prompt)}
+                  >
+                    <div className={styles.benchmarkTop}>
+                      <span className={`tier-badge ${ex.tier}`}>{ex.tier}</span>
+                      <span className={styles.benchmarkCategory}>{ex.category}</span>
+                    </div>
+                    <span className={styles.benchmarkLabel}>{ex.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -92,17 +95,20 @@ export default function PlaygroundPage() {
 const EXAMPLE_PROMPTS = [
   {
     tier: 'low',
-    label: 'Translate "Hello World" to French',
-    prompt: 'Translate "Hello World" to French',
+    category: 'Code utility',
+    label: 'TypeScript debounce utility with generic typing',
+    prompt: 'Write a type-safe TypeScript debounce function with configurable delay, leading/trailing execution options, and a cancel method. Include inline JSDoc comments.',
   },
   {
     tier: 'medium',
-    label: 'Explain how DNS resolution works',
-    prompt: 'Explain how DNS resolution works, step by step, for a software engineer who is new to networking.',
+    category: 'Data structures',
+    label: 'Implement an LRU Cache with O(1) operations in TypeScript',
+    prompt: 'Implement a generic LRU (Least Recently Used) Cache class in TypeScript with O(1) get and put time complexity using a Doubly Linked List and a Map. Include capacity eviction and unit test assertions.',
   },
   {
     tier: 'high',
-    label: 'Refactor this class to use Strategy Pattern',
-    prompt: 'Refactor the following TypeScript class to use the Strategy pattern. The class currently has 3 different sorting algorithms hardcoded as methods. Explain your design decisions.\n\n```typescript\nclass DataProcessor {\n  sortBubble(arr: number[]): number[] { /* ... */ }\n  sortMerge(arr: number[]): number[] { /* ... */ }\n  sortQuick(arr: number[]): number[] { /* ... */ }\n}\n```',
+    category: 'Distributed systems',
+    label: 'Refactor payment service with Strategy pattern & idempotency',
+    prompt: 'Refactor the following TypeScript payment processor to use the Strategy pattern with strict types, idempotency keys, distributed locking via Redis, and transactional outbox event publishing. Provide architecture diagrams in ASCII, failure handling, and test fixtures:\n\n```typescript\nclass PaymentProcessor {\n  async process(type: "card" | "crypto" | "wire", amount: number, accountId: string) {\n    if (type === "card") { await stripe.charge(amount); }\n    else if (type === "crypto") { await web3.transfer(amount); }\n    else { await bank.wire(amount); }\n  }\n}\n```',
   },
 ];

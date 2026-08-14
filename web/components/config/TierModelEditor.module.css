@@ -1,52 +1,66 @@
-.container { padding: var(--space-5); }
+.container {
+  padding: var(--space-4);
+  background: var(--color-surface);
+}
 
-.header { margin-bottom: var(--space-4); }
+.header {
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
 
 .title {
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-text-muted);
-}
-
-.tiers { display: flex; flex-direction: column; gap: var(--space-3); }
-
-.tierRow {
-  display: grid;
-  grid-template-columns: 90px 20px 1fr auto;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3);
-  border-radius: var(--radius-md);
-  background: rgba(255,255,255,0.03);
-  border: 1px solid var(--color-border);
-}
-
-.tierLeft { display: flex; align-items: center; }
-
-.arrow { color: var(--color-text-muted); font-size: 0.875rem; }
-
-.tierRight {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.model {
-  font-size: 0.85rem;
-  color: var(--color-text-primary);
-}
-
-.provider {
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
-}
-
-.cost {
   font-family: var(--font-mono);
   font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  letter-spacing: 0.02em;
+}
+
+.subtitle {
+  font-size: 0.75rem;
   color: var(--color-text-muted);
-  text-align: right;
-  white-space: nowrap;
+  margin-top: 2px;
+}
+
+.tierList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.tierRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.tierInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.modelName {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.providerName {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+}
+
+.tierCost {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
 }

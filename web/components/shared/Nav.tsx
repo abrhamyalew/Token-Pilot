@@ -16,33 +16,29 @@ export function Nav() {
   return (
     <header className={styles.header}>
       <nav className={styles.nav}>
-        {/* Logo */}
+        {/* Brand */}
         <Link href="/" className={styles.logo}>
-          <span className={styles.logoIcon}>⚡</span>
-          <span className={styles.logoText}>
-            Token<strong>Pilot</strong>
-          </span>
+          <span className={styles.logoMark}>TP</span>
+          <span className={styles.brandTitle}>Token Pilot</span>
+          <span className={styles.versionTag}>v0.1</span>
         </Link>
 
-        {/* Links */}
+        {/* Center Nav Links */}
         <ul className={styles.links}>
-          {NAV_LINKS.map(({ href, label }) => (
-            <li key={href}>
-              <Link
-                href={href}
-                className={`${styles.link} ${pathname === href ? styles.active : ''}`}
-              >
-                {label}
-              </Link>
-            </li>
-          ))}
+          {NAV_LINKS.map(({ href, label }) => {
+            const isActive = pathname === href;
+            return (
+              <li key={href}>
+                <Link
+                  href={href}
+                  className={`${styles.link} ${isActive ? styles.active : ''}`}
+                >
+                  {label}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
-
-        {/* Status pill */}
-        <div className={styles.status}>
-          <span className="status-dot online" />
-          <span className={styles.statusText}>Live</span>
-        </div>
       </nav>
     </header>
   );

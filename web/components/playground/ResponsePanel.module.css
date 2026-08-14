@@ -1,91 +1,78 @@
 .container {
-  padding: var(--space-5);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
+  padding: 0;
+  overflow: hidden;
 }
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
+  padding: 10px 16px;
+  background: var(--color-bg-subtle);
+  border-bottom: 1px solid var(--color-border);
 }
 
-.title {
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-text-muted);
-}
-
-.streamingBadge {
+.headerLeft {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: 0.75rem;
-  color: var(--color-accent);
+}
+
+.title {
   font-family: var(--font-mono);
-}
-
-.streamDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--color-accent);
-  animation: blink 1s ease-in-out infinite;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.2; }
-}
-
-.doneBadge {
   font-size: 0.75rem;
-  color: var(--color-success);
-  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  letter-spacing: 0.02em;
 }
 
-.errorBadge {
-  font-size: 0.75rem;
-  color: var(--color-error);
-  font-family: var(--font-mono);
-}
-
-.classifyingBadge {
+.streamingStatus {
   font-size: 0.75rem;
   color: var(--color-text-muted);
-  font-family: var(--font-mono);
-  animation: fadeInOut 1.4s ease-in-out infinite;
 }
 
-@keyframes fadeInOut {
-  0%, 100% { opacity: 0.5; }
-  50%       { opacity: 1; }
+.copyBtn {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-family: var(--font-sans);
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.copyBtn:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text-primary);
 }
 
 .content {
-  font-size: 0.95rem;
-  line-height: 1.75;
+  padding: var(--space-4);
+  font-size: 0.925rem;
+  line-height: 1.65;
   color: var(--color-text-primary);
+  max-height: 480px;
+  overflow-y: auto;
+  background: var(--color-surface);
+}
+
+.formattedText {
   white-space: pre-wrap;
   word-break: break-word;
-  max-height: 400px;
-  overflow-y: auto;
 }
 
 .placeholder {
   color: var(--color-text-muted);
-  font-style: italic;
+  font-size: 0.85rem;
 }
 
 .cursor {
   display: inline-block;
   width: 2px;
-  height: 1.1em;
-  background: var(--color-accent);
+  height: 1.15em;
+  background: #111111;
   vertical-align: text-bottom;
   margin-left: 2px;
   animation: cursorBlink 0.8s step-end infinite;
@@ -93,15 +80,28 @@
 
 @keyframes cursorBlink {
   0%, 100% { opacity: 1; }
-  50%       { opacity: 0; }
+  50%      { opacity: 0; }
 }
 
-.error {
-  background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
-  color: var(--color-error);
-  font-size: 0.875rem;
+.errorBox {
+  margin: var(--space-3);
+  padding: var(--space-3);
+  background: var(--tier-high-bg);
+  border: 1px solid var(--tier-high-border);
+  border-radius: var(--radius-xs);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.errorLabel {
   font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--tier-high-text);
+}
+
+.errorText {
+  font-size: 0.825rem;
+  color: var(--tier-high-text);
 }

@@ -68,8 +68,8 @@ export function useChat() {
       });
 
       if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        const msg = (body as any)?.error?.message ?? `HTTP ${res.status}`;
+        const body = (await res.json().catch(() => ({}))) as { error?: { message?: string } };
+        const msg = body.error?.message ?? `HTTP ${res.status}`;
         setState((s) => ({ ...s, status: 'error', error: msg }));
         return;
       }
