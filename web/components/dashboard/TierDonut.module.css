@@ -1,0 +1,9 @@
+.container { padding: var(--space-5); }
+.header { margin-bottom: var(--space-2); }
+.title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+}
