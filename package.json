@@ -3,6 +3,11 @@
   "version": "0.1.0",
   "description": "Intelligent LLM router that classifies prompt complexity and routes to the cheapest capable model",
   "private": true,
+  "workspaces": [
+    "packages/*",
+    "web"
+  ],
+
   "license": "MIT",
   "scripts": {
     "build": "nest build",
@@ -19,6 +24,8 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@token-pilot/classifier": "*",
+
     "@anthropic-ai/sdk": "^0.116.0",
     "@google/generative-ai": "^0.21.0",
     "@nestjs/common": "^10.0.0",

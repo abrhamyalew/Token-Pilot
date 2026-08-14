@@ -1,55 +1,10 @@
 /**
- * Classifier types — prompt feature extraction and tier assignment.
+ * Classifier types — re-exported from the shared @token-pilot/classifier package.
  */
-
-export type Tier = 'low' | 'medium' | 'high' | 'high_alt';
-
-export interface PromptFeatures {
-  tokenCount: number;
-  sentenceCount: number;
-  avgSentenceLength: number;
-  questionCount: number;
-  codeBlockPresent: number;
-  reasoningKeywords: number;
-  simpleKeywords: number;
-  constraintCount: number;
-  structuralDepth: number;
-  domainTermDensity: number;
-  domainHitCount: number;
-  formalLanguageScore: number;
-  systemPrompt: boolean;
-  multiTurnCount: number;
-}
-
-export interface ClassifierResult {
-  tier: Tier;
-  score: number;
-  confidence: number;
-  classifier: 'rules' | 'llm' | 'trained';
-  features: PromptFeatures;
-  reasoning?: string;
-}
-
-/** Tunable weights for the feature-vector classifier */
-export interface ClassifierWeights {
-  tokenCount: number;
-  avgSentenceLength: number;
-  questionCount: number;
-  codeBlockPresent: number;
-  reasoningKeywords: number;
-  simpleKeywords: number;
-  constraintCount: number;
-  structuralDepth: number;
-  domainTermDensity: number;
-  domainHitCount: number;
-  formalLanguageScore: number;
-  systemPrompt: number;
-  multiTurnCount: number;
-}
-
-/** Tier boundary thresholds */
-export interface ClassifierThresholds {
-  lowMax: number;
-  mediumMax: number;
-  highMax: number;
-}
+export type {
+  Tier,
+  PromptFeatures,
+  ClassifierResult,
+  ClassifierWeights,
+  ClassifierThresholds,
+} from '@token-pilot/classifier';
