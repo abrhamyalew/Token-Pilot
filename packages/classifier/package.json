@@ -1,0 +1,14 @@
+{
+  "name": "@token-pilot/classifier",
+  "version": "0.1.0",
+  "description": "Shared prompt classifier — feature extraction and scoring engine",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}
