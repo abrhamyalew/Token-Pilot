@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useConfigStore } from '@/lib/config-store';
 import styles from './Nav.module.css';
 
 const NAV_LINKS = [
@@ -12,6 +13,7 @@ const NAV_LINKS = [
 
 export function Nav() {
   const pathname = usePathname();
+  const { activeKeyCount } = useConfigStore();
 
   return (
     <header className={styles.header}>
@@ -33,7 +35,13 @@ export function Nav() {
                   href={href}
                   className={`${styles.link} ${isActive ? styles.active : ''}`}
                 >
-                  {label}
+                  <span>{label}</span>
+                  {href === '/config' && activeKeyCount > 0 && (
+                    <span
+                      className={styles.keyIndicatorDot}
+                      title={`${activeKeyCount} custom BYOK keys active`}
+                    />
+                  )}
                 </Link>
               </li>
             );

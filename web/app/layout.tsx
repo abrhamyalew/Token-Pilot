@@ -26,6 +26,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { ConfigProvider } from '@/lib/config-store';
+
 export default function RootLayout({
   children,
 }: {
@@ -34,8 +36,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Nav />
-        <main>{children}</main>
+        <ConfigProvider>
+          <Nav />
+          <main>{children}</main>
+        </ConfigProvider>
       </body>
     </html>
   );

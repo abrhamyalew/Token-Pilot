@@ -156,8 +156,11 @@ function ExpandedDetails({
           <button type="button" className={styles.inspectBtn} onClick={copyJson}>
             {copiedJson ? 'Copied' : 'Copy JSON'}
           </button>
-          <button type="button" className={styles.closeBtn} onClick={onClose}>
-            ✕
+          <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close details">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <line x1="1" y1="1" x2="9" y2="9" />
+              <line x1="9" y1="1" x2="1" y2="9" />
+            </svg>
           </button>
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { getGatewayUrl } from '@/lib/api';
+import { useConfigStore } from '@/lib/config-store';
 
 export interface RoutingMetadata {
   tier: string;
@@ -37,8 +38,9 @@ const INITIAL_STATE: ChatState = {
 export function useChat() {
   const [state, setState] = useState<ChatState>(INITIAL_STATE);
   const abortRef = useRef<AbortController | null>(null);
+  const { getActiveUserApiKeys, getTierModelOverrides } = useConfigStore();
 
-  const send = useCallback(async (prompt: string, byokKey?: string) => {
+  const send = useCallback(async (prompt: string) => {
     // Cancel any in-flight request
     abortRef.current?.abort();
     const controller = new AbortController();
@@ -51,19 +53,31 @@ export function useChat() {
       'Content-Type': 'application/json',
       Accept: 'text/event-stream',
     };
-    if (byokKey) {
-      headers['X-BYOK-Key'] = byokKey;
+
+    const userApiKeys = getActiveUserApiKeys();
+    const tierOverrides = getTierModelOverrides();
+
+    const requestBody: Record<string, unknown> = {
+      model: 'auto',
+      messages: [{ role: 'user', content: prompt }],
+      stream: true,
+    };
+
+    // Attach user keys if configured (empty keys already stripped)
+    if (Object.keys(userApiKeys).length > 0) {
+      requestBody.user_api_keys = userApiKeys;
+    }
+
+    // Attach custom tier model mappings if configured
+    if (Object.keys(tierOverrides).length > 0) {
+      requestBody.tier_model_overrides = tierOverrides;
     }
 
     try {
       const res = await fetch(`${gatewayUrl}/v1/chat/completions`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({
-          model: 'auto',
-          messages: [{ role: 'user', content: prompt }],
-          stream: true,
-        }),
+        body: JSON.stringify(requestBody),
         signal: controller.signal,
       });
 
@@ -131,7 +145,7 @@ export function useChat() {
         error: (err as Error).message ?? 'Unknown error',
       }));
     }
-  }, []);
+  }, [getActiveUserApiKeys, getTierModelOverrides]);
 
   const reset = useCallback(() => {
     abortRef.current?.abort();

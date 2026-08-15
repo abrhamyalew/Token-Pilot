@@ -1,18 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { useConfigStore } from '@/lib/config-store';
 import styles from './PromptInput.module.css';
 
 interface Props {
-  onSubmit: (prompt: string, byokKey?: string) => void;
+  onSubmit: (prompt: string) => void;
   isLoading: boolean;
   requestsRemaining: number | null;
 }
 
 export function PromptInput({ onSubmit, isLoading, requestsRemaining }: Props) {
   const [prompt, setPrompt] = useState('');
-  const [byokKey, setByokKey] = useState('');
-  const [showByok, setShowByok] = useState(false);
+  const { routingMode, setRoutingMode, activeKeyCount } = useConfigStore();
 
   const wordCount = prompt.trim() ? prompt.trim().split(/\s+/).length : 0;
   const charCount = prompt.length;
@@ -22,7 +23,7 @@ export function PromptInput({ onSubmit, isLoading, requestsRemaining }: Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
-    onSubmit(prompt.trim(), byokKey.trim() || undefined);
+    onSubmit(prompt.trim());
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -53,6 +54,42 @@ export function PromptInput({ onSubmit, isLoading, requestsRemaining }: Props) {
           </div>
         </div>
 
+        {/* Mode Selector Segmented Control */}
+        <div className={styles.modeControlBar}>
+          <div className={styles.modeToggleGroup}>
+            <button
+              type="button"
+              className={`${styles.modeToggleBtn} ${
+                routingMode === 'preset' ? styles.modeActive : ''
+              }`}
+              onClick={() => setRoutingMode('preset')}
+              title="Use public preset demo keys (free live inference for Low/Med tiers; High tiers show routing & complexity analysis)"
+            >
+              <span>Preset Mode (Free Demo)</span>
+            </button>
+
+            <button
+              type="button"
+              className={`${styles.modeToggleBtn} ${
+                routingMode === 'byok' ? styles.modeActive : ''
+              }`}
+              onClick={() => setRoutingMode('byok')}
+              title="Use your own API keys and custom model mappings for all tiers"
+            >
+              <span>BYOK Mode (Custom Keys)</span>
+              {activeKeyCount > 0 && (
+                <span className={styles.activeKeyCountBadge}>{activeKeyCount}</span>
+              )}
+            </button>
+          </div>
+
+          <span className={styles.modeDescription}>
+            {routingMode === 'preset'
+              ? 'Free demo for Low/Med (Groq & Gemini) • High tiers require BYOK key'
+              : `Custom provider keys & model overrides active (${activeKeyCount} keys entered)`}
+          </span>
+        </div>
+
         {/* Textarea */}
         <div className={styles.textareaWrapper}>
           <textarea
@@ -73,55 +110,55 @@ export function PromptInput({ onSubmit, isLoading, requestsRemaining }: Props) {
           <button
             type="button"
             className={styles.snippetBtn}
-            onClick={() => applySnippet('Explain the difference between optimistic and pessimistic locking in databases.')}
+            onClick={() =>
+              applySnippet(
+                'Write a custom React useDebounce hook in TypeScript with generic typing, leading/trailing options, and a cancel method.',
+              )
+            }
           >
-            Database Locking
+            Debounce Hook (Low)
           </button>
           <button
             type="button"
             className={styles.snippetBtn}
-            onClick={() => applySnippet('Write a Python function to parse JSON with type validation and error handling.')}
+            onClick={() =>
+              applySnippet(
+                'Implement a generic LRU Cache in TypeScript with O(1) get and put using a Doubly Linked List and Map.',
+              )
+            }
           >
-            Python Parser
+            LRU Cache (Med)
           </button>
           <button
             type="button"
             className={styles.snippetBtn}
-            onClick={() => applySnippet('Compare the time complexity of QuickSort vs MergeSort in worst-case scenarios.')}
+            onClick={() =>
+              applySnippet(
+                'Formally analyze Byzantine Fault Tolerant consensus protocols. Prove safety and liveness invariants under network partitions, and implement the leader election state machine in TypeScript with fault tolerance guarantees.',
+              )
+            }
           >
-            Sorting Algorithms
+            Distributed Consensus (High)
           </button>
         </div>
 
-        {/* Footer with BYOK & Shortcuts */}
+        {/* Footer with BYOK status & Shortcuts */}
         <div className={styles.windowFooter}>
-          <button
-            type="button"
-            className={styles.byokToggle}
-            onClick={() => setShowByok((v) => !v)}
-          >
-            <span>{showByok ? 'Hide custom API key' : 'Custom API key (BYOK)'}</span>
-          </button>
+          <Link href="/config" className={styles.byokLink}>
+            {routingMode === 'byok' ? (
+              <span className={styles.activeKeyPill}>
+                <span className={styles.activeKeyDot} />
+                BYOK Mode: {activeKeyCount} {activeKeyCount === 1 ? 'key' : 'keys'} active (Config)
+              </span>
+            ) : (
+              <span>Preset Mode active • Configure custom BYOK keys</span>
+            )}
+          </Link>
 
           <div className={styles.shortcutNotice}>
             <kbd>⌘</kbd> <kbd>Enter</kbd> to submit
           </div>
         </div>
-
-        {/* Collapsible BYOK Input Drawer */}
-        {showByok && (
-          <div className={styles.byokDrawer}>
-            <label className={styles.byokLabel}>OpenAI or Anthropic API Key (stored in local memory only)</label>
-            <input
-              type="password"
-              value={byokKey}
-              onChange={(e) => setByokKey(e.target.value)}
-              placeholder="sk-..."
-              className={`input ${styles.byokInput}`}
-              id="byok-input"
-            />
-          </div>
-        )}
       </div>
 
       {/* Action Row */}

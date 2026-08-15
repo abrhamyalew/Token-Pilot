@@ -48,7 +48,13 @@ export function RoutingViz({ status, metadata }: Props) {
               <div
                 className={`${styles.node} ${isDone ? styles.nodeDone : ''} ${isActive ? styles.nodeActive : ''} ${isPending ? styles.nodePending : ''}`}
               >
-                {isDone ? '✓' : i + 1}
+                {isDone ? (
+                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="2 6 5 9 10 3" />
+                  </svg>
+                ) : (
+                  i + 1
+                )}
               </div>
               <span className={`${styles.stageLabel} ${isPending ? styles.muted : ''}`}>
                 {stage.label}

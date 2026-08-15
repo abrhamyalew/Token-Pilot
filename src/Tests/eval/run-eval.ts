@@ -136,7 +136,7 @@ function main(): void {
       console.log();
     }
   } else {
-    console.log('\n\n✅ All prompts classified correctly!');
+    console.log('\n\n[PASS] All prompts classified correctly!');
   }
 
   // ─── Score Distribution ────────────────────────────────────────────────
@@ -164,11 +164,11 @@ function main(): void {
 
   if (totalCorrect / results.length < 0.7) {
     console.log(
-      `⚠️  Overall accuracy (${overallPct}%) is below the 70% target.`,
+      `[WARNING] Overall accuracy (${overallPct}%) is below the 70% target.`,
     );
     process.exit(1);
   } else {
-    console.log(`✅ Overall accuracy: ${overallPct}%`);
+    console.log(`[PASS] Overall accuracy: ${overallPct}%`);
     process.exit(0);
   }
 }

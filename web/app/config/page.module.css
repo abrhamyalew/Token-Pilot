@@ -41,17 +41,17 @@
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-5);
+  gap: var(--space-6);
   align-items: start;
 }
 
 .col {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-6);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .grid {
     grid-template-columns: 1fr;
   }

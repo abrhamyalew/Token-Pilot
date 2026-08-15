@@ -67,6 +67,7 @@
 .link {
   display: inline-flex;
   align-items: center;
+  gap: 6px;
   padding: 5px 12px;
   border-radius: var(--radius-sm);
   font-size: 0.85rem;
@@ -74,6 +75,13 @@
   color: var(--color-text-secondary);
   text-decoration: none;
   transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.keyIndicatorDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tier-low-solid);
 }
 
 .link:hover {

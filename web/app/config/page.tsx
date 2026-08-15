@@ -4,21 +4,16 @@ import { ProviderHealth } from '@/components/config/ProviderHealth';
 import { WeightSliders } from '@/components/config/WeightSliders';
 import { ThresholdSliders } from '@/components/config/ThresholdSliders';
 import { TierModelEditor } from '@/components/config/TierModelEditor';
+import { ApiKeyManager } from '@/components/config/ApiKeyManager';
+import { ConfigHeader } from '@/components/config/ConfigHeader';
 import styles from './page.module.css';
 
 export const metadata: Metadata = {
   title: 'Configuration',
-  description: 'Inspect tier-model mappings, classifier weights, threshold boundaries, and provider health.',
+  description: 'Manage custom BYOK API keys, tier-model routing assignments, classifier weights, and provider health.',
 };
 
 export const revalidate = 60;
-
-const TIER_MODEL_MAP = {
-  low:      { model: 'llama-3.3-70b-versatile', provider: 'Groq',      cost: 'Free tier' },
-  medium:   { model: 'gemini-3.6-flash',         provider: 'Google AI', cost: 'Free tier' },
-  high:     { model: 'gpt-5.5-pro',              provider: 'OpenAI',    cost: '$0.0300 / 1K in' },
-  high_alt: { model: 'claude-opus-4-8',          provider: 'Anthropic', cost: '$0.0050 / 1K in' },
-};
 
 export default async function ConfigPage() {
   const health = await getHealth().catch(() => null);
@@ -26,32 +21,22 @@ export default async function ConfigPage() {
   return (
     <div className={styles.page}>
       <div className="container">
-        {/* Header */}
-        <div className={styles.header}>
-          <div className={styles.headerText}>
-            <h1 className={`${styles.title} serif-heading`}>Routing Configuration</h1>
-            <p className={styles.subtitle}>
-              Parameters and weights governing complexity classification, tier cutoffs, and provider connectivity.
-            </p>
-          </div>
-
-          <div className={styles.previewTag}>
-            <span>Simulator Mode</span>
-          </div>
-        </div>
+        {/* Header with Mode Toggle */}
+        <ConfigHeader />
 
         {/* 2-Column Bento Layout */}
         <div className={styles.grid}>
           {/* Left Column */}
           <div className={styles.col}>
-            <TierModelEditor tiers={TIER_MODEL_MAP} />
-            <ThresholdSliders />
-            <ProviderHealth health={health} />
+            <TierModelEditor />
+            <ApiKeyManager />
           </div>
 
           {/* Right Column */}
           <div className={styles.col}>
+            <ThresholdSliders />
             <WeightSliders />
+            <ProviderHealth health={health} />
           </div>
         </div>
       </div>
