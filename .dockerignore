@@ -1,0 +1,32 @@
+# Frontend — not needed in the gateway Docker image
+web/
+
+# Build artifacts (will be built fresh inside Docker)
+node_modules/
+dist/
+build/
+packages/classifier/dist/
+
+# Next.js build cache
+.next/
+
+# Git history
+.git/
+
+# Environment files — secrets must be injected at runtime, never baked in
+.env
+.env.local
+.env.*.local
+
+# Dev & documentation
+*.md
+coverage/
+npm-debug.log*
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/

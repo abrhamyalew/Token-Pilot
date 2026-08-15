@@ -10,7 +10,8 @@
 
   "license": "MIT",
   "scripts": {
-    "build": "nest build",
+    "build": "npm run build --workspace=packages/classifier && nest build",
+    "pretest": "npm run build --workspace=packages/classifier",
     "start": "nest start",
     "dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
