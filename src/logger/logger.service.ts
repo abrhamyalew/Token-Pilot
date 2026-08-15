@@ -4,6 +4,10 @@
  * Logs are fire-and-forget: the response is sent to the client first,
  * then the log is written asynchronously. A failed write logs an error
  * but never blocks or fails the request.
+ *
+ * SECURITY & PRIVACY:
+ * - user_api_keys and Authorization tokens are strictly stripped/redacted.
+ * - Error messages and stacks are scrubbed for API key patterns.
  */
 
 import { Injectable, Inject, Logger } from '@nestjs/common';
@@ -26,6 +30,22 @@ export interface LogEntry {
   errorStack?: string;
 }
 
+const KEY_PATTERNS = [
+  /sk-[a-zA-Z0-9_\-]{15,}/g,
+  /sk-ant-[a-zA-Z0-9_\-]{15,}/g,
+  /gsk_[a-zA-Z0-9_\-]{15,}/g,
+  /AIza[a-zA-Z0-9_\-]{15,}/g,
+];
+
+function sanitizeString(str: string | undefined): string | undefined {
+  if (!str) return str;
+  let sanitized = str;
+  for (const pattern of KEY_PATTERNS) {
+    sanitized = sanitized.replace(pattern, '[REDACTED_API_KEY]');
+  }
+  return sanitized;
+}
+
 @Injectable()
 export class RequestLoggerService {
   private readonly logger = new Logger(RequestLoggerService.name);
@@ -46,16 +66,23 @@ export class RequestLoggerService {
         entry.usage.completion_tokens,
       );
 
-      const features: Record<string, unknown> = {
-        ...(entry.classification.features as any),
-      };
+      // Deep copy features and strictly strip any secret fields
+      const rawFeatures = (entry.classification.features as any) ?? {};
+      const features: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(rawFeatures)) {
+        if (k.toLowerCase().includes('key') || k.toLowerCase().includes('auth') || k.toLowerCase().includes('secret')) {
+          continue;
+        }
+        features[k] = v;
+      }
+
       if (entry.errorMessage) {
-        features._error = entry.errorMessage;
-        features._errorStack = entry.errorStack;
+        features._error = sanitizeString(entry.errorMessage);
+        features._errorStack = sanitizeString(entry.errorStack);
       }
 
       const record: NewRequestLog = {
-        promptText: entry.promptText,
+        promptText: sanitizeString(entry.promptText) ?? '',
         promptLength: entry.usage.prompt_tokens,
         tier: entry.classification.tier,
         classifier: entry.classification.classifier,

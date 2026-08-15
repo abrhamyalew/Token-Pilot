@@ -1,13 +1,14 @@
 /**
- * Anthropic Provider Adapter — Claude models via the Anthropic SDK.
+ * Anthropic Provider Adapter — BYOK only.
  *
- * Anthropic's API differs from OpenAI's, so this adapter normalizes
- * Claude's message format to the OpenAI response shape.
- * Operates in estimate-only mode when no API key is available (same as OpenAI adapter).
+ * Claude models via the Anthropic SDK. Normalizes response to OpenAI shape.
+ *
+ * SECURITY: This adapter NEVER falls back to a server-side environment key under any
+ * circumstance. Real calls are strictly executed using the visitor's user-supplied API key
+ * (request.user_api_keys.anthropic). If invoked without a user key, it returns estimate-only mode.
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
 import { v4 as uuid } from 'uuid';
 import { ChatChunk, ChatMessage } from '../shared/types';
@@ -24,81 +25,77 @@ export class AnthropicAdapter implements ProviderAdapter {
   readonly name = 'anthropic';
   private readonly logger = new Logger(AnthropicAdapter.name);
 
-  constructor(private readonly config: ConfigService) {}
-
   private getClient(apiKey?: string): Anthropic {
-    const key = apiKey ?? this.config.get<string>('ANTHROPIC_API_KEY');
-    if (!key) {
-      throw new Error('No Anthropic API key available');
+    if (!apiKey) {
+      throw new Error('Anthropic adapter requires a user-supplied API key; server fallback is strictly disabled');
     }
-    return new Anthropic({ apiKey: key });
+    validateByokKey('anthropic', apiKey);
+    return new Anthropic({ apiKey });
   }
 
   async chat(request: ProviderChatRequest): Promise<ProviderChatResponse> {
-    const byokKey = request.user_api_key;
-    const serverKey = this.config.get<string>('ANTHROPIC_API_KEY');
+    const byokKey = request.user_api_keys?.anthropic;
 
-    if (!byokKey && !serverKey) {
+    if (!byokKey) {
       return this.estimateOnly(request);
     }
 
-    // Validate BYOK key format before constructing a client
-    if (byokKey) {
-      validateByokKey('anthropic', byokKey);
-    }
-
-    this.logger.debug(`Anthropic chat: model=${request.model} byok=${!!byokKey}`);
+    this.logger.debug(`Anthropic chat: model=${request.model} byok=true`);
     const client = this.getClient(byokKey);
 
-    const { system, messages } = this.convertMessages(request.messages);
+    try {
+      const { system, messages } = this.convertMessages(request.messages);
 
-    const response = await client.messages.create({
-      model: request.model,
-      max_tokens: request.max_tokens ?? 1024,
-      ...(system && { system }),
-      messages,
-    });
+      const response = await client.messages.create({
+        model: request.model,
+        max_tokens: request.max_tokens ?? 1024,
+        ...(system && { system }),
+        messages,
+      });
 
-    const content = response.content
-      .filter((block): block is Anthropic.TextBlock => block.type === 'text')
-      .map((block) => block.text)
-      .join('');
+      const content = response.content
+        .filter((block): block is Anthropic.TextBlock => block.type === 'text')
+        .map((block) => block.text)
+        .join('');
 
-    const promptTokens = response.usage.input_tokens;
-    const completionTokens = response.usage.output_tokens;
+      const promptTokens = response.usage.input_tokens;
+      const completionTokens = response.usage.output_tokens;
 
-    return {
-      response: {
-        id: `chatcmpl-anthropic-${response.id}`,
-        object: 'chat.completion',
-        created: Math.floor(Date.now() / 1000),
-        model: response.model,
-        choices: [
-          {
-            index: 0,
-            message: { role: 'assistant', content },
-            finish_reason: response.stop_reason === 'end_turn' ? 'stop' : (response.stop_reason ?? 'stop'),
+      return {
+        response: {
+          id: `chatcmpl-anthropic-${response.id}`,
+          object: 'chat.completion',
+          created: Math.floor(Date.now() / 1000),
+          model: response.model,
+          choices: [
+            {
+              index: 0,
+              message: { role: 'assistant', content },
+              finish_reason: response.stop_reason === 'end_turn' ? 'stop' : (response.stop_reason ?? 'stop'),
+            },
+          ],
+          usage: {
+            prompt_tokens: promptTokens,
+            completion_tokens: completionTokens,
+            total_tokens: promptTokens + completionTokens,
           },
-        ],
+        },
         usage: {
           prompt_tokens: promptTokens,
           completion_tokens: completionTokens,
           total_tokens: promptTokens + completionTokens,
         },
-      },
-      usage: {
-        prompt_tokens: promptTokens,
-        completion_tokens: completionTokens,
-        total_tokens: promptTokens + completionTokens,
-      },
-    };
+      };
+    } catch (error: any) {
+      this.logger.error(`Anthropic completion failed: ${error?.message ?? 'Unknown provider error'}`);
+      throw error;
+    }
   }
 
   async *chatStream(request: ProviderChatRequest): AsyncIterable<ChatChunk> {
-    const byokKey = request.user_api_key;
-    const serverKey = this.config.get<string>('ANTHROPIC_API_KEY');
+    const byokKey = request.user_api_keys?.anthropic;
 
-    if (!byokKey && !serverKey) {
+    if (!byokKey) {
       const estimate = await this.estimateOnly(request);
       yield {
         id: estimate.response.id,
@@ -117,12 +114,7 @@ export class AnthropicAdapter implements ProviderAdapter {
       return;
     }
 
-    // Validate BYOK key format before constructing a client
-    if (byokKey) {
-      validateByokKey('anthropic', byokKey);
-    }
-
-    this.logger.debug(`Anthropic stream: model=${request.model} byok=${!!byokKey}`);
+    this.logger.debug(`Anthropic stream: model=${request.model} byok=true`);
     const client = this.getClient(byokKey);
 
     const { system, messages } = this.convertMessages(request.messages);
@@ -183,21 +175,8 @@ export class AnthropicAdapter implements ProviderAdapter {
   }
 
   async healthCheck(): Promise<boolean> {
-    try {
-      const key = this.config.get<string>('ANTHROPIC_API_KEY');
-      if (!key) {
-        return false;
-      }
-      // Lightweight API call — count tokens to verify the key is valid
-      const client = this.getClient();
-      await client.messages.countTokens({
-        model: 'claude-sonnet-4-20250514',
-        messages: [{ role: 'user', content: 'health check' }],
-      });
-      return true;
-    } catch {
-      return false;
-    }
+    // Anthropic adapter operates in BYOK/estimate mode; always ready
+    return true;
   }
 
   /**
@@ -242,10 +221,14 @@ export class AnthropicAdapter implements ProviderAdapter {
     );
 
     const content =
-      `[Estimate-only mode] This prompt would be routed to ${request.model}. ` +
-      `Estimated cost: $${estimatedCost.toFixed(6)} ` +
-      `(~${estimatedInputTokens} input + ~${estimatedOutputTokens} output tokens). ` +
-      `To see a real response, provide your Anthropic API key via the BYOK option.`;
+      `[Token Pilot — Preset Demo / Estimate Mode]\n\n` +
+      `Frontier Tier Notice: This prompt was evaluated as HIGH_ALT complexity and routed to ${request.model} (Anthropic).\n\n` +
+      `• Classification Tier: HIGH_ALT\n` +
+      `• Target Provider: Anthropic\n` +
+      `• Target Model: ${request.model}\n` +
+      `• Token Projection: ~${estimatedInputTokens} in / ~${estimatedOutputTokens} out\n` +
+      `• Estimated Frontier Cost: $${estimatedCost.toFixed(6)}\n\n` +
+      `The public demo provides live inference for LOW & MEDIUM tiers (Groq & Google). To execute live requests on frontier models, switch to BYOK Mode and add your Anthropic API key in Config.`;
 
     return {
       response: {

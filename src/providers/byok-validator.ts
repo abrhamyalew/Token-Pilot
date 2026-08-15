@@ -4,18 +4,22 @@
  * This catches garbage, accidental pastes, and obviously-malformed strings
  * before they're sent to a provider SDK. It does NOT validate that a key
  * is real or belongs to the sender — that's a provider-side concern, and
- * the auth guard (#3/#4) limits who can reach this endpoint at all.
+ * the auth guard limits who can reach this endpoint at all.
+ *
+ * SECURITY INVARIANT: Error messages must NEVER echo or reflect any part
+ * of the user's secret key back to the caller.
  */
 
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { ProviderName } from './provider-tiers';
 
 /** Supported providers for BYOK format validation */
-export type ByokProvider = 'openai' | 'anthropic';
+export type ByokProvider = 'openai' | 'anthropic' | 'groq' | 'google' | 'deepseek';
 
 interface ProviderKeyRules {
   /** Human-readable provider name for error messages */
   label: string;
-  /** Required prefix (e.g., 'sk-') */
+  /** Required prefix (e.g., 'sk-', 'gsk_', 'AIza') */
   prefix: string;
   /** Minimum key length */
   minLength: number;
@@ -40,6 +44,27 @@ const KEY_RULES: Record<ByokProvider, ProviderKeyRules> = {
     maxLength: 256,
     charPattern: /^[a-zA-Z0-9\-_]+$/,
   },
+  groq: {
+    label: 'Groq',
+    prefix: 'gsk_',
+    minLength: 20,
+    maxLength: 256,
+    charPattern: /^[a-zA-Z0-9\-_]+$/,
+  },
+  google: {
+    label: 'Google AI Studio',
+    prefix: 'AIza',
+    minLength: 20,
+    maxLength: 256,
+    charPattern: /^[a-zA-Z0-9\-_]+$/,
+  },
+  deepseek: {
+    label: 'DeepSeek',
+    prefix: 'sk-',
+    minLength: 20,
+    maxLength: 256,
+    charPattern: /^[a-zA-Z0-9\-_]+$/,
+  },
 };
 
 /**
@@ -51,6 +76,17 @@ const KEY_RULES: Record<ByokProvider, ProviderKeyRules> = {
  */
 export function validateByokKey(provider: ByokProvider, key: string): void {
   const rules = KEY_RULES[provider];
+  if (!rules) {
+    throw new HttpException(
+      {
+        error: {
+          message: `Unknown provider for API key validation: "${provider}".`,
+          type: 'invalid_request_error',
+        },
+      },
+      HttpStatus.BAD_REQUEST,
+    );
+  }
 
   if (typeof key !== 'string' || key.trim().length === 0) {
     throw new HttpException(

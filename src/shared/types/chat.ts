@@ -8,6 +8,8 @@ export interface ChatMessage {
   content: string;
 }
 
+import { Tier } from './classifier';
+
 export interface ChatRequest {
   /** Optional — Token Pilot picks the model via routing. Clients can send this but it's ignored. */
   model?: string;
@@ -15,8 +17,10 @@ export interface ChatRequest {
   max_tokens?: number;
   temperature?: number;
   stream?: boolean;
-  /** BYOK: visitor-supplied API key for frontier-tier real calls */
-  user_api_key?: string;
+  /** Multi-provider BYOK keys mapped by provider name (e.g. { openai: '...', groq: '...' }) */
+  user_api_keys?: Record<string, string>;
+  /** Optional per-tier model & provider overrides */
+  tier_model_overrides?: Partial<Record<Tier, { model: string; provider: string }>>;
 }
 
 export interface ChatResponse {

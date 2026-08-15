@@ -1,9 +1,10 @@
 /**
- * Google AI Studio Provider Adapter — Gemini Flash on the free tier.
+ * Google AI Studio Provider Adapter — Gemini on the free tier or BYOK.
  *
- * Uses the @google/generative-ai SDK. The API shape differs from OpenAI,
- * so this adapter normalizes everything to the OpenAI response format.
- * Free tier: dynamic quotas, no credit card required.
+ * Uses the @google/generative-ai SDK. Normalizes response to the OpenAI shape.
+ * Supports server-side GOOGLE_API_KEY and per-request user_api_keys.google.
+ *
+ * SECURITY: Caught errors are sanitized so secret keys are never logged.
  */
 
 import { Injectable, Logger } from '@nestjs/common';
@@ -16,86 +17,99 @@ import {
   ProviderChatRequest,
   ProviderChatResponse,
 } from './provider.interface';
+import { validateByokKey } from './byok-validator';
 
 @Injectable()
 export class GoogleAdapter implements ProviderAdapter {
   readonly name = 'google';
   private readonly logger = new Logger(GoogleAdapter.name);
-  private genAI: GoogleGenerativeAI | null = null;
+  private defaultGenAI: GoogleGenerativeAI | null = null;
 
   constructor(private readonly config: ConfigService) {}
 
-  private getGenAI(): GoogleGenerativeAI {
-    if (!this.genAI) {
+  private getGenAI(userApiKey?: string): GoogleGenerativeAI {
+    if (userApiKey) {
+      validateByokKey('google', userApiKey);
+      return new GoogleGenerativeAI(userApiKey);
+    }
+
+    if (!this.defaultGenAI) {
       const apiKey = this.config.get<string>('GOOGLE_API_KEY');
       if (!apiKey) {
-        throw new Error('GOOGLE_API_KEY not configured');
+        throw new Error('GOOGLE_API_KEY not configured and no user key provided');
       }
-      this.genAI = new GoogleGenerativeAI(apiKey);
+      this.defaultGenAI = new GoogleGenerativeAI(apiKey);
     }
-    return this.genAI;
+    return this.defaultGenAI;
   }
 
   async chat(request: ProviderChatRequest): Promise<ProviderChatResponse> {
-    this.logger.debug(`Google chat: model=${request.model}`);
-    const genAI = this.getGenAI();
+    const userKey = request.user_api_keys?.google;
+    this.logger.debug(`Google chat: model=${request.model} byok=${!!userKey}`);
+    const genAI = this.getGenAI(userKey);
 
-    const { systemInstruction, history, lastMessage } = this.convertMessages(request.messages);
+    try {
+      const { systemInstruction, history, lastMessage } = this.convertMessages(request.messages);
 
-    const model = genAI.getGenerativeModel({
-      model: request.model,
-      ...(systemInstruction && { systemInstruction }),
-      generationConfig: {
-        maxOutputTokens: request.max_tokens ?? 1024,
-        temperature: request.temperature ?? 0.7,
-      },
-    });
-
-    const chat = model.startChat({
-      history: history.map((m) => ({
-        role: m.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: m.content }],
-      })),
-    });
-
-    const result = await chat.sendMessage(lastMessage);
-    const response = result.response;
-    const text = response.text();
-    const usage = response.usageMetadata;
-
-    const promptTokens = usage?.promptTokenCount ?? 0;
-    const completionTokens = usage?.candidatesTokenCount ?? 0;
-
-    return {
-      response: {
-        id: `chatcmpl-google-${uuid()}`,
-        object: 'chat.completion',
-        created: Math.floor(Date.now() / 1000),
+      const model = genAI.getGenerativeModel({
         model: request.model,
-        choices: [
-          {
-            index: 0,
-            message: { role: 'assistant', content: text },
-            finish_reason: 'stop',
+        ...(systemInstruction && { systemInstruction }),
+        generationConfig: {
+          maxOutputTokens: request.max_tokens ?? 1024,
+          temperature: request.temperature ?? 0.7,
+        },
+      });
+
+      const chat = model.startChat({
+        history: history.map((m) => ({
+          role: m.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: m.content }],
+        })),
+      });
+
+      const result = await chat.sendMessage(lastMessage);
+      const response = result.response;
+      const text = response.text();
+      const usage = response.usageMetadata;
+
+      const promptTokens = usage?.promptTokenCount ?? 0;
+      const completionTokens = usage?.candidatesTokenCount ?? 0;
+
+      return {
+        response: {
+          id: `chatcmpl-google-${uuid()}`,
+          object: 'chat.completion',
+          created: Math.floor(Date.now() / 1000),
+          model: request.model,
+          choices: [
+            {
+              index: 0,
+              message: { role: 'assistant', content: text },
+              finish_reason: 'stop',
+            },
+          ],
+          usage: {
+            prompt_tokens: promptTokens,
+            completion_tokens: completionTokens,
+            total_tokens: promptTokens + completionTokens,
           },
-        ],
+        },
         usage: {
           prompt_tokens: promptTokens,
           completion_tokens: completionTokens,
           total_tokens: promptTokens + completionTokens,
         },
-      },
-      usage: {
-        prompt_tokens: promptTokens,
-        completion_tokens: completionTokens,
-        total_tokens: promptTokens + completionTokens,
-      },
-    };
+      };
+    } catch (error: any) {
+      this.logger.error(`Google completion failed: ${error?.message ?? 'Unknown error'}`);
+      throw error;
+    }
   }
 
   async *chatStream(request: ProviderChatRequest): AsyncIterable<ChatChunk> {
-    this.logger.debug(`Google stream: model=${request.model}`);
-    const genAI = this.getGenAI();
+    const userKey = request.user_api_keys?.google;
+    this.logger.debug(`Google stream: model=${request.model} byok=${!!userKey}`);
+    const genAI = this.getGenAI(userKey);
 
     const { systemInstruction, history, lastMessage } = this.convertMessages(request.messages);
 
@@ -170,7 +184,6 @@ export class GoogleAdapter implements ProviderAdapter {
   async healthCheck(): Promise<boolean> {
     try {
       const genAI = this.getGenAI();
-      // Use the model configured for the 'medium' tier
       const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
       await model.countTokens('health check');
       return true;

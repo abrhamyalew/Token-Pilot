@@ -11,6 +11,12 @@ import { Tier, ModelConfig, TierConfig } from '../types';
 // ─── Model Pricing ──────────────────────────────────────────────────────────
 
 const models: Record<string, ModelConfig> = {
+  'qwen/qwen3.6-27b': {
+    provider: 'groq',
+    inputCostPer1kTokens: 0.0,        // Free tier
+    outputCostPer1kTokens: 0.0,       // Free tier
+    maxTokens: 32_768,
+  },
   'llama-3.3-70b-versatile': {
     provider: 'groq',
     inputCostPer1kTokens: 0.0,        // Free tier (paid: $0.59/1M = $0.00059/1K)
@@ -47,7 +53,7 @@ const models: Record<string, ModelConfig> = {
 // ─── Tier → Model Mapping ───────────────────────────────────────────────────
 
 const tiers: Record<Tier, TierConfig> = {
-  low:      { model: 'llama-3.3-70b-versatile',      provider: 'groq' },
+  low:      { model: 'qwen/qwen3.6-27b',      provider: 'groq' },
   medium:   { model: 'gemini-3.6-flash',              provider: 'google' },
   high:     { model: 'gpt-5.5-pro',                   provider: 'openai' },
   high_alt: { model: 'claude-opus-4-8',               provider: 'anthropic' },

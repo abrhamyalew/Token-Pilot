@@ -57,8 +57,20 @@ export class ProviderRegistryService {
     return adapter;
   }
 
-  /** Get the adapter for a specific tier (resolves tier → provider → adapter) */
-  getAdapterForTier(tier: Tier): { adapter: ProviderAdapter; model: string; provider: string } {
+  /** Get the adapter for a specific tier (resolves tier → provider → adapter, respecting optional override) */
+  getAdapterForTier(
+    tier: Tier,
+    override?: { model: string; provider: string },
+  ): { adapter: ProviderAdapter; model: string; provider: string } {
+    if (override?.provider && override?.model) {
+      const adapter = this.getAdapter(override.provider);
+      return {
+        adapter,
+        model: override.model,
+        provider: override.provider,
+      };
+    }
+
     const tierConfig = getTierConfig(tier);
     const adapter = this.getAdapter(tierConfig.provider);
     return {

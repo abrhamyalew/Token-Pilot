@@ -1,13 +1,13 @@
 /**
  * Router Service — the orchestration core of Token Pilot.
  *
- * Flow: classify prompt → resolve tier → call provider → collect metrics → log.
+ * Flow: classify prompt → resolve tier & model (with overrides) → validate BYOK requirements → call provider → collect metrics → log.
  *
  * For streaming requests, the service returns an async iterable of chunks
  * plus a callback to log the completed request after streaming finishes.
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import {
   ChatRequest,
   ChatResponse,
@@ -22,6 +22,7 @@ import { RequestLoggerService, LogEntry } from '../logger/logger.service';
 import { CostCalculatorService } from '../logger/cost-calculator.service';
 import { ProviderChatResponse } from '../providers/provider.interface';
 import { estimateTokens } from '../shared/token-estimator';
+import { isByokRequired } from '../providers/provider-tiers';
 
 // ─── Response Types ─────────────────────────────────────────────────────────
 
@@ -67,11 +68,28 @@ export class RouterService {
     // 1. Classify
     const classification = this.classifier.classify(request.messages);
 
-    // 2. Resolve provider
+    // 2. Resolve provider & model (with optional tier overrides)
+    const override = request.tier_model_overrides?.[classification.tier];
     const { adapter, model, provider } =
-      this.providerRegistry.getAdapterForTier(classification.tier);
+      this.providerRegistry.getAdapterForTier(classification.tier, override);
 
-    // 3. Call provider with retry
+    // 3. Guard: If resolved provider requires BYOK and user supplied an override without an API key, reject immediately
+    if (isByokRequired(provider) && override) {
+      const userKey = request.user_api_keys?.[provider];
+      if (!userKey || userKey.trim().length === 0) {
+        throw new HttpException(
+          {
+            error: {
+              message: `This model requires your own API key for ${provider}.`,
+              type: 'invalid_request_error',
+            },
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
+
+    // 4. Call provider with retry
     const requestedMaxTokens = request.max_tokens ?? this.MAX_DEMO_TOKENS;
     const effectiveMaxTokens = Math.min(requestedMaxTokens, this.MAX_DEMO_TOKENS);
     const wasCapped = requestedMaxTokens > this.MAX_DEMO_TOKENS;
@@ -110,14 +128,14 @@ export class RouterService {
 
     const latencyMs = Date.now() - startTime;
 
-    // 4. Calculate costs
+    // 5. Calculate costs
     const costs = this.costCalculator.calculate(
       model,
       result.usage.prompt_tokens,
       result.usage.completion_tokens,
     );
 
-    // 5. Attach routing metadata
+    // 6. Attach routing metadata
     const routing: RoutingMetadata = {
       tier: classification.tier,
       classifier: classification.classifier,
@@ -132,7 +150,7 @@ export class RouterService {
 
     result.response.routing = routing;
 
-    // 6. Log asynchronously
+    // 7. Log asynchronously
     this.logAsync({
       promptText,
       classification,
@@ -159,11 +177,28 @@ export class RouterService {
     const classification = this.classifier.classify(request.messages);
     const startTime = Date.now();
 
-    // 2. Resolve provider
+    // 2. Resolve provider & model (with optional tier overrides)
+    const override = request.tier_model_overrides?.[classification.tier];
     const { adapter, model, provider } =
-      this.providerRegistry.getAdapterForTier(classification.tier);
+      this.providerRegistry.getAdapterForTier(classification.tier, override);
 
-    // 3. Create stream
+    // 3. Guard: If resolved provider requires BYOK and user supplied an override without an API key, reject immediately
+    if (isByokRequired(provider) && override) {
+      const userKey = request.user_api_keys?.[provider];
+      if (!userKey || userKey.trim().length === 0) {
+        throw new HttpException(
+          {
+            error: {
+              message: `This model requires your own API key for ${provider}.`,
+              type: 'invalid_request_error',
+            },
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
+
+    // 4. Create stream
     const providerRequest = {
       ...request,
       model,
@@ -173,7 +208,7 @@ export class RouterService {
 
     const stream = adapter.chatStream(providerRequest);
 
-    // 4. Finalize callback — called by the controller after streaming ends
+    // 5. Finalize callback — called by the controller after streaming ends
     const finalize = (collectedContent: string, usage: TokenUsage | null, error?: Error) => {
       const latencyMs = Date.now() - startTime;
       const promptText = request.messages.map((m) => m.content).join('\n');

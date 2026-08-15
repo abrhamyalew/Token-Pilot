@@ -82,6 +82,30 @@ export class ChatRequestValidationPipe implements PipeTransform<ChatRequest, Cha
       }
     }
 
+    // user_api_keys: optional, record of string -> string
+    if (value.user_api_keys !== undefined && value.user_api_keys !== null) {
+      if (typeof value.user_api_keys !== 'object' || Array.isArray(value.user_api_keys)) {
+        this.fail('user_api_keys must be an object with provider keys.');
+      }
+      for (const [provider, key] of Object.entries(value.user_api_keys)) {
+        if (typeof key !== 'string') {
+          this.fail(`user_api_keys["${provider}"] must be a string.`);
+        }
+      }
+    }
+
+    // tier_model_overrides: optional, record of Tier -> { model: string, provider: string }
+    if (value.tier_model_overrides !== undefined && value.tier_model_overrides !== null) {
+      if (typeof value.tier_model_overrides !== 'object' || Array.isArray(value.tier_model_overrides)) {
+        this.fail('tier_model_overrides must be an object.');
+      }
+      for (const [tier, config] of Object.entries(value.tier_model_overrides)) {
+        if (!config || typeof config !== 'object' || typeof config.model !== 'string' || typeof config.provider !== 'string') {
+          this.fail(`tier_model_overrides["${tier}"] must have string "model" and "provider" fields.`);
+        }
+      }
+    }
+
     return value;
   }
 

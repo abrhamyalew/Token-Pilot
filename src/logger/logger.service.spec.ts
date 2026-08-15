@@ -72,7 +72,7 @@ describe('RequestLoggerService', () => {
     );
   });
 
-  it('stores provider error details inside the features object', async () => {
+  it('stores provider error details inside the features object with keys redacted', async () => {
     const values = vi.fn().mockResolvedValue(undefined);
     const db = { insert: vi.fn().mockReturnValue({ values }) };
     const costCalculator = {
@@ -87,8 +87,8 @@ describe('RequestLoggerService', () => {
     await new RequestLoggerService(db as any, costCalculator as any).log(
       makeEntry({
         status: 'error',
-        errorMessage: 'provider failed',
-        errorStack: 'stack here',
+        errorMessage: 'provider failed with key sk-1234567890abcdef123456',
+        errorStack: 'stack trace containing gsk_1234567890abcdef123456',
       }),
     );
 
@@ -96,19 +96,16 @@ describe('RequestLoggerService', () => {
       expect.objectContaining({
         status: 'error',
         features: expect.objectContaining({
-          _error: 'provider failed',
-          _errorStack: 'stack here',
+          _error: 'provider failed with key [REDACTED_API_KEY]',
+          _errorStack: 'stack trace containing [REDACTED_API_KEY]',
         }),
       }),
     );
   });
 
-  it('swallows database errors so logging cannot fail the request path', async () => {
-    const db = {
-      insert: vi.fn().mockReturnValue({
-        values: vi.fn().mockRejectedValue(new Error('db unavailable')),
-      }),
-    };
+  it('strictly excludes user_api_keys and key fields from database records', async () => {
+    const values = vi.fn().mockResolvedValue(undefined);
+    const db = { insert: vi.fn().mockReturnValue({ values }) };
     const costCalculator = {
       calculate: vi.fn().mockReturnValue({
         actualCost: 0,
@@ -118,8 +115,22 @@ describe('RequestLoggerService', () => {
       }),
     };
 
-    await expect(
-      new RequestLoggerService(db as any, costCalculator as any).log(makeEntry()),
-    ).resolves.toBeUndefined();
+    const entryWithSecret = makeEntry({
+      classification: {
+        ...classification,
+        features: {
+          ...classification.features,
+          user_api_keys: 'sk-secret-key-12345',
+          apiKey: 'gsk_secret_12345',
+        } as any,
+      },
+    });
+
+    await new RequestLoggerService(db as any, costCalculator as any).log(entryWithSecret);
+
+    const loggedRecord = values.mock.calls[0][0];
+    expect(loggedRecord.features.user_api_keys).toBeUndefined();
+    expect(loggedRecord.features.apiKey).toBeUndefined();
+    expect(JSON.stringify(loggedRecord)).not.toContain('sk-secret-key-12345');
   });
 });

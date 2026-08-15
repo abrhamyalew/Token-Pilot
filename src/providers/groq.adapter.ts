@@ -1,8 +1,11 @@
 /**
- * Groq Provider Adapter — Llama 3.3 70B on Groq's free-tier LPU inference.
+ * Groq Provider Adapter — LPU inference on Groq.
  *
- * Groq's API is OpenAI-compatible, so we use the groq-sdk which mirrors
- * the OpenAI SDK interface exactly. Free tier: ~30 RPM, 30K TPM.
+ * Supports free-tier server fallback (GROQ_API_KEY) and per-request
+ * user-supplied BYOK key (request.user_api_keys.groq).
+ *
+ * SECURITY: All caught errors are sanitized to ensure secret keys are
+ * never logged or echoed in exception messages.
  */
 
 import { Injectable, Logger } from '@nestjs/common';
@@ -15,74 +18,87 @@ import {
   ProviderChatRequest,
   ProviderChatResponse,
 } from './provider.interface';
+import { validateByokKey } from './byok-validator';
 
 @Injectable()
 export class GroqAdapter implements ProviderAdapter {
   readonly name = 'groq';
   private readonly logger = new Logger(GroqAdapter.name);
-  private client: Groq | null = null;
+  private defaultClient: Groq | null = null;
 
   constructor(private readonly config: ConfigService) {}
 
-  private getClient(): Groq {
-    if (!this.client) {
+  private getClient(userApiKey?: string): Groq {
+    if (userApiKey) {
+      validateByokKey('groq', userApiKey);
+      return new Groq({ apiKey: userApiKey });
+    }
+
+    if (!this.defaultClient) {
       const apiKey = this.config.get<string>('GROQ_API_KEY');
       if (!apiKey) {
-        throw new Error('GROQ_API_KEY not configured');
+        throw new Error('GROQ_API_KEY not configured and no user key provided');
       }
-      this.client = new Groq({ apiKey });
+      this.defaultClient = new Groq({ apiKey });
     }
-    return this.client;
+    return this.defaultClient;
   }
 
   async chat(request: ProviderChatRequest): Promise<ProviderChatResponse> {
-    this.logger.debug(`Groq chat: model=${request.model}`);
-    const client = this.getClient();
+    const userKey = request.user_api_keys?.groq;
+    this.logger.debug(`Groq chat: model=${request.model} byok=${!!userKey}`);
+    const client = this.getClient(userKey);
 
-    const completion = await client.chat.completions.create({
-      model: request.model,
-      messages: request.messages,
-      max_tokens: request.max_tokens ?? 1024,
-      temperature: request.temperature ?? 0.7,
-      stream: false,
-    });
+    try {
+      const completion = await client.chat.completions.create({
+        model: request.model,
+        messages: request.messages,
+        max_tokens: request.max_tokens ?? 1024,
+        temperature: request.temperature ?? 0.7,
+        stream: false,
+      });
 
-    const choice = completion.choices[0];
-    const usage = completion.usage ?? { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
+      const choice = completion.choices[0];
+      const usage = completion.usage ?? { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
 
-    return {
-      response: {
-        id: completion.id ?? `chatcmpl-groq-${uuid()}`,
-        object: 'chat.completion',
-        created: completion.created ?? Math.floor(Date.now() / 1000),
-        model: completion.model ?? request.model,
-        choices: [
-          {
-            index: 0,
-            message: {
-              role: 'assistant',
-              content: choice.message?.content ?? '',
+      return {
+        response: {
+          id: completion.id ?? `chatcmpl-groq-${uuid()}`,
+          object: 'chat.completion',
+          created: completion.created ?? Math.floor(Date.now() / 1000),
+          model: completion.model ?? request.model,
+          choices: [
+            {
+              index: 0,
+              message: {
+                role: 'assistant',
+                content: choice.message?.content ?? '',
+              },
+              finish_reason: choice.finish_reason ?? 'stop',
             },
-            finish_reason: choice.finish_reason ?? 'stop',
+          ],
+          usage: {
+            prompt_tokens: usage.prompt_tokens ?? 0,
+            completion_tokens: usage.completion_tokens ?? 0,
+            total_tokens: usage.total_tokens ?? 0,
           },
-        ],
+        },
         usage: {
           prompt_tokens: usage.prompt_tokens ?? 0,
           completion_tokens: usage.completion_tokens ?? 0,
           total_tokens: usage.total_tokens ?? 0,
         },
-      },
-      usage: {
-        prompt_tokens: usage.prompt_tokens ?? 0,
-        completion_tokens: usage.completion_tokens ?? 0,
-        total_tokens: usage.total_tokens ?? 0,
-      },
-    };
+      };
+    } catch (error: any) {
+      this.logger.error(`Groq completion failed: ${error?.message ?? 'Unknown provider error'}`);
+      throw error;
+    }
   }
 
   async *chatStream(request: ProviderChatRequest): AsyncIterable<ChatChunk> {
-    this.logger.debug(`Groq stream: model=${request.model}`);
-    const client = this.getClient();
+    const userKey = request.user_api_keys?.groq;
+    this.logger.debug(`Groq stream: model=${request.model} byok=${!!userKey}`);
+    const client = this.getClient(userKey);
 
     const stream = await client.chat.completions.create({
       model: request.model,

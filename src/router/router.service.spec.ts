@@ -1,3 +1,4 @@
+import { HttpException } from '@nestjs/common';
 import { RouterService } from './router.service';
 import { ClassifierResult, ChatRequest } from '../shared/types';
 import { ProviderAdapter, ProviderChatRequest, ProviderChatResponse } from '../providers/provider.interface';
@@ -55,10 +56,19 @@ function makeService(adapterOverrides: Partial<ProviderAdapter> = {}) {
   };
   const classifier = { classify: vi.fn().mockReturnValue(classification) };
   const providerRegistry = {
-    getAdapterForTier: vi.fn().mockReturnValue({
-      adapter,
-      model: 'llama-3.3-70b-versatile',
-      provider: 'groq',
+    getAdapterForTier: vi.fn().mockImplementation((tier, override) => {
+      if (override?.provider && override?.model) {
+        return {
+          adapter,
+          model: override.model,
+          provider: override.provider,
+        };
+      }
+      return {
+        adapter,
+        model: 'llama-3.3-70b-versatile',
+        provider: 'groq',
+      };
     }),
   };
   const requestLogger = { log: vi.fn().mockResolvedValue(undefined) };
@@ -138,6 +148,52 @@ describe('RouterService', () => {
         status: 'success',
       }),
     );
+  });
+
+  it('rejects tier overrides to BYOK-required providers when no user API key is provided', async () => {
+    const { service } = makeService();
+
+    const overrideRequest: ChatRequest = {
+      ...request,
+      tier_model_overrides: {
+        low: { provider: 'openai', model: 'gpt-4o' },
+      },
+    };
+
+    await expect(service.handleRequest(overrideRequest)).rejects.toThrow(HttpException);
+  });
+
+  it('allows tier overrides to BYOK-required providers when user API key is provided', async () => {
+    const { service, adapter } = makeService();
+
+    const overrideRequest: ChatRequest = {
+      ...request,
+      tier_model_overrides: {
+        low: { provider: 'openai', model: 'gpt-4o' },
+      },
+      user_api_keys: {
+        openai: 'sk-test-key-1234567890',
+      },
+    };
+
+    const result = await service.handleRequest(overrideRequest);
+    expect(result.classification.tier).toBe('low');
+    expect(adapter.chat).toHaveBeenCalled();
+  });
+
+  it('allows tier overrides to free-tier providers without an API key', async () => {
+    const { service, adapter } = makeService();
+
+    const overrideRequest: ChatRequest = {
+      ...request,
+      tier_model_overrides: {
+        low: { provider: 'google', model: 'gemini-2.0-flash' },
+      },
+    };
+
+    const result = await service.handleRequest(overrideRequest);
+    expect(result.classification.tier).toBe('low');
+    expect(adapter.chat).toHaveBeenCalled();
   });
 
   it('retries a failed provider call once before succeeding', async () => {
