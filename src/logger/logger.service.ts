@@ -31,8 +31,8 @@ export interface LogEntry {
 }
 
 const KEY_PATTERNS = [
-  /sk-[a-zA-Z0-9_\-]{15,}/g,
   /sk-ant-[a-zA-Z0-9_\-]{15,}/g,
+  /sk-[a-zA-Z0-9_\-]{15,}/g,
   /gsk_[a-zA-Z0-9_\-]{15,}/g,
   /AIza[a-zA-Z0-9_\-]{15,}/g,
 ];

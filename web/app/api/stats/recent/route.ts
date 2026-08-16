@@ -5,7 +5,10 @@ const GATEWAY_URL =
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const limit = searchParams.get('limit') ?? '25';
+  const rawLimit = searchParams.get('limit') ?? '25';
+
+  // Parse and clamp to a safe integer range before forwarding to the gateway
+  const limit = Math.max(1, Math.min(100, parseInt(rawLimit, 10) || 25));
 
   try {
     const res = await fetch(`${GATEWAY_URL}/api/stats/recent?limit=${limit}`, {

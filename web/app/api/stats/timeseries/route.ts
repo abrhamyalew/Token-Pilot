@@ -5,7 +5,10 @@ const GATEWAY_URL =
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const days = searchParams.get('days') ?? '7';
+  const rawDays = searchParams.get('days') ?? '7';
+
+  // Parse and clamp to a safe integer range before forwarding to the gateway
+  const days = Math.max(1, Math.min(90, parseInt(rawDays, 10) || 7));
 
   try {
     const res = await fetch(`${GATEWAY_URL}/api/stats/timeseries?days=${days}`, {
