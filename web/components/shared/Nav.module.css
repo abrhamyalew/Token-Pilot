@@ -27,15 +27,16 @@
   color: var(--color-text-primary);
 }
 
-.logoMark {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 2px 5px;
-  background: #111111;
-  color: #FFFFFF;
+.logoIcon {
+  display: block;
   border-radius: var(--radius-xs);
-  letter-spacing: 0.05em;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  transition: transform var(--transition-fast);
+}
+
+.logo:hover .logoIcon {
+  transform: scale(1.06);
 }
 
 .brandTitle {

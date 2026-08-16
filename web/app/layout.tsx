@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   description:
     'Token Pilot classifies prompt complexity and routes requests to the lowest-cost capable model.',
   keywords: ['LLM router', 'prompt classification', 'cost optimization', 'model routing'],
+  icons: {
+    icon: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
   openGraph: {
     title: 'Token Pilot Intelligent Prompt Router',
     description: 'Classify prompt complexity and route to cost-effective models.',
