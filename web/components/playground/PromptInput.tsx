@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useConfigStore } from '@/lib/config-store';
+import { RateLimitBar } from './RateLimitBar';
 import styles from './PromptInput.module.css';
 
 interface Props {
@@ -172,18 +173,14 @@ export function PromptInput({ onSubmit, isLoading, requestsRemaining }: Props) {
           {isLoading ? (
             <>
               <span className={styles.spinner} />
-              <span>Routing prompt…</span>
+              <span>Routing prompt...</span>
             </>
           ) : (
             <span>Route prompt</span>
           )}
         </button>
 
-        {requestsRemaining !== null && (
-          <div className={styles.rateLimitText}>
-            <span className="mono">{requestsRemaining} / 10</span> requests remaining
-          </div>
-        )}
+        <RateLimitBar requestsRemaining={requestsRemaining} />
       </div>
     </form>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 export interface HealthState {
   status: string;
@@ -10,6 +10,7 @@ export interface HealthState {
 export function useHealth(initialHealth: HealthState | null = null, pollIntervalMs = 60000) {
   const [health, setHealth] = useState<HealthState | null>(initialHealth);
   const [loading, setLoading] = useState(initialHealth === null);
+  const initialRef = useRef(initialHealth);
 
   const fetchHealth = useCallback(async () => {
     try {
@@ -31,30 +32,16 @@ export function useHealth(initialHealth: HealthState | null = null, pollInterval
   useEffect(() => {
     let active = true;
 
-    async function load() {
-      try {
-        const res = await fetch('/api/health');
-        if (active) {
-          if (res.ok) {
-            const data = await res.json();
-            setHealth(data);
-          } else {
-            setHealth({ status: 'degraded' });
-          }
-        }
-      } catch {
-        if (active) setHealth(null);
-      } finally {
-        if (active) setLoading(false);
-      }
-    }
-
-    if (initialHealth === null) {
-      load();
+    if (initialRef.current === null) {
+      fetchHealth();
     }
 
     if (pollIntervalMs > 0) {
-      const interval = setInterval(load, pollIntervalMs);
+      const interval = setInterval(() => {
+        if (active) {
+          fetchHealth();
+        }
+      }, pollIntervalMs);
       return () => {
         active = false;
         clearInterval(interval);
@@ -64,7 +51,7 @@ export function useHealth(initialHealth: HealthState | null = null, pollInterval
     return () => {
       active = false;
     };
-  }, [initialHealth, pollIntervalMs]);
+  }, [pollIntervalMs, fetchHealth]);
 
   return { health, loading, refetch: fetchHealth };
 }

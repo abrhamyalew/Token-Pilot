@@ -1,7 +1,10 @@
 /**
- * Gateway API client — typed fetch wrapper for all gateway endpoints.
- * Used by both Next.js API routes (server-side) and the playground hook (client-side SSE).
+ * Gateway API client - typed fetch wrapper for all server-side gateway endpoints.
+ * Used by Next.js Server Components and API route handlers.
  */
+
+import { getGatewayUrl } from './gateway-client';
+export { getGatewayUrl };
 
 const GATEWAY_URL =
   process.env.GATEWAY_URL ?? process.env.NEXT_PUBLIC_GATEWAY_URL ?? 'http://localhost:3000';
@@ -44,7 +47,12 @@ export interface TimeseriesPoint {
   saved: number;
 }
 
-// ─── API functions ───────────────────────────────────────────────────────────
+export interface HealthResponse {
+  status: string;
+  providers: Record<string, boolean>;
+}
+
+// ─── Server API functions ───────────────────────────────────────────────────
 
 async function fetchGateway<T>(path: string): Promise<T> {
   const res = await fetch(`${GATEWAY_URL}${path}`, {
@@ -68,16 +76,6 @@ export async function getTimeseries(days = 7): Promise<TimeseriesPoint[]> {
   return fetchGateway<TimeseriesPoint[]>(`/api/stats/timeseries?days=${days}`);
 }
 
-export interface HealthResponse {
-  status: string;
-  providers: Record<string, boolean>;
-}
-
 export async function getHealth(): Promise<HealthResponse> {
   return fetchGateway<HealthResponse>('/health');
-}
-
-/** Returns the base gateway URL for client-side SSE streaming */
-export function getGatewayUrl(): string {
-  return process.env.NEXT_PUBLIC_GATEWAY_URL ?? 'http://localhost:3000';
 }

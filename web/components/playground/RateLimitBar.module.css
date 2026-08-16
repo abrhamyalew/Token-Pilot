@@ -1,0 +1,51 @@
+.container {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 4px 10px;
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.meterTrack {
+  width: 60px;
+  height: 6px;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.meterFill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 300ms ease, background-color 300ms ease;
+}
+
+.stateNormal {
+  background-color: var(--tier-low-solid);
+}
+
+.stateWarning {
+  background-color: var(--tier-high-solid);
+}
+
+.stateDanger {
+  background-color: oklch(0.55 0.20 25);
+}
+
+.label {
+  font-size: 0.725rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.count {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.dim {
+  color: var(--color-text-muted);
+}

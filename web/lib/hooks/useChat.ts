@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
-import { getGatewayUrl } from '@/lib/api';
+import { getGatewayUrl } from '@/lib/gateway-client';
 import { useConfigStore } from '@/lib/config-store';
 
 export interface RoutingMetadata {
