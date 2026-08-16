@@ -77,15 +77,15 @@ export function RoutingViz({ status, metadata }: Props) {
           </div>
           <div className={styles.metaRow}>
             <span className={styles.metaLabel}>Complexity score:</span>
-            <span className="mono">{metadata.score.toFixed(3)} / 1.000</span>
+            <span className="mono">{(metadata.score ?? 0).toFixed(3)} / 1.000</span>
           </div>
           <div className={styles.metaRow}>
             <span className={styles.metaLabel}>Confidence:</span>
-            <span className="mono">{(metadata.confidence * 100).toFixed(0)}%</span>
+            <span className="mono">{((metadata.confidence ?? 0) * 100).toFixed(0)}%</span>
           </div>
           <div className={styles.metaRow}>
             <span className={styles.metaLabel}>Overhead latency:</span>
-            <span className="mono">{metadata.latencyMs}ms</span>
+            <span className="mono">{metadata.latencyMs ?? 0}ms</span>
           </div>
         </div>
       )}

@@ -129,7 +129,9 @@ export class RouterController {
     body: ChatRequest,
     res: Response,
   ): Promise<void> {
+    const classifyStart = Date.now();
     const result = this.routerService.handleStreamRequest(body);
+    const classifyMs = Date.now() - classifyStart;
 
     this.logger.log(
       `Streaming ${result.classification.tier} → ${result.model} ` +
@@ -146,6 +148,21 @@ export class RouterController {
       'X-Token-Pilot-Confidence',
       result.classification.confidence.toFixed(3),
     );
+
+    // Inject routing metadata as the first SSE event so the frontend can
+    // display classification info while the model streams its response.
+    const routingEvent = {
+      routing: {
+        tier: result.classification.tier,
+        classifier: result.classification.classifier,
+        confidence: result.classification.confidence,
+        score: result.classification.score,
+        model: result.model,
+        provider: result.provider,
+        latencyMs: classifyMs,
+      },
+    };
+    res.write(`data: ${JSON.stringify(routingEvent)}\n\n`);
 
     // Stream chunks to the client
     let collectedContent = '';

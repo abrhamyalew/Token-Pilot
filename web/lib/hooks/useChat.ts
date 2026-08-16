@@ -122,7 +122,24 @@ export function useChat() {
 
             // Extract routing metadata from the first chunk
             if (chunk.routing && !metadata) {
-              metadata = chunk.routing as RoutingMetadata;
+              const r = chunk.routing;
+              const actualCost = r.actualCost ?? r.actual_cost ?? 0;
+              const frontierCost = r.frontierCost ?? r.frontier_cost ?? 0;
+              const sav = r.savings ?? (frontierCost - actualCost);
+              metadata = {
+                tier: r.tier ?? 'unknown',
+                model: r.model ?? 'unknown',
+                provider: r.provider ?? 'unknown',
+                score: r.score ?? 0,
+                confidence: r.confidence ?? 0,
+                features: r.features ?? {},
+                actualCost,
+                frontierCost,
+                savings: sav,
+                savingsPercent: frontierCost > 0 ? (sav / frontierCost) * 100 : 0,
+                latencyMs: r.latencyMs ?? r.latency_ms ?? 0,
+                classifier: r.classifier ?? 'rules',
+              };
               setState((s) => ({ ...s, metadata }));
             }
 

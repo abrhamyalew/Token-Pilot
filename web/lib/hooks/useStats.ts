@@ -31,34 +31,17 @@ export function useStats(refreshIntervalMs = 30000) {
   useEffect(() => {
     let active = true;
 
-    async function load() {
-      try {
-        const [sumRes, recRes, timeRes] = await Promise.all([
-          fetch('/api/stats/summary').then((r) => (r.ok ? r.json() : null)),
-          fetch('/api/stats/recent?limit=25').then((r) => (r.ok ? r.json() : [])),
-          fetch('/api/stats/timeseries?days=7').then((r) => (r.ok ? r.json() : [])),
-        ]);
-        if (active) {
-          setSummary(sumRes);
-          setRecent(recRes);
-          setTimeseries(timeRes);
-          setError(null);
-        }
-      } catch (err: unknown) {
-        if (active) {
-          setError((err as Error).message ?? 'Failed to load stats');
-        }
-      } finally {
-        if (active) {
-          setLoading(false);
-        }
-      }
-    }
+    // Initial load and interval polling both use the same fetchAll logic.
+    // The `active` flag prevents state updates after unmount.
+    const guardedFetch = async () => {
+      if (!active) return;
+      await fetchAll();
+    };
 
-    load();
+    guardedFetch();
 
     if (refreshIntervalMs > 0) {
-      const interval = setInterval(load, refreshIntervalMs);
+      const interval = setInterval(guardedFetch, refreshIntervalMs);
       return () => {
         active = false;
         clearInterval(interval);
@@ -68,7 +51,7 @@ export function useStats(refreshIntervalMs = 30000) {
     return () => {
       active = false;
     };
-  }, [refreshIntervalMs]);
+  }, [refreshIntervalMs, fetchAll]);
 
   return { summary, recent, timeseries, loading, error, refetch: fetchAll };
 }

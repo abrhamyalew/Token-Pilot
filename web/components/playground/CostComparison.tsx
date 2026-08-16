@@ -8,7 +8,11 @@ interface Props {
 }
 
 export function CostComparison({ metadata }: Props) {
-  const { actualCost, frontierCost, savings, savingsPercent, latencyMs } = metadata;
+  const actualCost = metadata.actualCost ?? 0;
+  const frontierCost = metadata.frontierCost ?? 0;
+  const savings = metadata.savings ?? 0;
+  const savingsPercent = metadata.savingsPercent ?? 0;
+  const latencyMs = metadata.latencyMs ?? 0;
 
   const formatCost = (c: number) =>
     c === 0 ? '$0.00 (Free)' : `$${c.toFixed(6)}`;

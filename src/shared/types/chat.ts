@@ -67,6 +67,12 @@ export interface RoutingMetadata {
   tier: string;
   classifier: string;
   confidence: number;
+  /** Raw complexity score from the scoring engine (0-1 range) */
+  score: number;
+  /** The model selected by routing */
+  model: string;
+  /** The provider serving the model */
+  provider: string;
   actual_cost: number;
   frontier_cost: number;
   savings: number;
