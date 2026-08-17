@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
+import { getGatewayUrl } from '@/lib/gateway-client';
 
-const GATEWAY_URL =
-  process.env.GATEWAY_URL ?? process.env.NEXT_PUBLIC_GATEWAY_URL ?? 'http://localhost:3000';
+const GATEWAY_URL = getGatewayUrl();
 
 export async function GET() {
   try {

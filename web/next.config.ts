@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
 
   // Forward dashboard API calls to the NestJS gateway server-side
   async rewrites() {
-    const gatewayUrl = process.env.GATEWAY_URL ?? 'http://localhost:3000';
+    const gatewayUrl = (process.env.GATEWAY_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
     return [
       {
         source: '/gateway/:path*',

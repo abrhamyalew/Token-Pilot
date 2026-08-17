@@ -6,8 +6,9 @@
 import { getGatewayUrl } from './gateway-client';
 export { getGatewayUrl };
 
-const GATEWAY_URL =
-  process.env.GATEWAY_URL ?? process.env.NEXT_PUBLIC_GATEWAY_URL ?? 'http://localhost:3000';
+const GATEWAY_URL = (
+  process.env.GATEWAY_URL ?? process.env.NEXT_PUBLIC_GATEWAY_URL ?? 'http://localhost:3000'
+).replace(/\/+$/, '');
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 

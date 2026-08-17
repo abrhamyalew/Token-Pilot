@@ -4,5 +4,6 @@
  */
 
 export function getGatewayUrl(): string {
-  return process.env.NEXT_PUBLIC_GATEWAY_URL ?? 'http://localhost:3000';
+  const url = process.env.NEXT_PUBLIC_GATEWAY_URL ?? 'http://localhost:3000';
+  return url.replace(/\/+$/, '');
 }
