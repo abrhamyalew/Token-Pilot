@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@token-pilot/classifier": ["../packages/classifier/src/index.ts"]
     }
   },
   "include": [
