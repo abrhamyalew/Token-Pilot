@@ -119,7 +119,7 @@ describe('RouterService', () => {
     expect(adapter.chat).toHaveBeenCalledWith(
       expect.objectContaining<Partial<ProviderChatRequest>>({
         model: 'llama-3.3-70b-versatile',
-        max_tokens: 1024,
+        max_tokens: 2048,
         stream: false,
       }),
     );
@@ -135,7 +135,7 @@ describe('RouterService', () => {
       actual_cost: 0,
       frontier_cost: 0.0312,
       savings: 0.0312,
-      max_tokens_applied: 1024,
+      max_tokens_applied: 2048,
       max_tokens_capped: true,
     });
     expect(requestLogger.log).toHaveBeenCalledWith(
@@ -249,7 +249,7 @@ describe('RouterService', () => {
     result.finalize('Hi there', null);
 
     expect(adapter.chatStream).toHaveBeenCalledWith(
-      expect.objectContaining({ max_tokens: 1024, stream: true }),
+      expect.objectContaining({ max_tokens: 2048, stream: true }),
     );
     expect(requestLogger.log).toHaveBeenCalledWith(
       expect.objectContaining({

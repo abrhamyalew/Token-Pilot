@@ -1,14 +1,22 @@
 .container {
   padding: var(--space-4);
+  position: relative;
 }
 
 .header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   margin-bottom: var(--space-3);
   padding-bottom: var(--space-2);
   border-bottom: 1px solid var(--color-border-subtle);
+  gap: var(--space-2);
+}
+
+.headerTitleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .title {
@@ -17,6 +25,19 @@
   font-weight: 600;
   color: var(--color-text-primary);
   letter-spacing: 0.02em;
+}
+
+.headerSubtitle {
+  font-size: 0.725rem;
+  color: var(--color-text-muted);
+}
+
+.reductionBadge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  flex-shrink: 0;
 }
 
 .grid {
@@ -28,36 +49,119 @@
 .costBox {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   padding: var(--space-3);
   background: var(--color-bg-subtle);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
+  position: relative;
+}
+
+.routedBox {
+  border-color: var(--tier-low-border);
+  background: var(--tier-low-bg);
+}
+
+.baselineBox {
+  border-color: var(--color-border);
+}
+
+.costBoxHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .costLabel {
   font-size: 0.75rem;
-  color: var(--color-text-muted);
+  font-weight: 600;
+  color: var(--color-text-secondary);
 }
 
 .costValue {
   font-size: 1.35rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-text-primary);
   margin: 2px 0;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
 
+.freeValue {
+  color: var(--tier-low-text);
+}
+
 .frontierValue {
   color: var(--color-text-secondary);
 }
 
-.costModel {
-  font-size: 0.725rem;
+.costFooter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  margin-top: 2px;
+}
+
+.modelTag {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  padding: 1px 5px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.providerTag {
   color: var(--color-text-muted);
 }
 
+/* Visual Savings Bar */
+.barContainer {
+  margin-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.barLabels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+}
+
+.barLabelLeft {
+  color: var(--tier-low-text);
+  font-weight: 600;
+}
+
+.barLabelRight {
+  color: var(--color-text-muted);
+}
+
+.barTrack {
+  height: 8px;
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  display: flex;
+  border: 1px solid var(--color-border);
+}
+
+.barFillSaved {
+  background: var(--tier-low-solid);
+  transition: width 400ms ease;
+}
+
+.barFillPaid {
+  background: var(--color-text-dim);
+  transition: width 400ms ease;
+}
+
+/* Summary Footer */
 .footer {
   display: flex;
   justify-content: space-between;
@@ -66,19 +170,96 @@
   padding-top: var(--space-2);
   border-top: 1px solid var(--color-border-subtle);
   font-size: 0.8rem;
+  flex-wrap: wrap;
+  gap: var(--space-2);
 }
 
 .savingsSummary {
   color: var(--color-text-secondary);
+  font-size: 0.775rem;
 }
 
 .savingsSummary strong {
   color: var(--tier-low-text);
 }
 
+.projectedNote {
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+  margin-left: 6px;
+}
+
 .latencyText {
   color: var(--color-text-muted);
+  font-size: 0.725rem;
+}
+
+/* Tooltips */
+.tooltipTrigger {
+  position: relative;
+  display: inline-flex;
+}
+
+.infoIcon {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+  transition: all var(--transition-fast);
+}
+
+.tooltipTrigger:hover .infoIcon {
+  color: var(--color-text-primary);
+  border-color: var(--color-border-strong);
+}
+
+.tooltip {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  width: 250px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.12);
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(4px) scale(0.98);
+  transition: opacity var(--transition-fast), transform var(--transition-fast), visibility var(--transition-fast);
+}
+
+.tooltipTrigger:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.tooltipTitle {
+  font-family: var(--font-sans);
   font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.tooltipText {
+  font-size: 0.7rem;
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+  margin: 0;
 }
 
 @media (max-width: 600px) {
@@ -86,3 +267,4 @@
     grid-template-columns: 1fr;
   }
 }
+

@@ -55,7 +55,7 @@ export class GoogleAdapter implements ProviderAdapter {
         model: request.model,
         ...(systemInstruction && { systemInstruction }),
         generationConfig: {
-          maxOutputTokens: request.max_tokens ?? 1024,
+          maxOutputTokens: request.max_tokens ?? 2048,
           temperature: request.temperature ?? 0.7,
         },
       });
@@ -117,7 +117,7 @@ export class GoogleAdapter implements ProviderAdapter {
       model: request.model,
       ...(systemInstruction && { systemInstruction }),
       generationConfig: {
-        maxOutputTokens: request.max_tokens ?? 1024,
+        maxOutputTokens: request.max_tokens ?? 2048,
         temperature: request.temperature ?? 0.7,
       },
     });

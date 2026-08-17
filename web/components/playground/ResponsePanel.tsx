@@ -15,8 +15,9 @@ interface Props {
 }
 
 export function ResponsePanel({ content, status, error }: Props) {
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const { setRoutingMode } = useConfigStore();
 
   const isFrontierWarning =
@@ -24,11 +25,41 @@ export function ResponsePanel({ content, status, error }: Props) {
     content.includes('Frontier Tier Notice') ||
     content.includes('[Token Pilot — Estimate Mode]');
 
+  // Auto-scroll down smoothly during streaming
   useEffect(() => {
-    if (status === 'streaming') {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (status === 'streaming' && contentRef.current) {
+      const container = contentRef.current;
+      // Scroll down within the container
+      container.scrollTop = container.scrollHeight;
     }
   }, [content, status]);
+
+  // When stream completes, smoothly scroll back to the top so user starts reading from the beginning
+  useEffect(() => {
+    if (status === 'done' && contentRef.current) {
+      contentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [status]);
+
+  // Track scroll position to show quick navigation buttons
+  const handleScroll = () => {
+    if (!contentRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = contentRef.current;
+    setShowScrollTop(scrollTop > 120);
+  };
+
+  const scrollToTop = () => {
+    contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const scrollToBottom = () => {
+    if (contentRef.current) {
+      contentRef.current.scrollTo({
+        top: contentRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  };
 
   const handleCopy = async () => {
     if (!content) return;
@@ -59,15 +90,38 @@ export function ResponsePanel({ content, status, error }: Props) {
           )}
         </div>
 
-        {content && status === 'done' && (
-          <button
-            type="button"
-            className={styles.copyBtn}
-            onClick={handleCopy}
-          >
-            {copied ? 'Copied' : 'Copy'}
-          </button>
-        )}
+        <div className={styles.headerActions}>
+          {content && (
+            <div className={styles.navButtons}>
+              <button
+                type="button"
+                className={styles.navBtn}
+                onClick={scrollToTop}
+                title="Scroll to top"
+              >
+                ↑ Top
+              </button>
+              <button
+                type="button"
+                className={styles.navBtn}
+                onClick={scrollToBottom}
+                title="Scroll to bottom"
+              >
+                ↓ Bottom
+              </button>
+            </div>
+          )}
+
+          {content && status === 'done' && (
+            <button
+              type="button"
+              className={styles.copyBtn}
+              onClick={handleCopy}
+            >
+              {copied ? 'Copied' : 'Copy'}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Body */}
@@ -77,7 +131,11 @@ export function ResponsePanel({ content, status, error }: Props) {
           <p className={styles.errorText}>{error}</p>
         </div>
       ) : (
-        <div className={styles.content}>
+        <div
+          ref={contentRef}
+          onScroll={handleScroll}
+          className={styles.content}
+        >
           {content ? (
             <div>
               {isFrontierWarning && (
@@ -128,7 +186,6 @@ export function ResponsePanel({ content, status, error }: Props) {
           ) : (
             <span className={styles.placeholder}>Awaiting model tokens…</span>
           )}
-          <div ref={bottomRef} />
         </div>
       )}
     </div>

@@ -53,7 +53,7 @@ export class GroqAdapter implements ProviderAdapter {
       const completion = await client.chat.completions.create({
         model: request.model,
         messages: request.messages,
-        max_tokens: request.max_tokens ?? 1024,
+        max_tokens: request.max_tokens ?? 2048,
         temperature: request.temperature ?? 0.7,
         stream: false,
       });
@@ -103,7 +103,7 @@ export class GroqAdapter implements ProviderAdapter {
     const stream = await client.chat.completions.create({
       model: request.model,
       messages: request.messages,
-      max_tokens: request.max_tokens ?? 1024,
+      max_tokens: request.max_tokens ?? 2048,
       temperature: request.temperature ?? 0.7,
       stream: true,
     });

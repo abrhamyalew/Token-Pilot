@@ -50,7 +50,7 @@ const RETRY_DELAY_MS = 500;
 @Injectable()
 export class RouterService {
   private readonly logger = new Logger(RouterService.name);
-  private readonly MAX_DEMO_TOKENS = 1024;
+  private readonly MAX_DEMO_TOKENS = 2048;
 
   constructor(
     private readonly classifier: ClassifierService,
