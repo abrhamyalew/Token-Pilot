@@ -1,7 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeHighlight from 'rehype-highlight';
 import { useConfigStore } from '@/lib/config-store';
 import styles from './ResponsePanel.module.css';
 
@@ -109,10 +112,16 @@ export function ResponsePanel({ content, status, error }: Props) {
 
               <div
                 className={
-                  isFrontierWarning ? styles.estimateDetailsBox : styles.formattedText
+                  isFrontierWarning ? styles.estimateDetailsBox : styles.markdownContent
                 }
               >
-                {content}
+                {isFrontierWarning ? (
+                  <>{content}</>
+                ) : (
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
+                    {content}
+                  </ReactMarkdown>
+                )}
                 {status === 'streaming' && <span className={styles.cursor} />}
               </div>
             </div>

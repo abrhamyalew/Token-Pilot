@@ -113,11 +113,11 @@ export function PromptInput({ onSubmit, isLoading, requestsRemaining }: Props) {
             className={styles.snippetBtn}
             onClick={() =>
               applySnippet(
-                'Write a custom React useDebounce hook in TypeScript with generic typing, leading/trailing options, and a cancel method.',
+                'What is a REST API? Give a brief summary.',
               )
             }
           >
-            Debounce Hook (Low)
+            REST API Summary (Low)
           </button>
           <button
             type="button"
@@ -135,11 +135,11 @@ export function PromptInput({ onSubmit, isLoading, requestsRemaining }: Props) {
             className={styles.snippetBtn}
             onClick={() =>
               applySnippet(
-                'Formally analyze Byzantine Fault Tolerant consensus protocols. Prove safety and liveness invariants under network partitions, and implement the leader election state machine in TypeScript with fault tolerance guarantees.',
+                'Refactor this TypeScript payment processor to use the Strategy pattern with idempotency keys, distributed locking via Redis, and a transactional outbox for event publishing. Include error handling and test fixtures.\n\n```typescript\nclass PaymentProcessor {\n  async process(type: "card" | "crypto" | "wire", amount: number) {\n    if (type === "card") { await stripe.charge(amount); }\n    else if (type === "crypto") { await web3.transfer(amount); }\n    else { await bank.wire(amount); }\n  }\n}\n```',
               )
             }
           >
-            Distributed Consensus (High)
+            Payment Refactor (High)
           </button>
         </div>
 

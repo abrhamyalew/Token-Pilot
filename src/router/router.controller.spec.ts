@@ -10,6 +10,15 @@ const classification = {
   features: {} as any,
 };
 
+const costCalculator = {
+  calculate: vi.fn().mockImplementation(() => ({
+    actualCost: 0,
+    frontierCost: 0.001,
+    savings: 0.001,
+    savingsPercent: 100,
+  })),
+};
+
 function makeResponse() {
   return {
     status: vi.fn().mockReturnThis(),
@@ -40,7 +49,7 @@ describe('RouterController', () => {
         },
       }),
     };
-    const controller = new RouterController(routerService as any, {} as any);
+    const controller = new RouterController(routerService as any, {} as any, costCalculator as any);
 
     await controller.chatCompletions(request, {} as any, res as any);
 
@@ -77,11 +86,12 @@ describe('RouterController', () => {
         finalize,
       }),
     };
-    const controller = new RouterController(routerService as any, {} as any);
+    const controller = new RouterController(routerService as any, {} as any, costCalculator as any);
 
     await controller.chatCompletions({ ...request, stream: true }, {} as any, res as any);
 
     expect(res.setHeader).toHaveBeenCalledWith('Content-Type', 'text/event-stream');
+    expect(res.write).toHaveBeenCalledWith(expect.stringContaining('routing_complete'));
     expect(res.write).toHaveBeenCalledWith('data: [DONE]\n\n');
     expect(res.end).toHaveBeenCalled();
     expect(finalize).toHaveBeenCalledWith('Hi', {
@@ -113,7 +123,7 @@ describe('RouterController', () => {
         finalize,
       }),
     };
-    const controller = new RouterController(routerService as any, {} as any);
+    const controller = new RouterController(routerService as any, {} as any, costCalculator as any);
 
     await controller.chatCompletions({ ...request, stream: true }, {} as any, res as any);
 
@@ -127,7 +137,7 @@ describe('RouterController', () => {
     const routerService = {
       handleRequest: vi.fn().mockRejectedValue(new HttpException('bad', HttpStatus.BAD_REQUEST)),
     };
-    const controller = new RouterController(routerService as any, {} as any);
+    const controller = new RouterController(routerService as any, {} as any, costCalculator as any);
 
     await expect(controller.chatCompletions(request, {} as any, makeResponse() as any)).rejects.toBeInstanceOf(
       HttpException,
@@ -139,7 +149,7 @@ describe('RouterController', () => {
     const routerService = {
       handleRequest: vi.fn().mockRejectedValue(new Error('unexpected')),
     };
-    const controller = new RouterController(routerService as any, {} as any);
+    const controller = new RouterController(routerService as any, {} as any, costCalculator as any);
 
     await controller.chatCompletions(request, {} as any, res as any);
 
@@ -153,7 +163,7 @@ describe('RouterController', () => {
     const providerRegistry = {
       checkAllHealth: vi.fn().mockResolvedValue({ mock: true }),
     };
-    const controller = new RouterController({} as any, providerRegistry as any);
+    const controller = new RouterController({} as any, providerRegistry as any, costCalculator as any);
 
     await expect(controller.health()).resolves.toMatchObject({
       status: 'ok',

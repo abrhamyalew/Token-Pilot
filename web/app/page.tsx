@@ -95,9 +95,9 @@ export default function PlaygroundPage() {
 const EXAMPLE_PROMPTS = [
   {
     tier: 'low',
-    category: 'Code utility',
-    label: 'TypeScript debounce utility with generic typing',
-    prompt: 'Write a type-safe TypeScript debounce function with configurable delay, leading/trailing execution options, and a cancel method. Include inline JSDoc comments.',
+    category: 'General knowledge',
+    label: 'What is a REST API?',
+    prompt: 'What is a REST API? Give a brief summary.',
   },
   {
     tier: 'medium',
@@ -107,8 +107,8 @@ const EXAMPLE_PROMPTS = [
   },
   {
     tier: 'high',
-    category: 'Distributed systems',
-    label: 'Refactor payment service with Strategy pattern & idempotency',
+    category: 'Architecture',
+    label: 'Refactor payment service with Strategy pattern and idempotency',
     prompt: 'Refactor the following TypeScript payment processor to use the Strategy pattern with strict types, idempotency keys, distributed locking via Redis, and transactional outbox event publishing. Provide architecture diagrams in ASCII, failure handling, and test fixtures:\n\n```typescript\nclass PaymentProcessor {\n  async process(type: "card" | "crypto" | "wire", amount: number, accountId: string) {\n    if (type === "card") { await stripe.charge(amount); }\n    else if (type === "crypto") { await web3.transfer(amount); }\n    else { await bank.wire(amount); }\n  }\n}\n```',
   },
 ];

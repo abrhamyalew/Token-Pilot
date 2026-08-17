@@ -26,6 +26,7 @@ import { ProviderRegistryService } from '../providers/provider-registry.service'
 import { ChatRequestValidationPipe } from './chat-request-validation.pipe';
 import { ChatRequest, TokenUsage } from '../shared/types';
 import { getAllTiers, getAllModels } from '../shared/cost-registry';
+import { CostCalculatorService } from '../logger/cost-calculator.service';
 
 @Controller()
 export class RouterController {
@@ -34,6 +35,7 @@ export class RouterController {
   constructor(
     private readonly routerService: RouterService,
     private readonly providerRegistry: ProviderRegistryService,
+    private readonly costCalculator: CostCalculatorService,
   ) {}
 
   /**
@@ -184,6 +186,31 @@ export class RouterController {
         // Write SSE event
         res.write(`data: ${JSON.stringify(chunk)}\n\n`);
       }
+
+      // Emit cost data now that we know actual token usage
+      const streamLatencyMs = Date.now() - classifyStart;
+      const finalUsage = lastUsage ?? {
+        prompt_tokens: 0,
+        completion_tokens: 0,
+        total_tokens: 0,
+      };
+
+      const costs = this.costCalculator.calculate(
+        result.model,
+        finalUsage.prompt_tokens,
+        finalUsage.completion_tokens,
+      ) ?? { actualCost: 0, frontierCost: 0, savings: 0, savingsPercent: 0 };
+
+      const routingComplete = {
+        routing_complete: {
+          actual_cost: costs.actualCost,
+          frontier_cost: costs.frontierCost,
+          savings: costs.savings,
+          savings_percent: costs.savingsPercent,
+          latency_ms: streamLatencyMs,
+        },
+      };
+      res.write(`data: ${JSON.stringify(routingComplete)}\n\n`);
 
       // SSE terminator
       res.write('data: [DONE]\n\n');

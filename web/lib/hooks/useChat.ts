@@ -143,6 +143,20 @@ export function useChat() {
               setState((s) => ({ ...s, metadata }));
             }
 
+            // Update cost data from the routing_complete event (arrives after stream ends)
+            if (chunk.routing_complete && metadata) {
+              const rc = chunk.routing_complete;
+              metadata = {
+                ...metadata,
+                actualCost: rc.actual_cost ?? rc.actualCost ?? metadata.actualCost,
+                frontierCost: rc.frontier_cost ?? rc.frontierCost ?? metadata.frontierCost,
+                savings: rc.savings ?? metadata.savings,
+                savingsPercent: rc.savings_percent ?? rc.savingsPercent ?? metadata.savingsPercent,
+                latencyMs: rc.latency_ms ?? rc.latencyMs ?? metadata.latencyMs,
+              };
+              setState((s) => ({ ...s, metadata }));
+            }
+
             const delta = chunk.choices?.[0]?.delta?.content;
             if (delta) {
               setState((s) => ({ ...s, content: s.content + delta }));

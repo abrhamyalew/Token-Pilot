@@ -115,25 +115,22 @@ export function scorePrompt(
     tier = 'high_alt';
   }
 
-  // ─── Confidence: feature agreement metric ───────────────────────────
-  const featureValues = [
-    n.tokenCount, n.avgSentenceLength, n.questionCount,
-    n.codeBlockPresent, n.reasoningKeywords, n.constraintCount,
-    n.structuralDepth, n.domainTermDensity, n.domainHitCount,
-    n.formalLanguageScore,
-  ];
-  const totalFeatures = featureValues.length;
-
-  let agreeing = 0;
-  for (const v of featureValues) {
-    switch (tier) {
-      case 'low':      if (v < 0.3) agreeing++; break;
-      case 'medium':   if (v >= 0.1 && v <= 0.8) agreeing++; break;
-      case 'high':     if (v >= 0.3) agreeing++; break;
-      case 'high_alt': if (v >= 0.4) agreeing++; break;
-    }
+  // ─── Confidence: distance-from-boundary metric ──────────────────────
+  // Measures how far the score sits from the nearest tier boundary.
+  // Further from any boundary = higher confidence in the classification.
+  const boundaries = [thresholds.lowMax, thresholds.mediumMax, thresholds.highMax];
+  let minDist = 1.0;
+  for (const b of boundaries) {
+    minDist = Math.min(minDist, Math.abs(score - b));
   }
-  const confidence = totalFeatures > 0 ? agreeing / totalFeatures : 0.5;
+  // Also consider distance from the extremes (0 and 1)
+  minDist = Math.min(minDist, score, 1.0 - score);
+
+  // Normalize: the widest tier band is ~0.22 (highMax - mediumMax),
+  // so half-band (~0.11) is a reasonable "max meaningful distance".
+  // Scores beyond that get full confidence.
+  const maxMeaningfulDist = 0.11;
+  const confidence = clamp01(minDist / maxMeaningfulDist);
 
   return { tier, score, confidence };
 }
