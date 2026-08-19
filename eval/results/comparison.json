@@ -1,0 +1,1158 @@
+{
+  "timestamp": "2026-08-19T20:27:28.074Z",
+  "totalPrompts": 60,
+  "summary": {
+    "rules": {
+      "accuracyPercent": 63.3,
+      "avgLatencyMs": 1.2,
+      "correctCount": 38
+    },
+    "llm": {
+      "accuracyPercent": 63.3,
+      "avgLatencyMs": 45.9,
+      "correctCount": 38
+    }
+  },
+  "results": [
+    {
+      "id": "low-001",
+      "category": "general-knowledge",
+      "expectedTier": "low",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0,
+        "confidence": 0,
+        "latencyMs": 13,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 69,
+        "match": true
+      }
+    },
+    {
+      "id": "low-002",
+      "category": "translation",
+      "expectedTier": "low",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0,
+        "confidence": 0,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 47,
+        "match": true
+      }
+    },
+    {
+      "id": "low-003",
+      "category": "list-generation",
+      "expectedTier": "low",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0,
+        "confidence": 0,
+        "latencyMs": 2,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": true
+      }
+    },
+    {
+      "id": "low-004",
+      "category": "summarization",
+      "expectedTier": "low",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0.03119999999999999,
+        "confidence": 0.2836363636363636,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0.2836363636363636,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": true
+      }
+    },
+    {
+      "id": "low-005",
+      "category": "math-unit-conversion",
+      "expectedTier": "low",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0.0372,
+        "confidence": 0.33818181818181814,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0.33818181818181814,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": true
+      }
+    },
+    {
+      "id": "low-006",
+      "category": "general-knowledge",
+      "expectedTier": "low",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.16826666666666668,
+        "confidence": 0.2884848484848485,
+        "latencyMs": 1,
+        "match": false
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.2884848484848485,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": false
+      }
+    },
+    {
+      "id": "low-007",
+      "category": "writing",
+      "expectedTier": "low",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0,
+        "confidence": 0,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": true
+      }
+    },
+    {
+      "id": "low-008",
+      "category": "formatting",
+      "expectedTier": "low",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0,
+        "confidence": 0,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": true
+      }
+    },
+    {
+      "id": "low-009",
+      "category": "factual",
+      "expectedTier": "low",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0.016399999999999998,
+        "confidence": 0.14909090909090908,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0.14909090909090908,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": true
+      }
+    },
+    {
+      "id": "low-010",
+      "category": "grammar",
+      "expectedTier": "low",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0,
+        "confidence": 0,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": true
+      }
+    },
+    {
+      "id": "low-011",
+      "category": "general-knowledge",
+      "expectedTier": "low",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0.024933333333333335,
+        "confidence": 0.22666666666666668,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0.22666666666666668,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": true
+      }
+    },
+    {
+      "id": "low-012",
+      "category": "extraction",
+      "expectedTier": "low",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0.029644444444444442,
+        "confidence": 0.26949494949494945,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0.26949494949494945,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": true
+      }
+    },
+    {
+      "id": "low-013",
+      "category": "programming-trivia",
+      "expectedTier": "low",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.16826666666666668,
+        "confidence": 0.2884848484848485,
+        "latencyMs": 1,
+        "match": false
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.2884848484848485,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": false
+      }
+    },
+    {
+      "id": "low-014",
+      "category": "translation",
+      "expectedTier": "low",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0,
+        "confidence": 0,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": true
+      }
+    },
+    {
+      "id": "low-015",
+      "category": "vocabulary",
+      "expectedTier": "low",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0.02266666666666667,
+        "confidence": 0.20606060606060608,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0.20606060606060608,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": true
+      }
+    },
+    {
+      "id": "low-016",
+      "category": "basic-math",
+      "expectedTier": "low",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0,
+        "confidence": 0,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": true
+      }
+    },
+    {
+      "id": "low-017",
+      "category": "translation",
+      "expectedTier": "low",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0,
+        "confidence": 0,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": true
+      }
+    },
+    {
+      "id": "low-018",
+      "category": "simple-coding",
+      "expectedTier": "low",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0.02946666666666667,
+        "confidence": 0.2678787878787879,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0.2678787878787879,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": true
+      }
+    },
+    {
+      "id": "low-019",
+      "category": "science-trivia",
+      "expectedTier": "low",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0,
+        "confidence": 0,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": true
+      }
+    },
+    {
+      "id": "low-020",
+      "category": "definition",
+      "expectedTier": "low",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.14946666666666666,
+        "confidence": 0.4593939393939395,
+        "latencyMs": 1,
+        "match": false
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.4593939393939395,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": false
+      }
+    },
+    {
+      "id": "med-001",
+      "category": "networking",
+      "expectedTier": "medium",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.19306666666666666,
+        "confidence": 0.06303030303030316,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.06303030303030316,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": true
+      }
+    },
+    {
+      "id": "med-002",
+      "category": "programming",
+      "expectedTier": "medium",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.16533333333333333,
+        "confidence": 0.31515151515151524,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.31515151515151524,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": true
+      }
+    },
+    {
+      "id": "med-003",
+      "category": "system-design",
+      "expectedTier": "medium",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.19306666666666666,
+        "confidence": 0.06303030303030316,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.06303030303030316,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": true
+      }
+    },
+    {
+      "id": "med-004",
+      "category": "frontend",
+      "expectedTier": "medium",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.16533333333333333,
+        "confidence": 0.31515151515151524,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.31515151515151524,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": true
+      }
+    },
+    {
+      "id": "med-005",
+      "category": "copywriting",
+      "expectedTier": "medium",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0.04013333333333334,
+        "confidence": 0.36242424242424237,
+        "latencyMs": 1,
+        "match": false
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0.36242424242424237,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": false
+      }
+    },
+    {
+      "id": "med-006",
+      "category": "algorithms",
+      "expectedTier": "medium",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.16306666666666667,
+        "confidence": 0.33575757575757587,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.33575757575757587,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": true
+      }
+    },
+    {
+      "id": "med-007",
+      "category": "devops",
+      "expectedTier": "medium",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.14723333333333333,
+        "confidence": 0.47969696969696984,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.47969696969696984,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": true
+      }
+    },
+    {
+      "id": "med-008",
+      "category": "computer-science",
+      "expectedTier": "medium",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.19533333333333333,
+        "confidence": 0.042424242424242545,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.042424242424242545,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": true
+      }
+    },
+    {
+      "id": "med-009",
+      "category": "backend",
+      "expectedTier": "medium",
+      "rulesResult": {
+        "tier": "high",
+        "score": 0.21439999999999998,
+        "confidence": 0.13090909090909061,
+        "latencyMs": 1,
+        "match": false
+      },
+      "llmResult": {
+        "tier": "high",
+        "confidence": 0.13090909090909061,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": false
+      }
+    },
+    {
+      "id": "med-010",
+      "category": "security",
+      "expectedTier": "medium",
+      "rulesResult": {
+        "tier": "high",
+        "score": 0.20723333333333332,
+        "confidence": 0.06575757575757558,
+        "latencyMs": 1,
+        "match": false
+      },
+      "llmResult": {
+        "tier": "high",
+        "confidence": 0.06575757575757558,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": false
+      }
+    },
+    {
+      "id": "med-011",
+      "category": "database",
+      "expectedTier": "medium",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.17213333333333333,
+        "confidence": 0.25333333333333347,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.25333333333333347,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": true
+      }
+    },
+    {
+      "id": "med-012",
+      "category": "runtime-internals",
+      "expectedTier": "medium",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0.02946666666666667,
+        "confidence": 0.2678787878787879,
+        "latencyMs": 1,
+        "match": false
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0.2678787878787879,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": false
+      }
+    },
+    {
+      "id": "med-013",
+      "category": "data-science",
+      "expectedTier": "medium",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.17775238095238094,
+        "confidence": 0.20225108225108246,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.20225108225108246,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": true
+      }
+    },
+    {
+      "id": "med-014",
+      "category": "frameworks",
+      "expectedTier": "medium",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0.047599999999999996,
+        "confidence": 0.2945454545454546,
+        "latencyMs": 1,
+        "match": false
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0.2945454545454546,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": false
+      }
+    },
+    {
+      "id": "med-015",
+      "category": "data-structures",
+      "expectedTier": "medium",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.1744,
+        "confidence": 0.23272727272727284,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.23272727272727284,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": true
+      }
+    },
+    {
+      "id": "med-016",
+      "category": "web-architecture",
+      "expectedTier": "medium",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0.03626666666666667,
+        "confidence": 0.3296969696969697,
+        "latencyMs": 1,
+        "match": false
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0.3296969696969697,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": false
+      }
+    },
+    {
+      "id": "med-017",
+      "category": "security",
+      "expectedTier": "medium",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.17436666666666667,
+        "confidence": 0.23303030303030312,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.23303030303030312,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": true
+      }
+    },
+    {
+      "id": "med-018",
+      "category": "programming",
+      "expectedTier": "medium",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.15626666666666666,
+        "confidence": 0.3975757575757577,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.3975757575757577,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": true
+      }
+    },
+    {
+      "id": "med-019",
+      "category": "database",
+      "expectedTier": "medium",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.19306666666666666,
+        "confidence": 0.06303030303030316,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.06303030303030316,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": true
+      }
+    },
+    {
+      "id": "med-020",
+      "category": "testing",
+      "expectedTier": "medium",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0.05213333333333334,
+        "confidence": 0.2533333333333333,
+        "latencyMs": 1,
+        "match": false
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0.2533333333333333,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": false
+      }
+    },
+    {
+      "id": "high-001",
+      "category": "distributed-systems",
+      "expectedTier": "high",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.11876666666666666,
+        "confidence": 0.35242424242424236,
+        "latencyMs": 1,
+        "match": false
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.35242424242424236,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": false
+      }
+    },
+    {
+      "id": "high-002",
+      "category": "theoretical-cs",
+      "expectedTier": "high",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.1976,
+        "confidence": 0.021818181818181938,
+        "latencyMs": 1,
+        "match": false
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.021818181818181938,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": false
+      }
+    },
+    {
+      "id": "high-003",
+      "category": "software-architecture",
+      "expectedTier": "high",
+      "rulesResult": {
+        "tier": "high",
+        "score": 0.31013333333333337,
+        "confidence": 0.9987878787878783,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "high",
+        "confidence": 0.9987878787878783,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": true
+      }
+    },
+    {
+      "id": "high-004",
+      "category": "systems-programming",
+      "expectedTier": "high",
+      "rulesResult": {
+        "tier": "high",
+        "score": 0.41632,
+        "confidence": 0.0334545454545451,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "high",
+        "confidence": 0.0334545454545451,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": true
+      }
+    },
+    {
+      "id": "high-005",
+      "category": "ai-infrastructure",
+      "expectedTier": "high",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.0945,
+        "confidence": 0.1318181818181818,
+        "latencyMs": 1,
+        "match": false
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.1318181818181818,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": false
+      }
+    },
+    {
+      "id": "high-006",
+      "category": "machine-learning",
+      "expectedTier": "high",
+      "rulesResult": {
+        "tier": "high",
+        "score": 0.2644190476190476,
+        "confidence": 0.5856277056277054,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "high",
+        "confidence": 0.5856277056277054,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": true
+      }
+    },
+    {
+      "id": "high-007",
+      "category": "fintech-architecture",
+      "expectedTier": "high",
+      "rulesResult": {
+        "tier": "high",
+        "score": 0.23303333333333331,
+        "confidence": 0.30030303030303,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "high",
+        "confidence": 0.30030303030303,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": true
+      }
+    },
+    {
+      "id": "high-008",
+      "category": "type-theory",
+      "expectedTier": "high",
+      "rulesResult": {
+        "tier": "high",
+        "score": 0.23919999999999997,
+        "confidence": 0.356363636363636,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "high",
+        "confidence": 0.356363636363636,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": true
+      }
+    },
+    {
+      "id": "high-009",
+      "category": "cryptography",
+      "expectedTier": "high",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.17159999999999997,
+        "confidence": 0.2581818181818185,
+        "latencyMs": 1,
+        "match": false
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.2581818181818185,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": false
+      }
+    },
+    {
+      "id": "high-010",
+      "category": "formal-methods",
+      "expectedTier": "high",
+      "rulesResult": {
+        "tier": "high",
+        "score": 0.38271999999999995,
+        "confidence": 0.3389090909090912,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "high",
+        "confidence": 0.3389090909090912,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": true
+      }
+    },
+    {
+      "id": "high-011",
+      "category": "database-internals",
+      "expectedTier": "high",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0.053033333333333335,
+        "confidence": 0.24515151515151515,
+        "latencyMs": 1,
+        "match": false
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0.24515151515151515,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": false
+      }
+    },
+    {
+      "id": "high-012",
+      "category": "quantum-computing",
+      "expectedTier": "high",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.19156666666666666,
+        "confidence": 0.0766666666666668,
+        "latencyMs": 1,
+        "match": false
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.0766666666666668,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": false
+      }
+    },
+    {
+      "id": "high-013",
+      "category": "collaborative-systems",
+      "expectedTier": "high",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.15555862068965517,
+        "confidence": 0.40401253918495306,
+        "latencyMs": 1,
+        "match": false
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.40401253918495306,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": false
+      }
+    },
+    {
+      "id": "high-014",
+      "category": "operating-systems",
+      "expectedTier": "high",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.14048888888888889,
+        "confidence": 0.5410101010101012,
+        "latencyMs": 1,
+        "match": false
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.5410101010101012,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": false
+      }
+    },
+    {
+      "id": "high-015",
+      "category": "smart-contract-security",
+      "expectedTier": "high",
+      "rulesResult": {
+        "tier": "high",
+        "score": 0.2534,
+        "confidence": 0.48545454545454547,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "high",
+        "confidence": 0.48545454545454547,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": true
+      }
+    },
+    {
+      "id": "high-016",
+      "category": "system-design",
+      "expectedTier": "high",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.19340000000000002,
+        "confidence": 0.05999999999999995,
+        "latencyMs": 1,
+        "match": false
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.05999999999999995,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": false
+      }
+    },
+    {
+      "id": "high-017",
+      "category": "robotics-control",
+      "expectedTier": "high",
+      "rulesResult": {
+        "tier": "medium",
+        "score": 0.16876666666666668,
+        "confidence": 0.28393939393939394,
+        "latencyMs": 1,
+        "match": false
+      },
+      "llmResult": {
+        "tier": "medium",
+        "confidence": 0.28393939393939394,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": false
+      }
+    },
+    {
+      "id": "high-018",
+      "category": "hardware-security",
+      "expectedTier": "high",
+      "rulesResult": {
+        "tier": "high",
+        "score": 0.2023478260869565,
+        "confidence": 0.021343873517786317,
+        "latencyMs": 1,
+        "match": true
+      },
+      "llmResult": {
+        "tier": "high",
+        "confidence": 0.021343873517786317,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": true
+      }
+    },
+    {
+      "id": "high-019",
+      "category": "compiler-design",
+      "expectedTier": "high",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0.053033333333333335,
+        "confidence": 0.24515151515151515,
+        "latencyMs": 1,
+        "match": false
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0.24515151515151515,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 45,
+        "match": false
+      }
+    },
+    {
+      "id": "high-020",
+      "category": "storage-systems",
+      "expectedTier": "high",
+      "rulesResult": {
+        "tier": "low",
+        "score": 0.0704,
+        "confidence": 0.08727272727272725,
+        "latencyMs": 1,
+        "match": false
+      },
+      "llmResult": {
+        "tier": "low",
+        "confidence": 0.08727272727272725,
+        "reasoning": "Offline simulated classification based on feature vector.",
+        "latencyMs": 46,
+        "match": false
+      }
+    }
+  ]
+}

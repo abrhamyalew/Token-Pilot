@@ -1,0 +1,487 @@
+{
+  "timestamp": "2026-08-19T20:29:12.147Z",
+  "totalEvaluated": 60,
+  "averageOverallScore": 4.52,
+  "scores": [
+    {
+      "promptId": "low-001",
+      "category": "general-knowledge",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "low-002",
+      "category": "translation",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "low-003",
+      "category": "list-generation",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "low-004",
+      "category": "summarization",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "low-005",
+      "category": "math-unit-conversion",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "low-006",
+      "category": "general-knowledge",
+      "accuracy": 4,
+      "completeness": 3.9,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.13
+    },
+    {
+      "promptId": "low-007",
+      "category": "writing",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "low-008",
+      "category": "formatting",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "low-009",
+      "category": "factual",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "low-010",
+      "category": "grammar",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "low-011",
+      "category": "general-knowledge",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "low-012",
+      "category": "extraction",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "low-013",
+      "category": "programming-trivia",
+      "accuracy": 4,
+      "completeness": 3.9,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.13
+    },
+    {
+      "promptId": "low-014",
+      "category": "translation",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "low-015",
+      "category": "vocabulary",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "low-016",
+      "category": "basic-math",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "low-017",
+      "category": "translation",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "low-018",
+      "category": "simple-coding",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "low-019",
+      "category": "science-trivia",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "low-020",
+      "category": "definition",
+      "accuracy": 4,
+      "completeness": 3.9,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.13
+    },
+    {
+      "promptId": "med-001",
+      "category": "networking",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "med-002",
+      "category": "programming",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "med-003",
+      "category": "system-design",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "med-004",
+      "category": "frontend",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "med-005",
+      "category": "copywriting",
+      "accuracy": 4,
+      "completeness": 3.9,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.13
+    },
+    {
+      "promptId": "med-006",
+      "category": "algorithms",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "med-007",
+      "category": "devops",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "med-008",
+      "category": "computer-science",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "med-009",
+      "category": "backend",
+      "accuracy": 4,
+      "completeness": 3.9,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.13
+    },
+    {
+      "promptId": "med-010",
+      "category": "security",
+      "accuracy": 4,
+      "completeness": 3.9,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.13
+    },
+    {
+      "promptId": "med-011",
+      "category": "database",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "med-012",
+      "category": "runtime-internals",
+      "accuracy": 4,
+      "completeness": 3.9,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.13
+    },
+    {
+      "promptId": "med-013",
+      "category": "data-science",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "med-014",
+      "category": "frameworks",
+      "accuracy": 4,
+      "completeness": 3.9,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.13
+    },
+    {
+      "promptId": "med-015",
+      "category": "data-structures",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "med-016",
+      "category": "web-architecture",
+      "accuracy": 4,
+      "completeness": 3.9,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.13
+    },
+    {
+      "promptId": "med-017",
+      "category": "security",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "med-018",
+      "category": "programming",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "med-019",
+      "category": "database",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.67
+    },
+    {
+      "promptId": "med-020",
+      "category": "testing",
+      "accuracy": 4,
+      "completeness": 3.9,
+      "reasoningDepth": 4.5,
+      "overallScore": 4.13
+    },
+    {
+      "promptId": "high-001",
+      "category": "distributed-systems",
+      "accuracy": 4,
+      "completeness": 3.9,
+      "reasoningDepth": 4.9,
+      "overallScore": 4.27
+    },
+    {
+      "promptId": "high-002",
+      "category": "theoretical-cs",
+      "accuracy": 4,
+      "completeness": 3.9,
+      "reasoningDepth": 4.9,
+      "overallScore": 4.27
+    },
+    {
+      "promptId": "high-003",
+      "category": "software-architecture",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.9,
+      "overallScore": 4.8
+    },
+    {
+      "promptId": "high-004",
+      "category": "systems-programming",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.9,
+      "overallScore": 4.8
+    },
+    {
+      "promptId": "high-005",
+      "category": "ai-infrastructure",
+      "accuracy": 4,
+      "completeness": 3.9,
+      "reasoningDepth": 4.9,
+      "overallScore": 4.27
+    },
+    {
+      "promptId": "high-006",
+      "category": "machine-learning",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.9,
+      "overallScore": 4.8
+    },
+    {
+      "promptId": "high-007",
+      "category": "fintech-architecture",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.9,
+      "overallScore": 4.8
+    },
+    {
+      "promptId": "high-008",
+      "category": "type-theory",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.9,
+      "overallScore": 4.8
+    },
+    {
+      "promptId": "high-009",
+      "category": "cryptography",
+      "accuracy": 4,
+      "completeness": 3.9,
+      "reasoningDepth": 4.9,
+      "overallScore": 4.27
+    },
+    {
+      "promptId": "high-010",
+      "category": "formal-methods",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.9,
+      "overallScore": 4.8
+    },
+    {
+      "promptId": "high-011",
+      "category": "database-internals",
+      "accuracy": 4,
+      "completeness": 3.9,
+      "reasoningDepth": 4.9,
+      "overallScore": 4.27
+    },
+    {
+      "promptId": "high-012",
+      "category": "quantum-computing",
+      "accuracy": 4,
+      "completeness": 3.9,
+      "reasoningDepth": 4.9,
+      "overallScore": 4.27
+    },
+    {
+      "promptId": "high-013",
+      "category": "collaborative-systems",
+      "accuracy": 4,
+      "completeness": 3.9,
+      "reasoningDepth": 4.9,
+      "overallScore": 4.27
+    },
+    {
+      "promptId": "high-014",
+      "category": "operating-systems",
+      "accuracy": 4,
+      "completeness": 3.9,
+      "reasoningDepth": 4.9,
+      "overallScore": 4.27
+    },
+    {
+      "promptId": "high-015",
+      "category": "smart-contract-security",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.9,
+      "overallScore": 4.8
+    },
+    {
+      "promptId": "high-016",
+      "category": "system-design",
+      "accuracy": 4,
+      "completeness": 3.9,
+      "reasoningDepth": 4.9,
+      "overallScore": 4.27
+    },
+    {
+      "promptId": "high-017",
+      "category": "robotics-control",
+      "accuracy": 4,
+      "completeness": 3.9,
+      "reasoningDepth": 4.9,
+      "overallScore": 4.27
+    },
+    {
+      "promptId": "high-018",
+      "category": "hardware-security",
+      "accuracy": 4.8,
+      "completeness": 4.7,
+      "reasoningDepth": 4.9,
+      "overallScore": 4.8
+    },
+    {
+      "promptId": "high-019",
+      "category": "compiler-design",
+      "accuracy": 4,
+      "completeness": 3.9,
+      "reasoningDepth": 4.9,
+      "overallScore": 4.27
+    },
+    {
+      "promptId": "high-020",
+      "category": "storage-systems",
+      "accuracy": 4,
+      "completeness": 3.9,
+      "reasoningDepth": 4.9,
+      "overallScore": 4.27
+    }
+  ]
+}

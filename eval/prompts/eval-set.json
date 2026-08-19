@@ -1,0 +1,362 @@
+[
+  {
+    "id": "low-001",
+    "prompt": "What is the capital of France?",
+    "expectedTier": "low",
+    "category": "general-knowledge"
+  },
+  {
+    "id": "low-002",
+    "prompt": "Translate 'Good morning, how are you?' to Spanish.",
+    "expectedTier": "low",
+    "category": "translation"
+  },
+  {
+    "id": "low-003",
+    "prompt": "Give me a list of 5 healthy breakfast ideas with eggs.",
+    "expectedTier": "low",
+    "category": "list-generation"
+  },
+  {
+    "id": "low-004",
+    "prompt": "Summarize this paragraph in one sentence: The water cycle describes how water evaporates from the surface of the earth, rises into the atmosphere, cools and condenses into rain or snow in clouds, and falls again to the surface as precipitation.",
+    "expectedTier": "low",
+    "category": "summarization"
+  },
+  {
+    "id": "low-005",
+    "prompt": "Convert 100 miles per hour to kilometers per hour.",
+    "expectedTier": "low",
+    "category": "math-unit-conversion"
+  },
+  {
+    "id": "low-006",
+    "prompt": "What does HTTP stand for in web technology?",
+    "expectedTier": "low",
+    "category": "general-knowledge"
+  },
+  {
+    "id": "low-007",
+    "prompt": "Write a friendly 2-sentence thank you note to a colleague for helping with a presentation.",
+    "expectedTier": "low",
+    "category": "writing"
+  },
+  {
+    "id": "low-008",
+    "prompt": "Format the following names into a numbered Markdown list sorted alphabetically: Alice, David, Bob, Charlie, Eve.",
+    "expectedTier": "low",
+    "category": "formatting"
+  },
+  {
+    "id": "low-009",
+    "prompt": "What is the boiling point of water at sea level in Celsius and Fahrenheit?",
+    "expectedTier": "low",
+    "category": "factual"
+  },
+  {
+    "id": "low-010",
+    "prompt": "Fix spelling and grammar: 'Their going to there house over they're.'",
+    "expectedTier": "low",
+    "category": "grammar"
+  },
+  {
+    "id": "low-011",
+    "prompt": "Name the primary colors in additive color theory.",
+    "expectedTier": "low",
+    "category": "general-knowledge"
+  },
+  {
+    "id": "low-012",
+    "prompt": "Extract the email address from this text: 'Contact support at help@example.com for assistance.'",
+    "expectedTier": "low",
+    "category": "extraction"
+  },
+  {
+    "id": "low-013",
+    "prompt": "Is Python a compiled or interpreted programming language?",
+    "expectedTier": "low",
+    "category": "programming-trivia"
+  },
+  {
+    "id": "low-014",
+    "prompt": "Translate 'Thank you very much' into German, Japanese, and Italian.",
+    "expectedTier": "low",
+    "category": "translation"
+  },
+  {
+    "id": "low-015",
+    "prompt": "Provide 3 synonyms for the word 'innovative'.",
+    "expectedTier": "low",
+    "category": "vocabulary"
+  },
+  {
+    "id": "low-016",
+    "prompt": "What is 25 percent of 480?",
+    "expectedTier": "low",
+    "category": "basic-math"
+  },
+  {
+    "id": "low-017",
+    "prompt": "List the days of the week in French.",
+    "expectedTier": "low",
+    "category": "translation"
+  },
+  {
+    "id": "low-018",
+    "prompt": "Write a regex to match a 5-digit US zip code.",
+    "expectedTier": "low",
+    "category": "simple-coding"
+  },
+  {
+    "id": "low-019",
+    "prompt": "What is the chemical formula for table salt?",
+    "expectedTier": "low",
+    "category": "science-trivia"
+  },
+  {
+    "id": "low-020",
+    "prompt": "Give a quick definition of an API in simple terms.",
+    "expectedTier": "low",
+    "category": "definition"
+  },
+  {
+    "id": "med-001",
+    "prompt": "Explain the difference between TCP and UDP with pros, cons, and common use cases.",
+    "expectedTier": "medium",
+    "category": "networking"
+  },
+  {
+    "id": "med-002",
+    "prompt": "Write a TypeScript function to debounce an arbitrary asynchronous callback with cancel and flush methods.",
+    "expectedTier": "medium",
+    "category": "programming"
+  },
+  {
+    "id": "med-003",
+    "prompt": "Compare SQL versus NoSQL databases across scalability, consistency models, schema design, and query flexibility.",
+    "expectedTier": "medium",
+    "category": "system-design"
+  },
+  {
+    "id": "med-004",
+    "prompt": "Explain how React fiber reconciliation works, why keys matter in lists, and what triggers re-renders.",
+    "expectedTier": "medium",
+    "category": "frontend"
+  },
+  {
+    "id": "med-005",
+    "prompt": "Draft a product launch email for a new AI code review CLI tool targeting senior engineers. Highlight time savings and security.",
+    "expectedTier": "medium",
+    "category": "copywriting"
+  },
+  {
+    "id": "med-006",
+    "prompt": "Implement a binary search tree in Python with insert, delete, and in-order traversal methods.",
+    "expectedTier": "medium",
+    "category": "algorithms"
+  },
+  {
+    "id": "med-007",
+    "prompt": "Explain Docker multi-stage builds and provide a sample Dockerfile for a Node.js production container.",
+    "expectedTier": "medium",
+    "category": "devops"
+  },
+  {
+    "id": "med-008",
+    "prompt": "Analyze the time and space complexity of Merge Sort versus Quick Sort with worst-case scenarios.",
+    "expectedTier": "medium",
+    "category": "computer-science"
+  },
+  {
+    "id": "med-009",
+    "prompt": "Write a Node.js middleware in Express to rate-limit incoming requests per IP using an in-memory token bucket algorithm.",
+    "expectedTier": "medium",
+    "category": "backend"
+  },
+  {
+    "id": "med-010",
+    "prompt": "Explain OAuth 2.0 Authorization Code Flow with PKCE step by step including token exchange.",
+    "expectedTier": "medium",
+    "category": "security"
+  },
+  {
+    "id": "med-011",
+    "prompt": "Write a SQL query to calculate a 7-day moving average of daily revenue partitioned by store region.",
+    "expectedTier": "medium",
+    "category": "database"
+  },
+  {
+    "id": "med-012",
+    "prompt": "Explain how Garbage Collection works in V8 (scavenger vs mark-sweep-compact).",
+    "expectedTier": "medium",
+    "category": "runtime-internals"
+  },
+  {
+    "id": "med-013",
+    "prompt": "Write a Python script using pandas to clean a CSV: drop duplicates, impute missing numeric values with median, and parse dates.",
+    "expectedTier": "medium",
+    "category": "data-science"
+  },
+  {
+    "id": "med-014",
+    "prompt": "Explain the concept of Dependency Injection in NestJS and how custom providers (@Inject) work with tokens.",
+    "expectedTier": "medium",
+    "category": "frameworks"
+  },
+  {
+    "id": "med-015",
+    "prompt": "Implement an LRU Cache in JavaScript using a Map with get, put, and evict methods with O(1) operations.",
+    "expectedTier": "medium",
+    "category": "data-structures"
+  },
+  {
+    "id": "med-016",
+    "prompt": "Write a technical summary comparing WebSockets, Server-Sent Events (SSE), and Long Polling.",
+    "expectedTier": "medium",
+    "category": "web-architecture"
+  },
+  {
+    "id": "med-017",
+    "prompt": "Explain how HTTPS handshake establishes TLS 1.3 session keys between client and server.",
+    "expectedTier": "medium",
+    "category": "security"
+  },
+  {
+    "id": "med-018",
+    "prompt": "Implement a retry utility function in TypeScript with exponential backoff and jitter.",
+    "expectedTier": "medium",
+    "category": "programming"
+  },
+  {
+    "id": "med-019",
+    "prompt": "Explain the difference between optimistic concurrency control and pessimistic locking in databases with examples.",
+    "expectedTier": "medium",
+    "category": "database"
+  },
+  {
+    "id": "med-020",
+    "prompt": "Write unit tests using Vitest to test an asynchronous payment charging service with mocks and error assertions.",
+    "expectedTier": "medium",
+    "category": "testing"
+  },
+  {
+    "id": "high-001",
+    "prompt": "Design a high-throughput, low-latency distributed rate limiter capable of handling 500,000 requests per second across 10 regions. Detail sliding window algorithms, Redis cluster synchronization, clock skew mitigation, and fallback degradation strategies.",
+    "expectedTier": "high",
+    "category": "distributed-systems"
+  },
+  {
+    "id": "high-002",
+    "prompt": "Prove mathematically that the halting problem is undecidable using Turing machine reductions and Cantor diagonal arguments.",
+    "expectedTier": "high",
+    "category": "theoretical-cs"
+  },
+  {
+    "id": "high-003",
+    "prompt": "Refactor the following multi-threaded legacy payment processor in C++ / TypeScript into an event-sourced architecture using the Outbox Pattern, Raft-based distributed ledger consensus, idempotent replay guards, and zero-downtime schema evolution:\n\n```typescript\nclass PaymentProcessor {\n  async process(type: 'card' | 'crypto', amount: number, accountId: string) {\n    if (type === 'card') { await stripe.charge(amount); }\n    else { await web3.transfer(amount); }\n  }\n}\n```",
+    "expectedTier": "high",
+    "category": "software-architecture"
+  },
+  {
+    "id": "high-004",
+    "prompt": "Analyze memory safety in Rust vs C++ when implementing an asynchronous lock-free ring buffer (SPSC and MPMC). Provide verified memory ordering primitives (Acquire, Release, SeqCst) and formal proof sketches of progress guarantees.",
+    "expectedTier": "high",
+    "category": "systems-programming"
+  },
+  {
+    "id": "high-005",
+    "prompt": "Design an end-to-end LLM inference serving engine with dynamic batching, continuous KV cache paged memory management (vLLM style), speculative decoding, and tensor parallelism across 8 H100 GPUs. Detail CUDA kernel optimizations and communication overhead.",
+    "expectedTier": "high",
+    "category": "ai-infrastructure"
+  },
+  {
+    "id": "high-006",
+    "prompt": "Derive the backpropagation gradient equations for Multi-Head Self-Attention with Rotary Position Embeddings (RoPE) and FlashAttention tiling. Include complete matrix calculus derivations.",
+    "expectedTier": "high",
+    "category": "machine-learning"
+  },
+  {
+    "id": "high-007",
+    "prompt": "Architect a global financial settlement platform supporting multi-currency cross-border transactions under strict regulatory compliance (SOC2, PCI-DSS). Detail double-entry bookkeeping ledgers, Paxos consensus, cryptographic tamper-proofing, and audit trail validation.",
+    "expectedTier": "high",
+    "category": "fintech-architecture"
+  },
+  {
+    "id": "high-008",
+    "prompt": "Formalize the operational semantics and type soundness proof for a lambda calculus extended with linear types and effect handlers using progress and preservation theorems.",
+    "expectedTier": "high",
+    "category": "type-theory"
+  },
+  {
+    "id": "high-009",
+    "prompt": "Design a zero-knowledge succinct non-interactive argument of knowledge (zk-SNARK) circuit for private identity verification over elliptic curves (BN254). Explain R1CS constraint generation, QAP reduction, and setup ceremonies.",
+    "expectedTier": "high",
+    "category": "cryptography"
+  },
+  {
+    "id": "high-010",
+    "prompt": "Provide a complete formal specification and TLA+ verification model for a distributed two-phase commit protocol with Byzantine fault tolerance and asynchronous network partitioning resilience.",
+    "expectedTier": "high",
+    "category": "formal-methods"
+  },
+  {
+    "id": "high-011",
+    "prompt": "Design a multi-tenant vector database indexing engine capable of searching 10 billion 1536-dimensional embeddings in sub-10ms. Compare HNSW, DiskANN, and IVF-PQ indexing with SIMD AVX-512 distance computation kernels.",
+    "expectedTier": "high",
+    "category": "database-internals"
+  },
+  {
+    "id": "high-012",
+    "prompt": "Analyze quantum computing Shor algorithm for integer factorization. Detail quantum Fourier transform circuit depth, modular exponentiation complexity, and cryptographic implications for RSA-4096.",
+    "expectedTier": "high",
+    "category": "quantum-computing"
+  },
+  {
+    "id": "high-013",
+    "prompt": "Design a distributed real-time collaborative document editor using CRDTs (Conflict-free Replicated Data Types, specifically Yjs / Logoot) with undo/redo tree history, garbage collection of tombstones, and P2P WebRTC synchronization.",
+    "expectedTier": "high",
+    "category": "collaborative-systems"
+  },
+  {
+    "id": "high-014",
+    "prompt": "Implement a custom memory allocator in C / Rust (Buddy allocator with SLUB cache for kernel objects). Detail fragmentation mitigation, cache alignment, thread-local caching, and NUMA-aware allocation.",
+    "expectedTier": "high",
+    "category": "operating-systems"
+  },
+  {
+    "id": "high-015",
+    "prompt": "Provide an in-depth vulnerability audit of an EVM Solidity smart contract involving flash loans, reentrancy guards, oracle price manipulation (TWAP vs spot), and arithmetic underflow/overflow edge cases with exploit PoCs.",
+    "expectedTier": "high",
+    "category": "smart-contract-security"
+  },
+  {
+    "id": "high-016",
+    "prompt": "Design a microservices orchestration topology for 100M daily active users migrating from a monolithic database to a sharded event-driven architecture using Kafka, Saga orchestrators, CQRS read models, and dual-write reconciliation.",
+    "expectedTier": "high",
+    "category": "system-design"
+  },
+  {
+    "id": "high-017",
+    "prompt": "Derive the mathematical equations for Kalman Filter and Extended Kalman Filter (EKF) sensor fusion (IMU + GPS) for autonomous UAV localization. Include state covariance prediction, Jacobian computation, and measurement update steps.",
+    "expectedTier": "high",
+    "category": "robotics-control"
+  },
+  {
+    "id": "high-018",
+    "prompt": "Architect a secure hardware-enforced trusted execution environment (Intel SGX / ARM TrustZone) attestation pipeline for confidential AI computing with remote KMS key unwrapping.",
+    "expectedTier": "high",
+    "category": "hardware-security"
+  },
+  {
+    "id": "high-019",
+    "prompt": "Design a compiler optimization pass in LLVM (SSA form) for loop vectorization, dead code elimination, and alias analysis. Write sample C++ LLVM Pass code with dominance frontier calculation.",
+    "expectedTier": "high",
+    "category": "compiler-design"
+  },
+  {
+    "id": "high-020",
+    "prompt": "Design a distributed geo-replicated object storage system (S3 compatible) with erasure coding (Reed-Solomon 8+4), metadata indexing using CockroachDB/TiKV, bitrot detection with scrubbers, and tiered lifecycle offloading.",
+    "expectedTier": "high",
+    "category": "storage-systems"
+  }
+]

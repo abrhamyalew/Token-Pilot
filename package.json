@@ -22,7 +22,11 @@
     "db:studio": "drizzle-kit studio",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "eval": "ts-node -r tsconfig-paths/register eval/scripts/run-eval.ts",
+    "eval:judge": "ts-node -r tsconfig-paths/register eval/scripts/judge.ts",
+    "eval:chart": "ts-node -r tsconfig-paths/register eval/scripts/chart.ts",
+    "eval:all": "npm run eval && npm run eval:judge && npm run eval:chart"
   },
   "dependencies": {
     "@token-pilot/classifier": "*",
