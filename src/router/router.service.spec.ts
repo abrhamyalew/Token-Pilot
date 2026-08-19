@@ -54,7 +54,7 @@ function makeService(adapterOverrides: Partial<ProviderAdapter> = {}) {
     healthCheck: vi.fn(),
     ...adapterOverrides,
   };
-  const classifier = { classify: vi.fn().mockReturnValue(classification) };
+  const classifier = { classify: vi.fn().mockResolvedValue(classification) };
   const providerRegistry = {
     getAdapterForTier: vi.fn().mockImplementation((tier, override) => {
       if (override?.provider && override?.model) {
@@ -245,7 +245,7 @@ describe('RouterService', () => {
     }
     const { adapter, requestLogger, service } = makeService({ chatStream: vi.fn().mockReturnValue(stream()) });
 
-    const result = service.handleStreamRequest({ messages: [{ role: 'user', content: 'Hello now' }] });
+    const result = await service.handleStreamRequest({ messages: [{ role: 'user', content: 'Hello now' }] });
     result.finalize('Hi there', null);
 
     expect(adapter.chatStream).toHaveBeenCalledWith(
@@ -259,11 +259,11 @@ describe('RouterService', () => {
     );
   });
 
-  it('logs stream failures when finalize receives an error', () => {
+  it('logs stream failures when finalize receives an error', async () => {
     async function* stream() {}
     const { requestLogger, service } = makeService({ chatStream: vi.fn().mockReturnValue(stream()) });
 
-    const result = service.handleStreamRequest(request);
+    const result = await service.handleStreamRequest(request);
     result.finalize('', null, new Error('stream failed'));
 
     expect(requestLogger.log).toHaveBeenCalledWith(

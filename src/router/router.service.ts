@@ -1,7 +1,7 @@
 /**
- * Router Service — the orchestration core of Token Pilot.
+ * Router Service - the orchestration core of Token Pilot.
  *
- * Flow: classify prompt → resolve tier & model (with overrides) → validate BYOK requirements → call provider → collect metrics → log.
+ * Flow: classify prompt -> resolve tier & model (with overrides) -> validate BYOK requirements -> call provider -> collect metrics -> log.
  *
  * For streaming requests, the service returns an async iterable of chunks
  * plus a callback to log the completed request after streaming finishes.
@@ -24,7 +24,7 @@ import { ProviderChatResponse } from '../providers/provider.interface';
 import { estimateTokens } from '../shared/token-estimator';
 import { isByokRequired } from '../providers/provider-tiers';
 
-// ─── Response Types ─────────────────────────────────────────────────────────
+// Response Types
 
 export interface RouteResult {
   response: ChatResponse;
@@ -40,12 +40,12 @@ export interface StreamRouteResult {
   finalize: (collectedContent: string, usage: TokenUsage | null, error?: Error) => void;
 }
 
-// ─── Constants ──────────────────────────────────────────────────────────────
+// Constants
 
 const MAX_RETRIES = 1;
 const RETRY_DELAY_MS = 500;
 
-// ─── Service ────────────────────────────────────────────────────────────────
+// Service
 
 @Injectable()
 export class RouterService {
@@ -65,8 +65,14 @@ export class RouterService {
   async handleRequest(request: ChatRequest): Promise<RouteResult> {
     const startTime = Date.now();
 
-    // 1. Classify
-    const classification = this.classifier.classify(request.messages);
+    // 1. Classify (rules or llm classifier)
+    const classification = await this.classifier.classify(request.messages, {
+      classifierType: request.classifier ?? 'rules',
+      provider: request.classifier_provider,
+      model: request.classifier_model,
+      apiKey: request.classifier_api_key,
+      userApiKeys: request.user_api_keys,
+    });
 
     // 2. Resolve provider & model (with optional tier overrides)
     const override = request.tier_model_overrides?.[classification.tier];
@@ -122,6 +128,10 @@ export class RouterService {
         status: 'error',
         errorMessage: (error as Error)?.message ?? String(error),
         errorStack: (error as Error)?.stack,
+        reasoning: classification.reasoning,
+        classifyLatencyMs: classification.classifyLatencyMs,
+        fallbackFrom: classification.fallbackFrom,
+        fallbackReason: classification.fallbackReason,
       });
       throw error;
     }
@@ -149,6 +159,10 @@ export class RouterService {
       latency_ms: latencyMs,
       max_tokens_applied: effectiveMaxTokens,
       max_tokens_capped: wasCapped,
+      reasoning: classification.reasoning,
+      classify_latency_ms: classification.classifyLatencyMs,
+      fallback_from: classification.fallbackFrom,
+      fallback_reason: classification.fallbackReason,
     };
 
     result.response.routing = routing;
@@ -162,6 +176,10 @@ export class RouterService {
       usage: result.usage,
       latencyMs,
       status: 'success',
+      reasoning: classification.reasoning,
+      classifyLatencyMs: classification.classifyLatencyMs,
+      fallbackFrom: classification.fallbackFrom,
+      fallbackReason: classification.fallbackReason,
     });
 
     return {
@@ -175,10 +193,17 @@ export class RouterService {
    * Returns the stream, classification metadata, and a finalize callback
    * that the controller calls after the stream is consumed.
    */
-  handleStreamRequest(request: ChatRequest): StreamRouteResult {
-    // 1. Classify
-    const classification = this.classifier.classify(request.messages);
+  async handleStreamRequest(request: ChatRequest): Promise<StreamRouteResult> {
     const startTime = Date.now();
+
+    // 1. Classify (rules or llm classifier)
+    const classification = await this.classifier.classify(request.messages, {
+      classifierType: request.classifier ?? 'rules',
+      provider: request.classifier_provider,
+      model: request.classifier_model,
+      apiKey: request.classifier_api_key,
+      userApiKeys: request.user_api_keys,
+    });
 
     // 2. Resolve provider & model (with optional tier overrides)
     const override = request.tier_model_overrides?.[classification.tier];
@@ -211,7 +236,7 @@ export class RouterService {
 
     const stream = adapter.chatStream(providerRequest);
 
-    // 5. Finalize callback — called by the controller after streaming ends
+    // 5. Finalize callback - called by the controller after streaming ends
     const finalize = (collectedContent: string, usage: TokenUsage | null, error?: Error) => {
       const latencyMs = Date.now() - startTime;
       const promptText = request.messages.map((m) => m.content).join('\n');
@@ -228,6 +253,10 @@ export class RouterService {
           status: 'error',
           errorMessage: error.message ?? String(error),
           errorStack: error.stack,
+          reasoning: classification.reasoning,
+          classifyLatencyMs: classification.classifyLatencyMs,
+          fallbackFrom: classification.fallbackFrom,
+          fallbackReason: classification.fallbackReason,
         });
         return;
       }
@@ -250,13 +279,17 @@ export class RouterService {
         usage: finalUsage,
         latencyMs,
         status: 'success',
+        reasoning: classification.reasoning,
+        classifyLatencyMs: classification.classifyLatencyMs,
+        fallbackFrom: classification.fallbackFrom,
+        fallbackReason: classification.fallbackReason,
       });
     };
 
     return { stream, classification, model, provider, finalize };
   }
 
-  // ─── Private Helpers ────────────────────────────────────────────────────
+  // Private Helpers
 
   /**
    * Call a provider function with retry logic.
@@ -288,7 +321,7 @@ export class RouterService {
   }
 
   /**
-   * Fire-and-forget log — never blocks the response.
+   * Fire-and-forget log - never blocks the response.
    */
   private logAsync(entry: LogEntry): void {
     this.requestLogger.log(entry).catch((err) => {

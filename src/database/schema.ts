@@ -1,5 +1,5 @@
 /**
- * Drizzle ORM schema — Supabase Postgres.
+ * Drizzle ORM schema - Supabase Postgres.
  *
  * Tables:
  *   - request_logs: every routed request with classification, cost, and timing data
@@ -23,7 +23,7 @@ export const requestLogs = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 
-    // Request metadata — prompt stored in plain text (users informed via consent banner)
+    // Request metadata: prompt stored in plain text (users informed via consent banner)
     promptText: text('prompt_text').notNull(),
     promptLength: integer('prompt_length').notNull(),
 
@@ -32,6 +32,8 @@ export const requestLogs = pgTable(
     classifier: text('classifier').notNull(),
     confidence: real('confidence'),
     features: jsonb('features'),
+    reasoning: text('reasoning'),
+    classifyLatencyMs: integer('classify_latency_ms'),
 
     // Execution
     provider: text('provider').notNull(),
@@ -45,9 +47,11 @@ export const requestLogs = pgTable(
     actualCost: real('actual_cost').notNull(),
     frontierCost: real('frontier_cost').notNull(),
 
-    // Escalation tracking
+    // Escalation / fallback tracking
     escalatedFrom: text('escalated_from'),
     escalationReason: text('escalation_reason'),
+    fallbackFrom: text('fallback_from'),
+    fallbackReason: text('fallback_reason'),
   },
   (table) => [
     index('idx_logs_created').on(table.createdAt),

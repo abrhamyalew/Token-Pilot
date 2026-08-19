@@ -1,5 +1,5 @@
 /**
- * Request Logger Service — writes every routed request to Postgres.
+ * Request Logger Service - writes every routed request to Postgres.
  *
  * Logs are fire-and-forget: the response is sent to the client first,
  * then the log is written asynchronously. A failed write logs an error
@@ -28,6 +28,10 @@ export interface LogEntry {
   escalationReason?: string;
   errorMessage?: string;
   errorStack?: string;
+  reasoning?: string;
+  classifyLatencyMs?: number;
+  fallbackFrom?: string;
+  fallbackReason?: string;
 }
 
 const KEY_PATTERNS = [
@@ -56,7 +60,7 @@ export class RequestLoggerService {
   ) {}
 
   /**
-   * Log a completed request. Runs asynchronously — never blocks the response.
+   * Log a completed request. Runs asynchronously - never blocks the response.
    */
   async log(entry: LogEntry): Promise<void> {
     try {
@@ -88,6 +92,8 @@ export class RequestLoggerService {
         classifier: entry.classification.classifier,
         confidence: entry.classification.confidence,
         features: features as any,
+        reasoning: entry.reasoning ?? entry.classification.reasoning,
+        classifyLatencyMs: entry.classifyLatencyMs ?? entry.classification.classifyLatencyMs,
         provider: entry.provider,
         model: entry.model,
         inputTokens: entry.usage.prompt_tokens,
@@ -98,6 +104,8 @@ export class RequestLoggerService {
         frontierCost: costs.frontierCost,
         escalatedFrom: entry.escalatedFrom,
         escalationReason: entry.escalationReason,
+        fallbackFrom: entry.fallbackFrom ?? entry.classification.fallbackFrom,
+        fallbackReason: entry.fallbackReason ?? entry.classification.fallbackReason,
       };
 
       await this.db.insert(requestLogs).values(record);

@@ -78,7 +78,7 @@ describe('RouterController', () => {
     }
     const finalize = vi.fn();
     const routerService = {
-      handleStreamRequest: vi.fn().mockReturnValue({
+      handleStreamRequest: vi.fn().mockResolvedValue({
         stream: stream(),
         classification,
         model: 'test-model',
@@ -115,7 +115,7 @@ describe('RouterController', () => {
     }
     const finalize = vi.fn();
     const routerService = {
-      handleStreamRequest: vi.fn().mockReturnValue({
+      handleStreamRequest: vi.fn().mockResolvedValue({
         stream: stream(),
         classification,
         model: 'test-model',

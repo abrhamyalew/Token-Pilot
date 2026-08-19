@@ -1,5 +1,5 @@
 /**
- * Stats Query Service — aggregates request_logs data for the dashboard.
+ * Stats Query Service - aggregates request_logs data for the dashboard.
  *
  * All queries are read-only. Returns plain objects (no ORM wrappers)
  * so they're directly JSON-serialisable from the controller.
@@ -26,6 +26,7 @@ export interface RecentRequest {
   promptText: string;
   promptLength: number;
   tier: string;
+  classifier: string;
   model: string;
   provider: string;
   inputTokens: number;
@@ -36,6 +37,10 @@ export interface RecentRequest {
   frontierCost: number;
   confidence: number | null;
   features: unknown;
+  reasoning?: string | null;
+  classifyLatencyMs?: number | null;
+  fallbackFrom?: string | null;
+  fallbackReason?: string | null;
 }
 
 export interface TimeseriesPoint {
@@ -104,6 +109,7 @@ export class StatsQueryService {
       promptText: r.promptText,
       promptLength: r.promptLength,
       tier: r.tier,
+      classifier: r.classifier,
       model: r.model,
       provider: r.provider,
       inputTokens: r.inputTokens,
@@ -114,6 +120,10 @@ export class StatsQueryService {
       frontierCost: r.frontierCost,
       confidence: r.confidence ?? null,
       features: r.features,
+      reasoning: r.reasoning ?? null,
+      classifyLatencyMs: r.classifyLatencyMs ?? null,
+      fallbackFrom: r.fallbackFrom ?? null,
+      fallbackReason: r.fallbackReason ?? null,
     }));
   }
 

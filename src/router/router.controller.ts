@@ -1,9 +1,9 @@
 /**
- * Router Controller — the OpenAI-compatible HTTP endpoint.
+ * Router Controller - the OpenAI-compatible HTTP endpoint.
  *
- * POST /v1/chat/completions  — main routing endpoint (streaming + non-streaming)
- * GET  /health               — health check
- * GET  /v1/models            — list available models/tiers
+ * POST /v1/chat/completions  - main routing endpoint (streaming + non-streaming)
+ * GET  /health               - health check
+ * GET  /v1/models            - list available models/tiers
  */
 
 import {
@@ -120,8 +120,8 @@ export class RouterController {
     const result = await this.routerService.handleRequest(body);
 
     this.logger.log(
-      `Routed to ${result.classification.tier} → ${result.response.model} ` +
-        `(confidence: ${result.classification.confidence.toFixed(2)})`,
+      `Routed to ${result.classification.tier} -> ${result.response.model} ` +
+        `(classifier: ${result.classification.classifier}, confidence: ${result.classification.confidence.toFixed(2)})`,
     );
 
     res.json(result.response);
@@ -132,12 +132,12 @@ export class RouterController {
     res: Response,
   ): Promise<void> {
     const classifyStart = Date.now();
-    const result = this.routerService.handleStreamRequest(body);
+    const result = await this.routerService.handleStreamRequest(body);
     const classifyMs = Date.now() - classifyStart;
 
     this.logger.log(
-      `Streaming ${result.classification.tier} → ${result.model} ` +
-        `(confidence: ${result.classification.confidence.toFixed(2)})`,
+      `Streaming ${result.classification.tier} -> ${result.model} ` +
+        `(classifier: ${result.classification.classifier}, confidence: ${result.classification.confidence.toFixed(2)})`,
     );
 
     // Set SSE headers
@@ -146,6 +146,7 @@ export class RouterController {
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('X-Token-Pilot-Tier', result.classification.tier);
     res.setHeader('X-Token-Pilot-Model', result.model);
+    res.setHeader('X-Token-Pilot-Classifier', result.classification.classifier);
     res.setHeader(
       'X-Token-Pilot-Confidence',
       result.classification.confidence.toFixed(3),
@@ -162,6 +163,10 @@ export class RouterController {
         model: result.model,
         provider: result.provider,
         latencyMs: classifyMs,
+        classify_latency_ms: result.classification.classifyLatencyMs ?? classifyMs,
+        reasoning: result.classification.reasoning,
+        fallback_from: result.classification.fallbackFrom,
+        fallback_reason: result.classification.fallbackReason,
       },
     };
     res.write(`data: ${JSON.stringify(routingEvent)}\n\n`);
