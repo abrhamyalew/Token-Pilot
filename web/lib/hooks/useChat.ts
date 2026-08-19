@@ -17,6 +17,10 @@ export interface RoutingMetadata {
   savingsPercent: number;
   latencyMs: number;
   classifier: string;
+  reasoning?: string;
+  classifyLatencyMs?: number;
+  fallbackFrom?: string;
+  fallbackReason?: string;
 }
 
 export interface ChatState {
@@ -38,7 +42,14 @@ const INITIAL_STATE: ChatState = {
 export function useChat() {
   const [state, setState] = useState<ChatState>(INITIAL_STATE);
   const abortRef = useRef<AbortController | null>(null);
-  const { getActiveUserApiKeys, getTierModelOverrides } = useConfigStore();
+  const {
+    getActiveUserApiKeys,
+    getTierModelOverrides,
+    classifierMode,
+    llmClassifierProvider,
+    llmClassifierModel,
+    getEffectiveClassifierKey,
+  } = useConfigStore();
 
   const send = useCallback(async (prompt: string) => {
     // Cancel any in-flight request
@@ -61,7 +72,17 @@ export function useChat() {
       model: 'auto',
       messages: [{ role: 'user', content: prompt }],
       stream: true,
+      classifier: classifierMode,
     };
+
+    if (classifierMode === 'llm') {
+      requestBody.classifier_provider = llmClassifierProvider;
+      requestBody.classifier_model = llmClassifierModel;
+      const classifierKey = getEffectiveClassifierKey();
+      if (classifierKey) {
+        requestBody.classifier_api_key = classifierKey;
+      }
+    }
 
     // Attach user keys if configured (empty keys already stripped)
     if (Object.keys(userApiKeys).length > 0) {
@@ -139,6 +160,10 @@ export function useChat() {
                 savingsPercent: frontierCost > 0 ? (sav / frontierCost) * 100 : 0,
                 latencyMs: r.latencyMs ?? r.latency_ms ?? 0,
                 classifier: r.classifier ?? 'rules',
+                reasoning: r.reasoning,
+                classifyLatencyMs: r.classify_latency_ms ?? r.classifyLatencyMs ?? r.latencyMs ?? r.latency_ms ?? 0,
+                fallbackFrom: r.fallback_from ?? r.fallbackFrom,
+                fallbackReason: r.fallback_reason ?? r.fallbackReason,
               };
               setState((s) => ({ ...s, metadata }));
             }
@@ -176,7 +201,7 @@ export function useChat() {
         error: (err as Error).message ?? 'Unknown error',
       }));
     }
-  }, [getActiveUserApiKeys, getTierModelOverrides]);
+  }, [getActiveUserApiKeys, getTierModelOverrides, classifierMode]);
 
   const reset = useCallback(() => {
     abortRef.current?.abort();

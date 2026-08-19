@@ -5,6 +5,7 @@ import React, { createContext, useContext, useState, useCallback, useMemo } from
 export type Tier = 'low' | 'medium' | 'high' | 'high_alt';
 export type ProviderId = 'groq' | 'google' | 'openai' | 'anthropic' | 'deepseek';
 export type RoutingMode = 'preset' | 'byok';
+export type ClassifierMode = 'rules' | 'llm';
 
 export interface TierModelSelection {
   provider: ProviderId;
@@ -111,10 +112,22 @@ export const DEFAULT_TIER_MODELS: Record<Tier, TierModelSelection> = {
 const SESSION_STORAGE_KEY = 'token_pilot_session_byok_keys';
 const LOCAL_STORAGE_TIER_MODELS = 'token_pilot_tier_models';
 const LOCAL_STORAGE_ROUTING_MODE = 'token_pilot_routing_mode';
+const LOCAL_STORAGE_CLASSIFIER_MODE = 'token_pilot_classifier_mode';
+const LOCAL_STORAGE_LLM_CLASSIFIER_PROVIDER = 'token_pilot_llm_classifier_provider';
+const LOCAL_STORAGE_LLM_CLASSIFIER_MODEL = 'token_pilot_llm_classifier_model';
+const SESSION_STORAGE_LLM_CLASSIFIER_KEY = 'token_pilot_llm_classifier_key';
 
 interface ConfigContextValue {
   routingMode: RoutingMode;
   setRoutingMode: (mode: RoutingMode) => void;
+  classifierMode: ClassifierMode;
+  setClassifierMode: (mode: ClassifierMode) => void;
+  llmClassifierProvider: ProviderId;
+  setLlmClassifierProvider: (provider: ProviderId) => void;
+  llmClassifierModel: string;
+  setLlmClassifierModel: (model: string) => void;
+  llmClassifierApiKey: string;
+  setLlmClassifierApiKey: (key: string) => void;
   tierModels: Record<Tier, TierModelSelection>;
   setTierModel: (tier: Tier, selection: TierModelSelection) => void;
   resetTierModels: () => void;
@@ -126,6 +139,7 @@ interface ConfigContextValue {
   activeKeyCount: number;
   getActiveUserApiKeys: () => Record<string, string>;
   getTierModelOverrides: () => Partial<Record<Tier, { model: string; provider: string }>>;
+  getEffectiveClassifierKey: () => string;
 }
 
 const ConfigContext = createContext<ConfigContextValue | null>(null);
@@ -148,6 +162,104 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     setRoutingModeState(mode);
     try {
       localStorage.setItem(LOCAL_STORAGE_ROUTING_MODE, mode);
+    } catch {
+      // Ignore
+    }
+  }, []);
+
+  // Classifier Mode: 'rules' (weighted feature vector) vs 'llm' (Gemini Flash pre-classifier)
+  const [classifierMode, setClassifierModeState] = useState<ClassifierMode>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(LOCAL_STORAGE_CLASSIFIER_MODE);
+        if (saved === 'rules' || saved === 'llm') return saved;
+      } catch {
+        // Ignore
+      }
+    }
+    return 'rules';
+  });
+
+  // LLM Classifier Provider, Model, and Key
+  const [llmClassifierProvider, setLlmClassifierProviderState] = useState<ProviderId>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(LOCAL_STORAGE_LLM_CLASSIFIER_PROVIDER);
+        if (
+          saved &&
+          (saved === 'google' ||
+            saved === 'groq' ||
+            saved === 'openai' ||
+            saved === 'anthropic' ||
+            saved === 'deepseek')
+        ) {
+          return saved as ProviderId;
+        }
+      } catch {
+        // Ignore
+      }
+    }
+    return 'google';
+  });
+
+  const [llmClassifierModel, setLlmClassifierModelState] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(LOCAL_STORAGE_LLM_CLASSIFIER_MODEL);
+        if (saved) return saved;
+      } catch {
+        // Ignore
+      }
+    }
+    return 'gemini-3.6-flash';
+  });
+
+  const [llmClassifierApiKey, setLlmClassifierApiKeyState] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = sessionStorage.getItem(SESSION_STORAGE_LLM_CLASSIFIER_KEY);
+        if (saved) return saved;
+      } catch {
+        // Ignore
+      }
+    }
+    return '';
+  });
+
+  const setLlmClassifierProvider = useCallback((provider: ProviderId) => {
+    setLlmClassifierProviderState(provider);
+    let defaultModel = 'gemini-3.6-flash';
+    if (provider === 'groq') defaultModel = 'llama-3.3-70b-versatile';
+    if (provider === 'openai') defaultModel = 'gpt-4o-mini';
+    if (provider === 'anthropic') defaultModel = 'claude-3-5-haiku';
+    if (provider === 'deepseek') defaultModel = 'deepseek-chat';
+    setLlmClassifierModelState(defaultModel);
+
+    try {
+      localStorage.setItem(LOCAL_STORAGE_LLM_CLASSIFIER_PROVIDER, provider);
+      localStorage.setItem(LOCAL_STORAGE_LLM_CLASSIFIER_MODEL, defaultModel);
+    } catch {
+      // Ignore
+    }
+  }, []);
+
+  const setLlmClassifierModel = useCallback((model: string) => {
+    setLlmClassifierModelState(model);
+    try {
+      localStorage.setItem(LOCAL_STORAGE_LLM_CLASSIFIER_MODEL, model);
+    } catch {
+      // Ignore
+    }
+  }, []);
+
+  const setLlmClassifierApiKey = useCallback((key: string) => {
+    setLlmClassifierApiKeyState(key);
+    try {
+      if (key) {
+        sessionStorage.setItem(SESSION_STORAGE_LLM_CLASSIFIER_KEY, key);
+      } else {
+        sessionStorage.removeItem(SESSION_STORAGE_LLM_CLASSIFIER_KEY);
+      }
     } catch {
       // Ignore
     }
@@ -294,6 +406,26 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     return overrides;
   }, [tierModels, routingMode]);
 
+  const setClassifierMode = useCallback((mode: ClassifierMode) => {
+    setClassifierModeState(mode);
+    try {
+      localStorage.setItem(LOCAL_STORAGE_CLASSIFIER_MODE, mode);
+    } catch {
+      // Ignore
+    }
+  }, []);
+
+  const getEffectiveClassifierKey = useCallback(() => {
+    if (llmClassifierApiKey && llmClassifierApiKey.trim().length > 0) {
+      return llmClassifierApiKey.trim();
+    }
+    const byokKey = apiKeys[llmClassifierProvider];
+    if (byokKey && byokKey.trim().length > 0) {
+      return byokKey.trim();
+    }
+    return '';
+  }, [llmClassifierApiKey, apiKeys, llmClassifierProvider]);
+
   const activeKeyCount = useMemo(() => {
     return Object.values(apiKeys).filter((k) => k && k.trim().length > 0).length;
   }, [apiKeys]);
@@ -302,6 +434,14 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     () => ({
       routingMode,
       setRoutingMode,
+      classifierMode,
+      setClassifierMode,
+      llmClassifierProvider,
+      setLlmClassifierProvider,
+      llmClassifierModel,
+      setLlmClassifierModel,
+      llmClassifierApiKey,
+      setLlmClassifierApiKey,
       tierModels,
       setTierModel,
       resetTierModels,
@@ -313,10 +453,19 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
       activeKeyCount,
       getActiveUserApiKeys,
       getTierModelOverrides,
+      getEffectiveClassifierKey,
     }),
     [
       routingMode,
       setRoutingMode,
+      classifierMode,
+      setClassifierMode,
+      llmClassifierProvider,
+      setLlmClassifierProvider,
+      llmClassifierModel,
+      setLlmClassifierModel,
+      llmClassifierApiKey,
+      setLlmClassifierApiKey,
       tierModels,
       setTierModel,
       resetTierModels,
@@ -328,6 +477,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
       activeKeyCount,
       getActiveUserApiKeys,
       getTierModelOverrides,
+      getEffectiveClassifierKey,
     ],
   );
 

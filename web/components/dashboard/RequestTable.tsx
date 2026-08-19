@@ -12,9 +12,9 @@ function formatCost(n: number): string {
   return n === 0 ? '$0.00' : `$${n.toFixed(6)}`;
 }
 
-function truncate(s: string, max = 54): string {
-  if (!s) return '—';
-  return s.length > max ? s.slice(0, max) + '…' : s;
+function truncate(s: string, max = 48): string {
+  if (!s) return '-';
+  return s.length > max ? s.slice(0, max) + '...' : s;
 }
 
 function relativeTime(iso: string): string {
@@ -45,7 +45,7 @@ export function RequestTable({ requests }: Props) {
       <div className={styles.header}>
         <div>
           <span className={styles.title}>Inference Request Log</span>
-          <p className={styles.hint}>Click any record to inspect the full prompt and extracted feature signals</p>
+          <p className={styles.hint}>Click any record to inspect the full prompt, classifier reasoning, and features</p>
         </div>
         <span className={`${styles.count} mono`}>{requests.length} records</span>
       </div>
@@ -57,6 +57,7 @@ export function RequestTable({ requests }: Props) {
             <tr>
               <th style={{ width: 24 }}></th>
               <th>Prompt Snippet</th>
+              <th>Classifier</th>
               <th>Tier</th>
               <th>Routed Model</th>
               <th>Tokens</th>
@@ -77,10 +78,16 @@ export function RequestTable({ requests }: Props) {
                   onClick={() => toggleRow(r.id)}
                 >
                   <td className={styles.expandIcon}>
-                    <span className={styles.iconCaret}>{isExpanded ? '▾' : '▸'}</span>
+                    <span className={styles.iconCaret}>{isExpanded ? 'v' : '>'}</span>
                   </td>
                   <td className={styles.promptCell} title={r.promptText}>
                     {truncate(r.promptText)}
+                  </td>
+                  <td>
+                    <span className="mono" style={{ fontSize: '0.725rem', opacity: 0.85 }}>
+                      {r.classifier === 'llm' ? 'Gemini Flash' : 'Rules'}
+                      {r.fallbackFrom && ' (Fallback)'}
+                    </span>
                   </td>
                   <td>
                     <span className={`tier-badge ${r.tier.toLowerCase()}`}>
@@ -94,7 +101,7 @@ export function RequestTable({ requests }: Props) {
                   </td>
                   <td className={`${styles.mono} ${styles.actualCostCell}`}>{formatCost(r.actualCost)}</td>
                   <td className={`${styles.mono} ${styles.savedCell}`}>
-                    {saved > 0 ? `+${formatCost(saved)}` : '—'}
+                    {saved > 0 ? `+${formatCost(saved)}` : '-'}
                   </td>
                   <td className={styles.mono}>{r.latencyMs}ms</td>
                   <td className={styles.timeCell}>{relativeTime(r.createdAt)}</td>
@@ -177,6 +184,21 @@ function ExpandedDetails({
           <div className={styles.detailCard}>
             <span className={styles.sectionLabel}>Routing Decision</span>
             <div className={styles.detailRow}>
+              <span>Classifier Engine:</span>
+              <span className="mono">
+                {request.classifier === 'llm' ? 'Gemini Flash' : 'Heuristic Rules'}
+                {request.fallbackFrom && ` (Fallback from ${request.fallbackFrom})`}
+              </span>
+            </div>
+            {request.reasoning && (
+              <div className={styles.detailRow}>
+                <span>Reasoning:</span>
+                <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
+                  {request.reasoning}
+                </span>
+              </div>
+            )}
+            <div className={styles.detailRow}>
               <span>Tier:</span>
               <span className={`tier-badge ${request.tier.toLowerCase()}`}>{request.tier}</span>
             </div>
@@ -203,7 +225,7 @@ function ExpandedDetails({
               <span className="mono">{formatCost(request.actualCost)}</span>
             </div>
             <div className={styles.detailRow}>
-              <span>Frontier (GPT-4o):</span>
+              <span>Frontier (GPT-5.5 Pro):</span>
               <span className="mono">{formatCost(request.frontierCost)}</span>
             </div>
             <div className={styles.detailRow}>

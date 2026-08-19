@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import type { RoutingMetadata } from '@/lib/hooks/useChat';
 import styles from './RoutingViz.module.css';
 
@@ -9,18 +9,18 @@ type Status = 'idle' | 'classifying' | 'streaming' | 'done' | 'error';
 const PIPELINE_STAGES = [
   {
     id: 'extract',
-    label: 'Extract 12-signal vector',
-    tooltip: 'Analyzes prompt length, code blocks, reasoning verbs, constraints, structural depth, domain density, and formal syntax.',
+    label: 'Analyze prompt features',
+    tooltip: 'Analyzes prompt length, code blocks, reasoning verbs, constraints, structural depth, and syntax.',
   },
   {
     id: 'score',
-    label: 'Calculate complexity score',
-    tooltip: 'Multiplies extracted signal features by calibrated weights to yield a composite score from 0.000 to 1.000.',
+    label: 'Score complexity',
+    tooltip: 'Evaluates complexity either via 12-signal heuristic weights or Gemini Flash structured JSON reasoning.',
   },
   {
     id: 'resolve',
     label: 'Resolve optimal tier',
-    tooltip: 'Maps composite score against calibrated threshold boundaries (Low, Medium, High, Ultra High) to select the best model.',
+    tooltip: 'Maps complexity score to optimal tier (Low, Medium, High, Ultra High) to select the best model.',
   },
   {
     id: 'stream',
@@ -135,6 +135,31 @@ export function RoutingViz({ status, metadata }: Props) {
       {/* Metadata Telemetry Box with Rich Hover Information */}
       {metadata && (
         <div className={styles.telemetryBox}>
+          {/* Classifier Engine */}
+          <div className={styles.metaRowWrapper}>
+            <div className={styles.metaRow}>
+              <span className={styles.metaLabel}>
+                Classifier engine
+                <span className={styles.infoIcon}>?</span>
+              </span>
+              <span className="mono">
+                {metadata.classifier === 'llm' ? 'Gemini Flash' : 'Heuristic Rules'}
+                {metadata.fallbackFrom && ' (Fallback)'}
+              </span>
+            </div>
+            <div className={styles.tooltip}>
+              <div className={styles.tooltipHeader}>
+                <span className={styles.tooltipTitle}>Classifier Engine</span>
+              </div>
+              <p className={styles.tooltipText}>
+                {metadata.classifier === 'llm'
+                  ? 'Classified using Gemini 3.6 Flash structured JSON schema.'
+                  : 'Classified using calibrated 12-signal heuristic feature vector.'}
+                {metadata.fallbackFrom && ' Note: Defaulted to rules because LLM confidence was low or unavailable.'}
+              </p>
+            </div>
+          </div>
+
           {/* Target Model */}
           <div className={styles.metaRowWrapper}>
             <div className={styles.metaRow}>
@@ -173,7 +198,7 @@ export function RoutingViz({ status, metadata }: Props) {
             </div>
           </div>
 
-          {/* Complexity Score with Full Tier Guide */}
+          {/* Complexity Score / Reasoning */}
           <div className={styles.metaRowWrapper}>
             <div className={styles.metaRow}>
               <span className={styles.metaLabel}>
@@ -187,7 +212,9 @@ export function RoutingViz({ status, metadata }: Props) {
                 <span className={styles.tooltipTitle}>Complexity Score: {(metadata.score ?? 0).toFixed(3)}</span>
               </div>
               <p className={styles.tooltipText}>
-                Composite score evaluated from 12 weighted linguistic and structural features (token count, reasoning keywords, code blocks, constraints, domain density, and formal syntax).
+                {metadata.reasoning
+                  ? `Classification reasoning: "${metadata.reasoning}"`
+                  : 'Composite score evaluated from 12 weighted linguistic and structural features.'}
               </p>
               <div className={styles.tierGuide}>
                 <div className={styles.tierGuideTitle}>Routing Tier Thresholds:</div>
@@ -225,7 +252,7 @@ export function RoutingViz({ status, metadata }: Props) {
                 <span className={styles.tooltipTitle}>Routing Confidence</span>
               </div>
               <p className={styles.tooltipText}>
-                Distance-based certainty metric. Measures how far the score sits from adjacent tier boundaries. Higher percentage indicates a clear classification rather than a borderline edge.
+                Certainty metric. For rules, measures distance from threshold boundaries. For LLM, provides the model assessed confidence score.
               </p>
             </div>
           </div>
@@ -237,14 +264,14 @@ export function RoutingViz({ status, metadata }: Props) {
                 Overhead latency
                 <span className={styles.infoIcon}>?</span>
               </span>
-              <span className="mono">{metadata.latencyMs ?? 0}ms</span>
+              <span className="mono">{metadata.classifyLatencyMs ?? metadata.latencyMs ?? 0}ms</span>
             </div>
             <div className={styles.tooltip}>
               <div className={styles.tooltipHeader}>
-                <span className={styles.tooltipTitle}>Overhead Latency</span>
+                <span className={styles.tooltipTitle}>Classification Overhead</span>
               </div>
               <p className={styles.tooltipText}>
-                Time taken in milliseconds to extract the 12-signal feature vector and determine the optimal route before initiating the model stream.
+                Time taken in milliseconds to evaluate complexity and determine the optimal route before initiating the model stream.
               </p>
             </div>
           </div>

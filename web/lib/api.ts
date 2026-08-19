@@ -28,6 +28,7 @@ export interface RecentRequest {
   promptText: string;
   promptLength: number;
   tier: string;
+  classifier: string;
   model: string;
   provider: string;
   inputTokens: number;
@@ -38,6 +39,10 @@ export interface RecentRequest {
   frontierCost: number;
   confidence: number | null;
   features: unknown;
+  reasoning?: string | null;
+  classifyLatencyMs?: number | null;
+  fallbackFrom?: string | null;
+  fallbackReason?: string | null;
 }
 
 export interface TimeseriesPoint {

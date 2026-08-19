@@ -6,11 +6,12 @@ import { ThresholdSliders } from '@/components/config/ThresholdSliders';
 import { TierModelEditor } from '@/components/config/TierModelEditor';
 import { ApiKeyManager } from '@/components/config/ApiKeyManager';
 import { ConfigHeader } from '@/components/config/ConfigHeader';
+import { ClassifierToggle } from '@/components/config/ClassifierToggle';
 import styles from './page.module.css';
 
 export const metadata: Metadata = {
   title: 'Configuration',
-  description: 'Manage custom BYOK API keys, tier-model routing assignments, classifier weights, and provider health.',
+  description: 'Manage custom BYOK API keys, tier-model routing assignments, classifier engine, and provider health.',
 };
 
 export const revalidate = 60;
@@ -34,6 +35,7 @@ export default async function ConfigPage() {
 
           {/* Right Column */}
           <div className={styles.col}>
+            <ClassifierToggle />
             <ThresholdSliders />
             <WeightSliders />
             <ProviderHealth health={health} />
