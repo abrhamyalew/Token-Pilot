@@ -12,6 +12,7 @@ export interface LlmClassificationOutput {
   tier: Tier;
   confidence: number;
   reasoning: string;
+  classifierProvider?: string;
   classifierModel?: string;
   classificationTokens?: {
     promptTokens: number;

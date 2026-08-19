@@ -7,7 +7,15 @@ import {
 } from '../shared/types';
 import { extractFeatures } from './feature-extractor';
 import { scorePrompt } from './scoring-engine';
-import { LlmClassifierService } from './llm-classifier.service';
+import { LlmClassifierService, LlmClassifyOptions } from './llm-classifier.service';
+
+export interface ClassifierOptions {
+  classifierType?: ClassifierType;
+  provider?: string;
+  model?: string;
+  apiKey?: string;
+  userApiKeys?: Record<string, string>;
+}
 
 @Injectable()
 export class ClassifierService {
@@ -18,21 +26,32 @@ export class ClassifierService {
 
   /**
    * Classify the complexity of a chat request.
-   * Supports 'rules' (weighted feature vector) and 'llm' (Gemini Flash pre-classifier).
+   * Supports 'rules' (weighted feature vector) and 'llm' (LLM pre-classifier with custom provider, model, and key).
    * If LLM classifier returns confidence below 0.6 or fails, it defaults back to rules.
    */
   async classify(
     messages: ChatMessage[],
-    classifierType: ClassifierType = 'rules',
+    classifierTypeOrOptions?: ClassifierType | ClassifierOptions,
     userApiKeys?: Record<string, string>,
   ): Promise<ClassifierResult> {
+    const options: ClassifierOptions =
+      typeof classifierTypeOrOptions === 'string'
+        ? { classifierType: classifierTypeOrOptions, userApiKeys }
+        : classifierTypeOrOptions || { classifierType: 'rules', userApiKeys };
+
+    const classifierType = options.classifierType || 'rules';
     const promptText = this.extractPromptText(messages);
     const hasSystemPrompt = messages.some((m) => m.role === 'system');
     const turnCount = messages.filter((m) => m.role === 'user' || m.role === 'assistant').length;
     const features = extractFeatures(promptText, hasSystemPrompt, turnCount);
 
     if (classifierType === 'llm') {
-      return this.classifyWithLlm(promptText, features, userApiKeys);
+      return this.classifyWithLlm(promptText, features, {
+        provider: options.provider,
+        model: options.model,
+        apiKey: options.apiKey,
+        userApiKeys: options.userApiKeys || userApiKeys,
+      });
     }
 
     return this.classifyWithRules(features);
@@ -57,14 +76,11 @@ export class ClassifierService {
   private async classifyWithLlm(
     promptText: string,
     features: PromptFeatures,
-    userApiKeys?: Record<string, string>,
+    llmOptions?: LlmClassifyOptions,
   ): Promise<ClassifierResult> {
     const startMs = Date.now();
     try {
-      const llmResult = await this.llmClassifier.classify(
-        promptText,
-        userApiKeys?.google,
-      );
+      const llmResult = await this.llmClassifier.classify(promptText, llmOptions);
       const classifyLatencyMs = Date.now() - startMs;
 
       // Low confidence fallback to rules logic
@@ -89,7 +105,7 @@ export class ClassifierService {
       }
 
       this.logger.debug(
-        `LLM classified prompt -> tier=${llmResult.tier} confidence=${llmResult.confidence.toFixed(2)} in ${classifyLatencyMs}ms`,
+        `LLM classified prompt -> tier=${llmResult.tier} (${llmResult.classifierProvider || 'llm'}/${llmResult.classifierModel || 'default'}) confidence=${llmResult.confidence.toFixed(2)} in ${classifyLatencyMs}ms`,
       );
 
       return {

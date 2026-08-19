@@ -1,46 +1,97 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
+import Groq from 'groq-sdk';
+import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
 import { LlmClassificationOutput, Tier } from '../shared/types';
-import { validateByokKey } from '../providers/byok-validator';
+import { validateByokKey, ByokProvider } from '../providers/byok-validator';
+
+export interface LlmClassifyOptions {
+  provider?: string;
+  model?: string;
+  apiKey?: string;
+  userApiKeys?: Record<string, string>;
+}
+
+const DEFAULT_MODELS: Record<ByokProvider, string> = {
+  google: 'gemini-3.6-flash',
+  groq: 'llama-3.3-70b-versatile',
+  openai: 'gpt-4o-mini',
+  anthropic: 'claude-3-5-haiku',
+  deepseek: 'deepseek-chat',
+};
 
 @Injectable()
 export class LlmClassifierService {
   private readonly logger = new Logger(LlmClassifierService.name);
-  private readonly CLASSIFIER_MODEL = 'gemini-3.6-flash';
   private readonly TIMEOUT_MS = 10000;
-  private defaultGenAI: GoogleGenerativeAI | null = null;
 
   constructor(private readonly config: ConfigService) {}
 
-  private getGenAI(userApiKey?: string): GoogleGenerativeAI {
-    if (userApiKey) {
-      validateByokKey('google', userApiKey);
-      return new GoogleGenerativeAI(userApiKey);
-    }
-
-    if (!this.defaultGenAI) {
-      const apiKey = this.config.get<string>('GOOGLE_API_KEY');
-      if (!apiKey) {
-        throw new Error('GOOGLE_API_KEY not configured and no user key provided for classifier');
-      }
-      this.defaultGenAI = new GoogleGenerativeAI(apiKey);
-    }
-
-    return this.defaultGenAI;
-  }
-
   /**
-   * Classify prompt complexity using Gemini Flash with structured JSON output.
+   * Classify prompt complexity using the specified LLM provider and model.
+   * Supports Google, Groq, OpenAI, Anthropic, and DeepSeek with user-supplied
+   * or server fallback API keys.
    */
   async classify(
     promptText: string,
-    userApiKey?: string,
+    options?: LlmClassifyOptions,
   ): Promise<LlmClassificationOutput> {
-    const genAI = this.getGenAI(userApiKey);
+    const provider = (options?.provider || 'google').toLowerCase() as ByokProvider;
+    const key =
+      options?.apiKey ||
+      options?.userApiKeys?.[provider] ||
+      this.getServerApiKey(provider);
+
+    if (!key) {
+      throw new Error(`No API key configured or provided for classifier provider "${provider}".`);
+    }
+
+    if (options?.apiKey || options?.userApiKeys?.[provider]) {
+      validateByokKey(provider, key);
+    }
+
+    const modelName = options?.model || DEFAULT_MODELS[provider] || 'gemini-3.6-flash';
+
+    switch (provider) {
+      case 'google':
+        return this.classifyWithGoogle(promptText, key, modelName);
+      case 'groq':
+        return this.classifyWithGroq(promptText, key, modelName);
+      case 'openai':
+        return this.classifyWithOpenAI(promptText, key, modelName);
+      case 'anthropic':
+        return this.classifyWithAnthropic(promptText, key, modelName);
+      case 'deepseek':
+        return this.classifyWithDeepSeek(promptText, key, modelName);
+      default:
+        throw new Error(`Unsupported classifier provider: "${provider}"`);
+    }
+  }
+
+  private getServerApiKey(provider: ByokProvider): string | undefined {
+    switch (provider) {
+      case 'google':
+        return this.config.get<string>('GOOGLE_API_KEY');
+      case 'groq':
+        return this.config.get<string>('GROQ_API_KEY');
+      case 'openai':
+        return this.config.get<string>('OPENAI_API_KEY');
+      default:
+        return undefined;
+    }
+  }
+
+  private async classifyWithGoogle(
+    promptText: string,
+    apiKey: string,
+    modelName: string,
+  ): Promise<LlmClassificationOutput> {
+    const genAI = new GoogleGenerativeAI(apiKey);
 
     const model = genAI.getGenerativeModel({
-      model: this.CLASSIFIER_MODEL,
+      model: modelName,
       systemInstruction:
         'You are a prompt complexity classifier for an LLM routing system. ' +
         'Analyze user prompts and classify their complexity into low, medium, or high tier. ' +
@@ -107,7 +158,8 @@ export class LlmClassifierService {
         tier: normalizedTier,
         confidence,
         reasoning,
-        classifierModel: this.CLASSIFIER_MODEL,
+        classifierProvider: 'google',
+        classifierModel: modelName,
         classificationTokens: {
           promptTokens,
           completionTokens,
@@ -115,7 +167,239 @@ export class LlmClassifierService {
       };
     } catch (error) {
       clearTimeout(timeoutId);
-      this.logger.warn(`LLM classification failed: ${(error as Error)?.message ?? error}`);
+      this.logger.warn(`Google classification failed: ${(error as Error)?.message ?? error}`);
+      throw error;
+    }
+  }
+
+  private async classifyWithGroq(
+    promptText: string,
+    apiKey: string,
+    modelName: string,
+  ): Promise<LlmClassificationOutput> {
+    const client = new Groq({ apiKey });
+
+    try {
+      const completion = await client.chat.completions.create({
+        model: modelName,
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are a prompt complexity classifier for an LLM routing system. ' +
+              'Analyze user prompts and classify their complexity into low, medium, or high tier. ' +
+              'Respond with a valid JSON object with keys: "tier" ("low" | "medium" | "high"), "confidence" (number 0.0 to 1.0), and "reasoning" (string single sentence).',
+          },
+          {
+            role: 'user',
+            content: `Analyze and classify the complexity of the following prompt:\n\n"""\n${promptText}\n"""`,
+          },
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.1,
+        max_tokens: 256,
+      });
+
+      const raw = completion.choices[0]?.message?.content || '{}';
+      const parsed = JSON.parse(raw);
+      const normalizedTier = this.normalizeTier(parsed.tier);
+      const confidence = typeof parsed.confidence === 'number'
+        ? Math.max(0, Math.min(1, parsed.confidence))
+        : 0.5;
+      const reasoning = typeof parsed.reasoning === 'string'
+        ? parsed.reasoning
+        : 'Classification completed.';
+
+      const usage = completion.usage;
+
+      return {
+        tier: normalizedTier,
+        confidence,
+        reasoning,
+        classifierProvider: 'groq',
+        classifierModel: modelName,
+        classificationTokens: {
+          promptTokens: usage?.prompt_tokens ?? 0,
+          completionTokens: usage?.completion_tokens ?? 0,
+        },
+      };
+    } catch (error) {
+      this.logger.warn(`Groq classification failed: ${(error as Error)?.message ?? error}`);
+      throw error;
+    }
+  }
+
+  private async classifyWithOpenAI(
+    promptText: string,
+    apiKey: string,
+    modelName: string,
+  ): Promise<LlmClassificationOutput> {
+    const client = new OpenAI({ apiKey });
+
+    try {
+      const completion = await client.chat.completions.create({
+        model: modelName,
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are a prompt complexity classifier for an LLM routing system. ' +
+              'Analyze user prompts and classify their complexity into low, medium, or high tier. ' +
+              'Respond with a valid JSON object with keys: "tier" ("low" | "medium" | "high"), "confidence" (number 0.0 to 1.0), and "reasoning" (string single sentence).',
+          },
+          {
+            role: 'user',
+            content: `Analyze and classify the complexity of the following prompt:\n\n"""\n${promptText}\n"""`,
+          },
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.1,
+        max_tokens: 256,
+      });
+
+      const raw = completion.choices[0]?.message?.content || '{}';
+      const parsed = JSON.parse(raw);
+      const normalizedTier = this.normalizeTier(parsed.tier);
+      const confidence = typeof parsed.confidence === 'number'
+        ? Math.max(0, Math.min(1, parsed.confidence))
+        : 0.5;
+      const reasoning = typeof parsed.reasoning === 'string'
+        ? parsed.reasoning
+        : 'Classification completed.';
+
+      const usage = completion.usage;
+
+      return {
+        tier: normalizedTier,
+        confidence,
+        reasoning,
+        classifierProvider: 'openai',
+        classifierModel: modelName,
+        classificationTokens: {
+          promptTokens: usage?.prompt_tokens ?? 0,
+          completionTokens: usage?.completion_tokens ?? 0,
+        },
+      };
+    } catch (error) {
+      this.logger.warn(`OpenAI classification failed: ${(error as Error)?.message ?? error}`);
+      throw error;
+    }
+  }
+
+  private async classifyWithAnthropic(
+    promptText: string,
+    apiKey: string,
+    modelName: string,
+  ): Promise<LlmClassificationOutput> {
+    const client = new Anthropic({ apiKey });
+
+    try {
+      const response = await client.messages.create({
+        model: modelName,
+        max_tokens: 256,
+        temperature: 0.1,
+        system:
+          'You are a prompt complexity classifier for an LLM routing system. ' +
+          'Analyze user prompts and classify their complexity into low, medium, or high tier. ' +
+          'Output ONLY a valid JSON object with keys: "tier" ("low" | "medium" | "high"), "confidence" (number 0.0 to 1.0), and "reasoning" (string single sentence). Do not include markdown codeblocks or extra text.',
+        messages: [
+          {
+            role: 'user',
+            content: `Analyze and classify the complexity of the following prompt:\n\n"""\n${promptText}\n"""`,
+          },
+        ],
+      });
+
+      const text = response.content
+        .filter((block): block is Anthropic.TextBlock => block.type === 'text')
+        .map((block) => block.text)
+        .join('');
+
+      // Clean markdown code blocks if returned
+      const cleanJson = text.replace(/```(?:json)?\n?([\s\S]*?)\n?```/, '$1').trim();
+      const parsed = JSON.parse(cleanJson);
+
+      const normalizedTier = this.normalizeTier(parsed.tier);
+      const confidence = typeof parsed.confidence === 'number'
+        ? Math.max(0, Math.min(1, parsed.confidence))
+        : 0.5;
+      const reasoning = typeof parsed.reasoning === 'string'
+        ? parsed.reasoning
+        : 'Classification completed.';
+
+      return {
+        tier: normalizedTier,
+        confidence,
+        reasoning,
+        classifierProvider: 'anthropic',
+        classifierModel: modelName,
+        classificationTokens: {
+          promptTokens: response.usage.input_tokens,
+          completionTokens: response.usage.output_tokens,
+        },
+      };
+    } catch (error) {
+      this.logger.warn(`Anthropic classification failed: ${(error as Error)?.message ?? error}`);
+      throw error;
+    }
+  }
+
+  private async classifyWithDeepSeek(
+    promptText: string,
+    apiKey: string,
+    modelName: string,
+  ): Promise<LlmClassificationOutput> {
+    const client = new OpenAI({
+      apiKey,
+      baseURL: 'https://api.deepseek.com',
+    });
+
+    try {
+      const completion = await client.chat.completions.create({
+        model: modelName,
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are a prompt complexity classifier for an LLM routing system. ' +
+              'Analyze user prompts and classify their complexity into low, medium, or high tier. ' +
+              'Respond with a valid JSON object with keys: "tier" ("low" | "medium" | "high"), "confidence" (number 0.0 to 1.0), and "reasoning" (string single sentence).',
+          },
+          {
+            role: 'user',
+            content: `Analyze and classify the complexity of the following prompt:\n\n"""\n${promptText}\n"""`,
+          },
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.1,
+        max_tokens: 256,
+      });
+
+      const raw = completion.choices[0]?.message?.content || '{}';
+      const parsed = JSON.parse(raw);
+      const normalizedTier = this.normalizeTier(parsed.tier);
+      const confidence = typeof parsed.confidence === 'number'
+        ? Math.max(0, Math.min(1, parsed.confidence))
+        : 0.5;
+      const reasoning = typeof parsed.reasoning === 'string'
+        ? parsed.reasoning
+        : 'Classification completed.';
+
+      const usage = completion.usage;
+
+      return {
+        tier: normalizedTier,
+        confidence,
+        reasoning,
+        classifierProvider: 'deepseek',
+        classifierModel: modelName,
+        classificationTokens: {
+          promptTokens: usage?.prompt_tokens ?? 0,
+          completionTokens: usage?.completion_tokens ?? 0,
+        },
+      };
+    } catch (error) {
+      this.logger.warn(`DeepSeek classification failed: ${(error as Error)?.message ?? error}`);
       throw error;
     }
   }

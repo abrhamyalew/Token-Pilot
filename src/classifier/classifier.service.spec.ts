@@ -54,6 +54,7 @@ describe('ClassifierService', () => {
       tier: 'high',
       confidence: 0.95,
       reasoning: 'Requires complex architectural synthesis.',
+      classifierProvider: 'google',
       classifierModel: 'gemini-3.6-flash',
     });
 
@@ -67,6 +68,37 @@ describe('ClassifierService', () => {
     expect(result.confidence).toBe(0.95);
     expect(result.reasoning).toBe('Requires complex architectural synthesis.');
     expect(result.classifyLatencyMs).toBeDefined();
+  });
+
+  it('passes custom provider, model, and api key options to LLM classifier', async () => {
+    const spy = vi.spyOn(llmClassifier, 'classify').mockResolvedValue({
+      tier: 'medium',
+      confidence: 0.85,
+      reasoning: 'Moderate coding task.',
+      classifierProvider: 'groq',
+      classifierModel: 'llama-3.3-70b-versatile',
+    });
+
+    const result = await service.classify(
+      [{ role: 'user', content: 'Write an Express middleware.' }],
+      {
+        classifierType: 'llm',
+        provider: 'groq',
+        model: 'llama-3.3-70b-versatile',
+        apiKey: 'gsk_test1234567890123456',
+      },
+    );
+
+    expect(spy).toHaveBeenCalledWith(
+      'Write an Express middleware.',
+      expect.objectContaining({
+        provider: 'groq',
+        model: 'llama-3.3-70b-versatile',
+        apiKey: 'gsk_test1234567890123456',
+      }),
+    );
+    expect(result.classifier).toBe('llm');
+    expect(result.tier).toBe('medium');
   });
 
   it('falls back to rules when LLM confidence is below threshold', async () => {

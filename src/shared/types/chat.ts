@@ -19,6 +19,12 @@ export interface ChatRequest {
   stream?: boolean;
   /** Select classifier: 'rules' (default), 'llm', or 'trained' */
   classifier?: ClassifierType;
+  /** Chosen provider for LLM classifier (e.g. 'google', 'groq', 'openai') */
+  classifier_provider?: string;
+  /** Chosen model for LLM classifier (e.g. 'gemini-3.6-flash', 'llama-3.3-70b-versatile', 'gpt-4o-mini') */
+  classifier_model?: string;
+  /** Dedicated API key for the LLM classifier */
+  classifier_api_key?: string;
   /** Multi-provider BYOK keys mapped by provider name (e.g. { openai: '...', groq: '...', google: '...' }) */
   user_api_keys?: Record<string, string>;
   /** Optional per-tier model & provider overrides */
