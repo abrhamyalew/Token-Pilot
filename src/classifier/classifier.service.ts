@@ -1,26 +1,48 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ClassifierResult, ChatMessage } from '../shared/types';
+import {
+  ClassifierResult,
+  ClassifierType,
+  ChatMessage,
+  PromptFeatures,
+} from '../shared/types';
 import { extractFeatures } from './feature-extractor';
 import { scorePrompt } from './scoring-engine';
+import { LlmClassifierService } from './llm-classifier.service';
 
 @Injectable()
 export class ClassifierService {
   private readonly logger = new Logger(ClassifierService.name);
+  private readonly MIN_LLM_CONFIDENCE = 0.6;
+
+  constructor(private readonly llmClassifier: LlmClassifierService) {}
 
   /**
-   * Classify the complexity of a chat request and return a tier assignment.
-   * Extracts the user's prompt text from the messages array, runs feature
-   * extraction, and scores via the weighted vector classifier.
+   * Classify the complexity of a chat request.
+   * Supports 'rules' (weighted feature vector) and 'llm' (Gemini Flash pre-classifier).
+   * If LLM classifier returns confidence below 0.6 or fails, it defaults back to rules.
    */
-  classify(messages: ChatMessage[]): ClassifierResult {
+  async classify(
+    messages: ChatMessage[],
+    classifierType: ClassifierType = 'rules',
+    userApiKeys?: Record<string, string>,
+  ): Promise<ClassifierResult> {
     const promptText = this.extractPromptText(messages);
     const hasSystemPrompt = messages.some((m) => m.role === 'system');
     const turnCount = messages.filter((m) => m.role === 'user' || m.role === 'assistant').length;
     const features = extractFeatures(promptText, hasSystemPrompt, turnCount);
+
+    if (classifierType === 'llm') {
+      return this.classifyWithLlm(promptText, features, userApiKeys);
+    }
+
+    return this.classifyWithRules(features);
+  }
+
+  private classifyWithRules(features: PromptFeatures): ClassifierResult {
     const { tier, score, confidence } = scorePrompt(features);
 
     this.logger.debug(
-      `Classified prompt (${features.tokenCount} tokens) → tier=${tier} score=${score.toFixed(3)} confidence=${confidence.toFixed(3)}`,
+      `Rules classified prompt (${features.tokenCount} tokens) -> tier=${tier} score=${score.toFixed(3)} confidence=${confidence.toFixed(3)}`,
     );
 
     return {
@@ -32,10 +54,77 @@ export class ClassifierService {
     };
   }
 
+  private async classifyWithLlm(
+    promptText: string,
+    features: PromptFeatures,
+    userApiKeys?: Record<string, string>,
+  ): Promise<ClassifierResult> {
+    const startMs = Date.now();
+    try {
+      const llmResult = await this.llmClassifier.classify(
+        promptText,
+        userApiKeys?.google,
+      );
+      const classifyLatencyMs = Date.now() - startMs;
+
+      // Low confidence fallback to rules logic
+      if (llmResult.confidence < this.MIN_LLM_CONFIDENCE) {
+        this.logger.warn(
+          `LLM confidence ${llmResult.confidence.toFixed(2)} is below ${this.MIN_LLM_CONFIDENCE}. Defaulting to rules classifier.`,
+        );
+
+        const rulesResult = scorePrompt(features);
+        return {
+          tier: rulesResult.tier,
+          score: rulesResult.score,
+          confidence: rulesResult.confidence,
+          classifier: 'rules',
+          features,
+          reasoning: `LLM confidence (${llmResult.confidence.toFixed(2)}) below threshold ${this.MIN_LLM_CONFIDENCE}; defaulted to rules. LLM reasoning: ${llmResult.reasoning}`,
+          llmClassification: llmResult,
+          classifyLatencyMs,
+          fallbackFrom: 'llm',
+          fallbackReason: 'low_confidence',
+        };
+      }
+
+      this.logger.debug(
+        `LLM classified prompt -> tier=${llmResult.tier} confidence=${llmResult.confidence.toFixed(2)} in ${classifyLatencyMs}ms`,
+      );
+
+      return {
+        tier: llmResult.tier,
+        score: llmResult.confidence,
+        confidence: llmResult.confidence,
+        classifier: 'llm',
+        features,
+        reasoning: llmResult.reasoning,
+        llmClassification: llmResult,
+        classifyLatencyMs,
+      };
+    } catch (error) {
+      const classifyLatencyMs = Date.now() - startMs;
+      const errorMsg = (error as Error)?.message ?? String(error);
+      this.logger.warn(`LLM classifier failed (${errorMsg}); defaulting to rules classifier.`);
+
+      const rulesResult = scorePrompt(features);
+      return {
+        tier: rulesResult.tier,
+        score: rulesResult.score,
+        confidence: rulesResult.confidence,
+        classifier: 'rules',
+        features,
+        reasoning: `LLM classifier unavailable; defaulted to rules. Error: ${errorMsg}`,
+        classifyLatencyMs,
+        fallbackFrom: 'llm',
+        fallbackReason: errorMsg,
+      };
+    }
+  }
+
   /**
    * Extract the user-facing prompt text from a messages array.
-   * Concatenates all user messages (system instructions can influence
-   * complexity, so they're included too).
+   * Concatenates all user and system messages.
    */
   private extractPromptText(messages: ChatMessage[]): string {
     return messages
