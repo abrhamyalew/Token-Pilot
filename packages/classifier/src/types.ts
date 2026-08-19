@@ -1,11 +1,23 @@
 /**
- * Classifier types — prompt feature extraction and tier assignment.
+ * Classifier types - prompt feature extraction and tier assignment.
  *
  * This file is the single source of truth shared between the gateway
- * and the Next.js frontend. No NestJS imports — pure TypeScript.
+ * and the Next.js frontend. No NestJS imports - pure TypeScript.
  */
 
 export type Tier = 'low' | 'medium' | 'high' | 'high_alt';
+export type ClassifierType = 'rules' | 'llm' | 'trained';
+
+export interface LlmClassificationOutput {
+  tier: Tier;
+  confidence: number;
+  reasoning: string;
+  classifierModel?: string;
+  classificationTokens?: {
+    promptTokens: number;
+    completionTokens: number;
+  };
+}
 
 export interface PromptFeatures {
   tokenCount: number;
@@ -28,9 +40,13 @@ export interface ClassifierResult {
   tier: Tier;
   score: number;
   confidence: number;
-  classifier: 'rules' | 'llm' | 'trained';
+  classifier: ClassifierType;
   features: PromptFeatures;
   reasoning?: string;
+  llmClassification?: LlmClassificationOutput;
+  classifyLatencyMs?: number;
+  fallbackFrom?: ClassifierType;
+  fallbackReason?: string;
 }
 
 /** Tunable weights for the feature-vector classifier */

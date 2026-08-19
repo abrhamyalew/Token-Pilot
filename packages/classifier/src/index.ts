@@ -1,5 +1,5 @@
 /**
- * @token-pilot/classifier — public API
+ * @token-pilot/classifier - public API
  *
  * Shared prompt feature extraction and scoring engine.
  * Used by both the NestJS gateway and the Next.js frontend
@@ -15,6 +15,8 @@ export {
 } from './scoring-engine';
 export type {
   Tier,
+  ClassifierType,
+  LlmClassificationOutput,
   PromptFeatures,
   ClassifierResult,
   ClassifierWeights,

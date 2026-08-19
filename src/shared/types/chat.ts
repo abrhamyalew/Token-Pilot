@@ -8,16 +8,18 @@ export interface ChatMessage {
   content: string;
 }
 
-import { Tier } from './classifier';
+import { Tier, ClassifierType } from './classifier';
 
 export interface ChatRequest {
-  /** Optional — Token Pilot picks the model via routing. Clients can send this but it's ignored. */
+  /** Optional: Token Pilot picks the model via routing. Clients can send this but it is ignored. */
   model?: string;
   messages: ChatMessage[];
   max_tokens?: number;
   temperature?: number;
   stream?: boolean;
-  /** Multi-provider BYOK keys mapped by provider name (e.g. { openai: '...', groq: '...' }) */
+  /** Select classifier: 'rules' (default), 'llm', or 'trained' */
+  classifier?: ClassifierType;
+  /** Multi-provider BYOK keys mapped by provider name (e.g. { openai: '...', groq: '...', google: '...' }) */
   user_api_keys?: Record<string, string>;
   /** Optional per-tier model & provider overrides */
   tier_model_overrides?: Partial<Record<Tier, { model: string; provider: string }>>;
@@ -81,5 +83,12 @@ export interface RoutingMetadata {
   max_tokens_applied: number;
   /** True if the requested max_tokens was capped to the demo limit */
   max_tokens_capped: boolean;
+  /** Optional reasoning from LLM classifier */
+  reasoning?: string;
+  /** Classification latency in ms */
+  classify_latency_ms?: number;
+  /** If fallback occurred (e.g. from llm to rules) */
+  fallback_from?: string;
+  fallback_reason?: string;
 }
 
