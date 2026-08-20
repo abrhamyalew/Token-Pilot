@@ -17,6 +17,8 @@ export interface RoutingMetadata {
   savingsPercent: number;
   latencyMs: number;
   classifier: string;
+  classifierProvider?: string;
+  classifierModel?: string;
   reasoning?: string;
   classifyLatencyMs?: number;
   fallbackFrom?: string;
@@ -160,6 +162,8 @@ export function useChat() {
                 savingsPercent: frontierCost > 0 ? (sav / frontierCost) * 100 : 0,
                 latencyMs: r.latencyMs ?? r.latency_ms ?? 0,
                 classifier: r.classifier ?? 'rules',
+                classifierProvider: r.classifier_provider ?? r.classifierProvider,
+                classifierModel: r.classifier_model ?? r.classifierModel,
                 reasoning: r.reasoning,
                 classifyLatencyMs: r.classify_latency_ms ?? r.classifyLatencyMs ?? r.latencyMs ?? r.latency_ms ?? 0,
                 fallbackFrom: r.fallback_from ?? r.fallbackFrom,

@@ -143,7 +143,11 @@ export function RoutingViz({ status, metadata }: Props) {
                 <span className={styles.infoIcon}>?</span>
               </span>
               <span className="mono">
-                {metadata.classifier === 'llm' ? 'Gemini Flash' : 'Heuristic Rules'}
+                {metadata.classifier === 'llm'
+                  ? (metadata.classifierModel
+                      ? `${metadata.classifierProvider ? metadata.classifierProvider + ' / ' : ''}${metadata.classifierModel}`
+                      : 'LLM Classifier')
+                  : 'Heuristic Rules'}
                 {metadata.fallbackFrom && ' (Fallback)'}
               </span>
             </div>
@@ -153,7 +157,7 @@ export function RoutingViz({ status, metadata }: Props) {
               </div>
               <p className={styles.tooltipText}>
                 {metadata.classifier === 'llm'
-                  ? 'Classified using Gemini 3.6 Flash structured JSON schema.'
+                  ? `Classified using ${metadata.classifierModel ?? 'LLM'} structured JSON schema${metadata.classifierProvider ? ` via ${metadata.classifierProvider}` : ''}.`
                   : 'Classified using calibrated 12-signal heuristic feature vector.'}
                 {metadata.fallbackFrom && ' Note: Defaulted to rules because LLM confidence was low or unavailable.'}
               </p>
@@ -205,7 +209,10 @@ export function RoutingViz({ status, metadata }: Props) {
                 Complexity score
                 <span className={styles.infoIcon}>?</span>
               </span>
-              <span className="mono">{(metadata.score ?? 0).toFixed(3)} / 1.000</span>
+              <span className="mono">
+                {(metadata.score ?? 0).toFixed(3)}
+                {metadata.classifier !== 'llm' && ' / 1.000'}
+              </span>
             </div>
             <div className={`${styles.tooltip} ${styles.scoreTooltip}`}>
               <div className={styles.tooltipHeader}>
@@ -216,6 +223,11 @@ export function RoutingViz({ status, metadata }: Props) {
                   ? `Classification reasoning: "${metadata.reasoning}"`
                   : 'Composite score evaluated from 12 weighted linguistic and structural features.'}
               </p>
+              {metadata.classifier === 'llm' && (
+                <p className={styles.tooltipNote}>
+                  Score shown is the canonical midpoint for the classified tier (LLM classifiers return a tier label, not a continuous score). Confidence: {((metadata.confidence ?? 0) * 100).toFixed(0)}%.
+                </p>
+              )}
               <div className={styles.tierGuide}>
                 <div className={styles.tierGuideTitle}>Routing Tier Thresholds:</div>
                 <div className={`${styles.tierGuideRow} ${metadata.tier === 'low' ? styles.tierGuideRowActive : ''}`}>

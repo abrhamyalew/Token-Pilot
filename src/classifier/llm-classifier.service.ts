@@ -22,6 +22,67 @@ const DEFAULT_MODELS: Record<ByokProvider, string> = {
   deepseek: 'deepseek-chat',
 };
 
+function parseJsonResponse(raw: string): { tier?: unknown; confidence?: unknown; reasoning?: unknown } {
+  // Strip <think>...</think> blocks produced by reasoning models (Qwen, DeepSeek-R1, etc.)
+  // These appear BEFORE the actual JSON and can confuse the JSON extractor.
+  const withoutThink = raw.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+  const trimmed = withoutThink || raw.trim();
+
+  // 1. Direct JSON parse
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    // Continue
+  }
+
+  // 2. Strip code fences
+  const stripped = trimmed.replace(/```(?:json)?\s*([\s\S]*?)\s*```/g, '$1').trim();
+  try {
+    return JSON.parse(stripped);
+  } catch {
+    // Continue
+  }
+
+  // 3. Extract JSON object substring { ... } - take the LAST match to skip any
+  //    JSON-like fragments inside <think> blocks that weren't fully stripped
+  const allMatches = [...trimmed.matchAll(/\{[\s\S]*?\}/g)];
+  for (const match of allMatches.reverse()) {
+    try {
+      const parsed = JSON.parse(match[0]);
+      // Require at least a tier field to be a valid classification response
+      if (parsed && (parsed.tier || parsed.Tier)) return parsed;
+    } catch {
+      // Continue
+    }
+  }
+
+  // 4. Regex key-value extraction fallback if model returned preamble or partial JSON
+  const tierMatch = trimmed.match(/["']?tier["']?\s*:\s*["']?(low|medium|mid|high|high_alt)["']?/i);
+  const confMatch = trimmed.match(/["']?confidence["']?\s*:\s*([0-9.]+)/i);
+  const reasonMatch = trimmed.match(/["']?reasoning["']?\s*:\s*["']([^"'\n\r]+)["']?/i);
+
+  if (tierMatch) {
+    return {
+      tier: tierMatch[1],
+      confidence: confMatch ? parseFloat(confMatch[1]) : 0.8,
+      reasoning: reasonMatch ? reasonMatch[1] : 'Classified via pattern extraction.',
+    };
+  }
+
+  throw new Error(`Failed to parse JSON classification output: "${trimmed.slice(0, 120)}"`);
+}
+
+/** Normalize confidence from LLM output.
+ * Treats 0 as "not provided" - thinking models like Qwen/DeepSeek sometimes
+ * emit 0.0 instead of a real score when they don't understand the field.
+ */
+function normalizeConfidence(raw: unknown): number {
+  if (typeof raw === 'number' && raw > 0) {
+    return Math.max(0.01, Math.min(1, raw));
+  }
+  return 0.85; // Sensible default when model omits or zeroes the confidence field
+}
+
 @Injectable()
 export class LlmClassifierService {
   private readonly logger = new Logger(LlmClassifierService.name);
@@ -78,6 +139,10 @@ export class LlmClassifierService {
         return this.config.get<string>('GROQ_API_KEY');
       case 'openai':
         return this.config.get<string>('OPENAI_API_KEY');
+      case 'anthropic':
+        return this.config.get<string>('ANTHROPIC_API_KEY');
+      case 'deepseek':
+        return this.config.get<string>('DEEPSEEK_API_KEY');
       default:
         return undefined;
     }
@@ -95,33 +160,12 @@ export class LlmClassifierService {
       systemInstruction:
         'You are a prompt complexity classifier for an LLM routing system. ' +
         'Analyze user prompts and classify their complexity into low, medium, or high tier. ' +
-        'Tier definitions:\n' +
-        '- low: Simple factual questions, summaries, translations, formatting, casual chat. Handled well by small models.\n' +
-        '- medium: Explanations, comparisons, moderate code, structured analysis, multi-part questions.\n' +
-        '- high: Complex multi-step reasoning, architectural design, advanced code refactoring, mathematical proofs, deep domain expertise.\n' +
-        'Provide a confidence score between 0.0 and 1.0 and a concise single-sentence reasoning.',
+        'Output ONLY a valid JSON object without any commentary, preamble, or markdown formatting.\n' +
+        'JSON Schema: {"tier": "low" | "medium" | "high", "confidence": 0.0 to 1.0, "reasoning": "brief single sentence"}',
       generationConfig: {
         responseMimeType: 'application/json',
-        responseSchema: {
-          type: SchemaType.OBJECT,
-          properties: {
-            tier: {
-              type: SchemaType.STRING,
-              description: 'The assigned tier: low, medium, or high',
-            },
-            confidence: {
-              type: SchemaType.NUMBER,
-              description: 'Confidence score between 0.0 and 1.0',
-            },
-            reasoning: {
-              type: SchemaType.STRING,
-              description: 'Brief explanation of classification',
-            },
-          },
-          required: ['tier', 'confidence', 'reasoning'],
-        },
         temperature: 0.1,
-        maxOutputTokens: 256,
+        maxOutputTokens: 1024,
       },
     });
 
@@ -140,12 +184,10 @@ export class LlmClassifierService {
       clearTimeout(timeoutId);
 
       const responseText = result.response.text();
-      const parsed = JSON.parse(responseText);
+      const parsed = parseJsonResponse(responseText);
 
       const normalizedTier = this.normalizeTier(parsed.tier);
-      const confidence = typeof parsed.confidence === 'number'
-        ? Math.max(0, Math.min(1, parsed.confidence))
-        : 0.5;
+      const confidence = normalizeConfidence(parsed.confidence);
       const reasoning = typeof parsed.reasoning === 'string'
         ? parsed.reasoning
         : 'Classification completed.';
@@ -179,38 +221,50 @@ export class LlmClassifierService {
   ): Promise<LlmClassificationOutput> {
     const client = new Groq({ apiKey });
 
-    try {
-      const completion = await client.chat.completions.create({
-        model: modelName,
-        messages: [
-          {
-            role: 'system',
-            content:
-              'You are a prompt complexity classifier for an LLM routing system. ' +
-              'Analyze user prompts and classify their complexity into low, medium, or high tier. ' +
-              'Respond with a valid JSON object with keys: "tier" ("low" | "medium" | "high"), "confidence" (number 0.0 to 1.0), and "reasoning" (string single sentence).',
-          },
-          {
-            role: 'user',
-            content: `Analyze and classify the complexity of the following prompt:\n\n"""\n${promptText}\n"""`,
-          },
-        ],
-        response_format: { type: 'json_object' },
-        temperature: 0.1,
-        max_tokens: 256,
-      });
+    const systemPrompt =
+      'You are a prompt complexity classifier for an LLM routing system. ' +
+      'Analyze user prompts and classify their complexity into low, medium, or high tier. ' +
+      'Respond ONLY with a valid JSON object in this exact schema: {"tier": "low" | "medium" | "high", "confidence": 0.0 to 1.0, "reasoning": "brief single sentence"}';
 
-      const raw = completion.choices[0]?.message?.content || '{}';
-      const parsed = JSON.parse(raw);
+    const userPrompt = `Analyze and classify the complexity of the following prompt:\n\n"""\n${promptText}\n"""`;
+
+    try {
+      let raw = '';
+      let usage: any;
+
+      try {
+        const completion = await client.chat.completions.create({
+          model: modelName,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          response_format: { type: 'json_object' },
+          temperature: 0.1,
+          max_tokens: 512,
+        });
+        raw = completion.choices[0]?.message?.content || '{}';
+        usage = completion.usage;
+      } catch (jsonErr) {
+        const completion = await client.chat.completions.create({
+          model: modelName,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          temperature: 0.1,
+          max_tokens: 512,
+        });
+        raw = completion.choices[0]?.message?.content || '{}';
+        usage = completion.usage;
+      }
+
+      const parsed = parseJsonResponse(raw);
       const normalizedTier = this.normalizeTier(parsed.tier);
-      const confidence = typeof parsed.confidence === 'number'
-        ? Math.max(0, Math.min(1, parsed.confidence))
-        : 0.5;
+      const confidence = normalizeConfidence(parsed.confidence);
       const reasoning = typeof parsed.reasoning === 'string'
         ? parsed.reasoning
         : 'Classification completed.';
-
-      const usage = completion.usage;
 
       return {
         tier: normalizedTier,
@@ -236,38 +290,50 @@ export class LlmClassifierService {
   ): Promise<LlmClassificationOutput> {
     const client = new OpenAI({ apiKey });
 
-    try {
-      const completion = await client.chat.completions.create({
-        model: modelName,
-        messages: [
-          {
-            role: 'system',
-            content:
-              'You are a prompt complexity classifier for an LLM routing system. ' +
-              'Analyze user prompts and classify their complexity into low, medium, or high tier. ' +
-              'Respond with a valid JSON object with keys: "tier" ("low" | "medium" | "high"), "confidence" (number 0.0 to 1.0), and "reasoning" (string single sentence).',
-          },
-          {
-            role: 'user',
-            content: `Analyze and classify the complexity of the following prompt:\n\n"""\n${promptText}\n"""`,
-          },
-        ],
-        response_format: { type: 'json_object' },
-        temperature: 0.1,
-        max_tokens: 256,
-      });
+    const systemPrompt =
+      'You are a prompt complexity classifier for an LLM routing system. ' +
+      'Analyze user prompts and classify their complexity into low, medium, or high tier. ' +
+      'Respond ONLY with a valid JSON object in this exact schema: {"tier": "low" | "medium" | "high", "confidence": 0.0 to 1.0, "reasoning": "brief single sentence"}';
 
-      const raw = completion.choices[0]?.message?.content || '{}';
-      const parsed = JSON.parse(raw);
+    const userPrompt = `Analyze and classify the complexity of the following prompt:\n\n"""\n${promptText}\n"""`;
+
+    try {
+      let raw = '';
+      let usage: any;
+
+      try {
+        const completion = await client.chat.completions.create({
+          model: modelName,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          response_format: { type: 'json_object' },
+          temperature: 0.1,
+          max_tokens: 512,
+        });
+        raw = completion.choices[0]?.message?.content || '{}';
+        usage = completion.usage;
+      } catch (jsonErr) {
+        const completion = await client.chat.completions.create({
+          model: modelName,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          temperature: 0.1,
+          max_tokens: 512,
+        });
+        raw = completion.choices[0]?.message?.content || '{}';
+        usage = completion.usage;
+      }
+
+      const parsed = parseJsonResponse(raw);
       const normalizedTier = this.normalizeTier(parsed.tier);
-      const confidence = typeof parsed.confidence === 'number'
-        ? Math.max(0, Math.min(1, parsed.confidence))
-        : 0.5;
+      const confidence = normalizeConfidence(parsed.confidence);
       const reasoning = typeof parsed.reasoning === 'string'
         ? parsed.reasoning
         : 'Classification completed.';
-
-      const usage = completion.usage;
 
       return {
         tier: normalizedTier,
@@ -296,12 +362,12 @@ export class LlmClassifierService {
     try {
       const response = await client.messages.create({
         model: modelName,
-        max_tokens: 256,
+        max_tokens: 512,
         temperature: 0.1,
         system:
           'You are a prompt complexity classifier for an LLM routing system. ' +
           'Analyze user prompts and classify their complexity into low, medium, or high tier. ' +
-          'Output ONLY a valid JSON object with keys: "tier" ("low" | "medium" | "high"), "confidence" (number 0.0 to 1.0), and "reasoning" (string single sentence). Do not include markdown codeblocks or extra text.',
+          'Output ONLY a valid JSON object with keys: "tier" ("low" | "medium" | "high"), "confidence" (number 0.0 to 1.0), and "reasoning" (string single sentence). Do not include markdown fences.',
         messages: [
           {
             role: 'user',
@@ -315,14 +381,9 @@ export class LlmClassifierService {
         .map((block) => block.text)
         .join('');
 
-      // Clean markdown code blocks if returned
-      const cleanJson = text.replace(/```(?:json)?\n?([\s\S]*?)\n?```/, '$1').trim();
-      const parsed = JSON.parse(cleanJson);
-
+      const parsed = parseJsonResponse(text);
       const normalizedTier = this.normalizeTier(parsed.tier);
-      const confidence = typeof parsed.confidence === 'number'
-        ? Math.max(0, Math.min(1, parsed.confidence))
-        : 0.5;
+      const confidence = normalizeConfidence(parsed.confidence);
       const reasoning = typeof parsed.reasoning === 'string'
         ? parsed.reasoning
         : 'Classification completed.';
@@ -354,38 +415,50 @@ export class LlmClassifierService {
       baseURL: 'https://api.deepseek.com',
     });
 
-    try {
-      const completion = await client.chat.completions.create({
-        model: modelName,
-        messages: [
-          {
-            role: 'system',
-            content:
-              'You are a prompt complexity classifier for an LLM routing system. ' +
-              'Analyze user prompts and classify their complexity into low, medium, or high tier. ' +
-              'Respond with a valid JSON object with keys: "tier" ("low" | "medium" | "high"), "confidence" (number 0.0 to 1.0), and "reasoning" (string single sentence).',
-          },
-          {
-            role: 'user',
-            content: `Analyze and classify the complexity of the following prompt:\n\n"""\n${promptText}\n"""`,
-          },
-        ],
-        response_format: { type: 'json_object' },
-        temperature: 0.1,
-        max_tokens: 256,
-      });
+    const systemPrompt =
+      'You are a prompt complexity classifier for an LLM routing system. ' +
+      'Analyze user prompts and classify their complexity into low, medium, or high tier. ' +
+      'Respond ONLY with a valid JSON object with keys: "tier" ("low" | "medium" | "high"), "confidence" (number 0.0 to 1.0), and "reasoning" (string single sentence).';
 
-      const raw = completion.choices[0]?.message?.content || '{}';
-      const parsed = JSON.parse(raw);
+    const userPrompt = `Analyze and classify the complexity of the following prompt:\n\n"""\n${promptText}\n"""`;
+
+    try {
+      let raw = '';
+      let usage: any;
+
+      try {
+        const completion = await client.chat.completions.create({
+          model: modelName,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          response_format: { type: 'json_object' },
+          temperature: 0.1,
+          max_tokens: 512,
+        });
+        raw = completion.choices[0]?.message?.content || '{}';
+        usage = completion.usage;
+      } catch (jsonErr) {
+        const completion = await client.chat.completions.create({
+          model: modelName,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          temperature: 0.1,
+          max_tokens: 512,
+        });
+        raw = completion.choices[0]?.message?.content || '{}';
+        usage = completion.usage;
+      }
+
+      const parsed = parseJsonResponse(raw);
       const normalizedTier = this.normalizeTier(parsed.tier);
-      const confidence = typeof parsed.confidence === 'number'
-        ? Math.max(0, Math.min(1, parsed.confidence))
-        : 0.5;
+      const confidence = normalizeConfidence(parsed.confidence);
       const reasoning = typeof parsed.reasoning === 'string'
         ? parsed.reasoning
         : 'Classification completed.';
-
-      const usage = completion.usage;
 
       return {
         tier: normalizedTier,

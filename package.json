@@ -26,7 +26,8 @@
     "eval": "ts-node -r tsconfig-paths/register eval/scripts/run-eval.ts",
     "eval:judge": "ts-node -r tsconfig-paths/register eval/scripts/judge.ts",
     "eval:chart": "ts-node -r tsconfig-paths/register eval/scripts/chart.ts",
-    "eval:all": "npm run eval && npm run eval:judge && npm run eval:chart"
+    "eval:all": "npm run eval && npm run eval:judge && npm run eval:chart",
+    "wizard": "bash scripts/setup-wizard.sh"
   },
   "dependencies": {
     "@token-pilot/classifier": "*",

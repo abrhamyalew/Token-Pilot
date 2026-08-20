@@ -19,8 +19,8 @@ export type ByokProvider = 'openai' | 'anthropic' | 'groq' | 'google' | 'deepsee
 interface ProviderKeyRules {
   /** Human-readable provider name for error messages */
   label: string;
-  /** Required prefix (e.g., 'sk-', 'gsk_', 'AIza') */
-  prefix: string;
+  /** Allowed prefixes (e.g., ['sk-'], ['gsk_'], ['AIza', 'AQ.']) */
+  prefixes: string[];
   /** Minimum key length */
   minLength: number;
   /** Maximum key length */
@@ -32,38 +32,38 @@ interface ProviderKeyRules {
 const KEY_RULES: Record<ByokProvider, ProviderKeyRules> = {
   openai: {
     label: 'OpenAI',
-    prefix: 'sk-',
+    prefixes: ['sk-'],
     minLength: 20,
     maxLength: 256,
-    charPattern: /^[a-zA-Z0-9\-_]+$/,
+    charPattern: /^[a-zA-Z0-9\-_.]+$/,
   },
   anthropic: {
     label: 'Anthropic',
-    prefix: 'sk-ant-',
+    prefixes: ['sk-ant-'],
     minLength: 20,
     maxLength: 256,
-    charPattern: /^[a-zA-Z0-9\-_]+$/,
+    charPattern: /^[a-zA-Z0-9\-_.]+$/,
   },
   groq: {
     label: 'Groq',
-    prefix: 'gsk_',
+    prefixes: ['gsk_'],
     minLength: 20,
     maxLength: 256,
-    charPattern: /^[a-zA-Z0-9\-_]+$/,
+    charPattern: /^[a-zA-Z0-9\-_.]+$/,
   },
   google: {
     label: 'Google AI Studio',
-    prefix: 'AIza',
+    prefixes: ['AIza', 'AQ.'],
     minLength: 20,
     maxLength: 256,
-    charPattern: /^[a-zA-Z0-9\-_]+$/,
+    charPattern: /^[a-zA-Z0-9\-_.]+$/,
   },
   deepseek: {
     label: 'DeepSeek',
-    prefix: 'sk-',
+    prefixes: ['sk-'],
     minLength: 20,
     maxLength: 256,
-    charPattern: /^[a-zA-Z0-9\-_]+$/,
+    charPattern: /^[a-zA-Z0-9\-_.]+$/,
   },
 };
 
@@ -114,11 +114,12 @@ export function validateByokKey(provider: ByokProvider, key: string): void {
     );
   }
 
-  if (!trimmed.startsWith(rules.prefix)) {
+  const hasValidPrefix = rules.prefixes.some((prefix) => trimmed.startsWith(prefix));
+  if (!hasValidPrefix) {
     throw new HttpException(
       {
         error: {
-          message: `${rules.label} API key must start with "${rules.prefix}".`,
+          message: `${rules.label} API key must start with one of: ${rules.prefixes.map((p) => `"${p}"`).join(', ')}.`,
           type: 'invalid_request_error',
         },
       },
@@ -130,7 +131,7 @@ export function validateByokKey(provider: ByokProvider, key: string): void {
     throw new HttpException(
       {
         error: {
-          message: `${rules.label} API key contains invalid characters. Only alphanumeric characters, hyphens, and underscores are allowed.`,
+          message: `${rules.label} API key contains invalid characters.`,
           type: 'invalid_request_error',
         },
       },

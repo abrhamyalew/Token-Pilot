@@ -108,9 +108,20 @@ export class ClassifierService {
         `LLM classified prompt -> tier=${llmResult.tier} (${llmResult.classifierProvider || 'llm'}/${llmResult.classifierModel || 'default'}) confidence=${llmResult.confidence.toFixed(2)} in ${classifyLatencyMs}ms`,
       );
 
+      // Map the LLM tier to a canonical midpoint score so the displayed number
+      // sits inside the correct threshold band shown in the UI tooltip.
+      // Rules thresholds: low 0-0.08, medium 0.08-0.20, high 0.20-0.42, ultra >0.42
+      const TIER_SCORE_MIDPOINTS: Record<string, number> = {
+        low: 0.040,
+        medium: 0.140,
+        high: 0.310,
+        high_alt: 0.550,
+      };
+      const derivedScore = TIER_SCORE_MIDPOINTS[llmResult.tier] ?? 0.140;
+
       return {
         tier: llmResult.tier,
-        score: llmResult.confidence,
+        score: derivedScore,
         confidence: llmResult.confidence,
         classifier: 'llm',
         features,

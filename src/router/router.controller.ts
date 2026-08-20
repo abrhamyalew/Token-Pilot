@@ -158,6 +158,8 @@ export class RouterController {
       routing: {
         tier: result.classification.tier,
         classifier: result.classification.classifier,
+        classifier_provider: result.classification.llmClassification?.classifierProvider,
+        classifier_model: result.classification.llmClassification?.classifierModel,
         confidence: result.classification.confidence,
         score: result.classification.score,
         model: result.model,

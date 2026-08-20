@@ -50,7 +50,7 @@ export const PROVIDER_CATALOG: Record<ProviderId, ProviderCatalogItem> = {
     docUrl: 'https://aistudio.google.com/app/apikey',
     models: [
       { id: 'gemini-3.6-flash', name: 'Gemini 3.6 Flash', costDesc: 'Free tier / High speed multimodal' },
-      { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', costDesc: 'Free tier / Balanced reasoning' },
+      { id: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash Lite', costDesc: 'Free tier / Fastest/cheapest' },
       { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', costDesc: 'Free tier / Next-gen agentic' },
       { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', costDesc: '1M+ context window' },
     ],

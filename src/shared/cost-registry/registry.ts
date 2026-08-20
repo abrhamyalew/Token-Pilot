@@ -1,5 +1,5 @@
 /**
- * Cost Registry — single source of truth for model pricing and tier-to-model mapping.
+ * Cost Registry - single source of truth for model pricing and tier-to-model mapping.
  *
  * All cost rates are in USD per 1,000 tokens. Free-tier models have $0 rates.
  * This module is intentionally pure functions + data so it can be shared with
@@ -8,7 +8,7 @@
 
 import { Tier, ModelConfig, TierConfig } from '../types';
 
-// ─── Model Pricing ──────────────────────────────────────────────────────────
+// --- Model Pricing -----------------------------------------------------------
 
 const models: Record<string, ModelConfig> = {
   'qwen/qwen3.6-27b': {
@@ -48,9 +48,27 @@ const models: Record<string, ModelConfig> = {
     outputCostPer1kTokens: 0.0,
     maxTokens: 65_536,                // 65K max output, 1M context window
   },
+  'gemini-2.5-flash': {
+    provider: 'google',
+    inputCostPer1kTokens: 0.0,
+    outputCostPer1kTokens: 0.0,
+    maxTokens: 65_536,
+  },
+  'gemini-2.0-flash': {
+    provider: 'google',
+    inputCostPer1kTokens: 0.0,
+    outputCostPer1kTokens: 0.0,
+    maxTokens: 65_536,
+  },
+  'gemini-1.5-flash': {
+    provider: 'google',
+    inputCostPer1kTokens: 0.0,
+    outputCostPer1kTokens: 0.0,
+    maxTokens: 65_536,
+  },
 };
 
-// ─── Tier → Model Mapping ───────────────────────────────────────────────────
+// --- Tier to Model Mapping ---------------------------------------------------
 
 const tiers: Record<Tier, TierConfig> = {
   low:      { model: 'qwen/qwen3.6-27b',      provider: 'groq' },
@@ -59,7 +77,7 @@ const tiers: Record<Tier, TierConfig> = {
   high_alt: { model: 'claude-opus-4-8',               provider: 'anthropic' },
 };
 
-// ─── Lookup Functions ───────────────────────────────────────────────────────
+// --- Lookup Functions -------------------------------------------------------
 
 export function getModelConfig(modelName: string): ModelConfig | undefined {
   return models[modelName];
@@ -77,7 +95,7 @@ export function getProviderForTier(tier: Tier): string {
   return tiers[tier].provider;
 }
 
-// ─── Cost Calculations ─────────────────────────────────────────────────────
+// --- Cost Calculations -----------------------------------------------------
 
 export function calculateCost(
   modelName: string,
@@ -112,7 +130,7 @@ export function calculateSavings(
   return { actualCost, frontierCost, savings, savingsPercent };
 }
 
-// ─── Introspection ──────────────────────────────────────────────────────────
+// --- Introspection ----------------------------------------------------------
 
 export function getAllModels(): Record<string, ModelConfig> {
   return { ...models };

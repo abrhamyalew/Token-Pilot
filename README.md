@@ -130,9 +130,15 @@ Building the shared classifier package happens automatically during `prepare` an
 
 ### Environment Configuration
 
-#### 1. Gateway Backend (`.env`)
+#### Interactive Setup Wizard
 
-Copy `.env.example` in the project root:
+Run the interactive setup wizard to automatically open provider dashboards, enter keys securely, write `.env`, and sync database tables:
+
+```bash
+npm run wizard
+```
+
+Or configure manually by copying `.env.example`:
 
 ```bash
 cp .env.example .env
