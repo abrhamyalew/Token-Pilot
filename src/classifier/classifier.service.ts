@@ -24,11 +24,7 @@ export class ClassifierService {
 
   constructor(private readonly llmClassifier: LlmClassifierService) {}
 
-  /**
-   * Classify the complexity of a chat request.
-   * Supports 'rules' (weighted feature vector) and 'llm' (LLM pre-classifier with custom provider, model, and key).
-   * If LLM classifier returns confidence below 0.6 or fails, it defaults back to rules.
-   */
+  /** Falls back to rules when LLM confidence < 0.6 or LLM call fails. */
   async classify(
     messages: ChatMessage[],
     classifierTypeOrOptions?: ClassifierType | ClassifierOptions,
@@ -108,14 +104,13 @@ export class ClassifierService {
         `LLM classified prompt -> tier=${llmResult.tier} (${llmResult.classifierProvider || 'llm'}/${llmResult.classifierModel || 'default'}) confidence=${llmResult.confidence.toFixed(2)} in ${classifyLatencyMs}ms`,
       );
 
-      // Derive the score from real threshold midpoints so the displayed number
-      // sits inside the correct band shown in the UI tooltip even if thresholds are tuned.
-      const t = DEFAULT_THRESHOLDS;
+
+      const { lowMax, mediumMax, highMax } = DEFAULT_THRESHOLDS;
       const TIER_SCORE_MIDPOINTS: Record<string, number> = {
-        low:      (0 + t.medium) / 2,
-        medium:   (t.medium + t.high) / 2,
-        high:     (t.high + t.ultra) / 2,
-        high_alt: t.ultra + (t.ultra - t.high) / 2,
+        low:      lowMax / 2,                    
+        medium:   (lowMax + mediumMax) / 2,     
+        high:     (mediumMax + highMax) / 2,     
+        high_alt: highMax + (highMax - mediumMax) / 2,
       };
       const derivedScore = TIER_SCORE_MIDPOINTS[llmResult.tier] ?? TIER_SCORE_MIDPOINTS.medium;
 
@@ -153,10 +148,6 @@ export class ClassifierService {
     }
   }
 
-  /**
-   * Extract the user-facing prompt text from a messages array.
-   * Concatenates all user and system messages.
-   */
   private extractPromptText(messages: ChatMessage[]): string {
     return messages
       .filter((m) => m.role === 'user' || m.role === 'system')

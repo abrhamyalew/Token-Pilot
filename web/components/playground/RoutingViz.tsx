@@ -72,7 +72,6 @@ export function RoutingViz({ status, metadata }: Props) {
 
   return (
     <div className={`card ${styles.container}`}>
-      {/* Header */}
       <div className={styles.header}>
         <span className={styles.title}>Routing Pipeline</span>
         {status !== 'idle' && metadata && (
@@ -94,7 +93,6 @@ export function RoutingViz({ status, metadata }: Props) {
         )}
       </div>
 
-      {/* Stage Progression Checklist */}
       <div className={styles.pipeline}>
         {PIPELINE_STAGES.map((stage, i) => {
           const isDone = activeStep > i || status === 'done';
@@ -132,10 +130,8 @@ export function RoutingViz({ status, metadata }: Props) {
         })}
       </div>
 
-      {/* Metadata Telemetry Box with Rich Hover Information */}
       {metadata && (
         <div className={styles.telemetryBox}>
-          {/* Classifier Engine */}
           <div className={styles.metaRowWrapper}>
             <div className={styles.metaRow}>
               <span className={styles.metaLabel}>
@@ -164,7 +160,6 @@ export function RoutingViz({ status, metadata }: Props) {
             </div>
           </div>
 
-          {/* Target Model */}
           <div className={styles.metaRowWrapper}>
             <div className={styles.metaRow}>
               <span className={styles.metaLabel}>
@@ -183,7 +178,6 @@ export function RoutingViz({ status, metadata }: Props) {
             </div>
           </div>
 
-          {/* Provider */}
           <div className={styles.metaRowWrapper}>
             <div className={styles.metaRow}>
               <span className={styles.metaLabel}>
@@ -202,7 +196,6 @@ export function RoutingViz({ status, metadata }: Props) {
             </div>
           </div>
 
-          {/* Complexity Score / Reasoning */}
           <div className={styles.metaRowWrapper}>
             <div className={styles.metaRow}>
               <span className={styles.metaLabel}>
@@ -250,7 +243,6 @@ export function RoutingViz({ status, metadata }: Props) {
             </div>
           </div>
 
-          {/* Confidence */}
           <div className={styles.metaRowWrapper}>
             <div className={styles.metaRow}>
               <span className={styles.metaLabel}>
@@ -269,7 +261,6 @@ export function RoutingViz({ status, metadata }: Props) {
             </div>
           </div>
 
-          {/* Overhead Latency */}
           <div className={styles.metaRowWrapper}>
             <div className={styles.metaRow}>
               <span className={styles.metaLabel}>

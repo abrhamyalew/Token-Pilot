@@ -7,13 +7,39 @@ import { ResponsePanel } from '@/components/playground/ResponsePanel';
 import { CostComparison } from '@/components/playground/CostComparison';
 import styles from './page.module.css';
 
+const EXAMPLE_PROMPTS = [
+  {
+    tier: 'low',
+    category: 'General knowledge',
+    label: 'What is a REST API?',
+    prompt: 'What is a REST API? Give a brief summary.',
+  },
+  {
+    tier: 'medium',
+    category: 'Data structures',
+    label: 'Implement an LRU Cache with O(1) operations in TypeScript',
+    prompt: 'Implement a generic LRU (Least Recently Used) Cache class in TypeScript with O(1) get and put time complexity using a Doubly Linked List and a Map. Include capacity eviction and unit test assertions.',
+  },
+  {
+    tier: 'high',
+    category: 'Architecture',
+    label: 'Refactor payment service with Strategy pattern and idempotency',
+    prompt: 'Refactor the following TypeScript payment processor to use the Strategy pattern with strict types, idempotency keys, distributed locking via Redis, and transactional outbox event publishing. Provide architecture diagrams in ASCII, failure handling, and test fixtures:\n\n```typescript\nclass PaymentProcessor {\n  async process(type: "card" | "crypto" | "wire", amount: number, accountId: string) {\n    if (type === "card") { await stripe.charge(amount); }\n    else if (type === "crypto") { await web3.transfer(amount); }\n    else { await bank.wire(amount); }\n  }\n}\n```',
+  },
+  {
+    tier: 'high_alt',
+    category: 'Distributed Systems & Proofs',
+    label: 'Raft consensus formal specification and TLA+ safety proof',
+    prompt: 'Provide a formal TLA+ specification for the Raft consensus algorithm leader election and log replication with dynamic cluster membership changes. Include the formal safety invariants, an inductive proof sketch for StateMachineSafety, and complete pseudocode handling network partitions, split votes, and Byzantine failure mitigations.',
+  },
+];
+
 export default function PlaygroundPage() {
   const { state, send, reset } = useChat();
   const isLoading = state.status === 'classifying' || state.status === 'streaming';
 
   return (
     <div className={styles.page}>
-      {/* Editorial Hero */}
       <section className={styles.hero}>
         <div className={styles.heroContent}>
           <h1 className={`${styles.heroTitle} serif-heading`}>
@@ -26,9 +52,7 @@ export default function PlaygroundPage() {
         </div>
       </section>
 
-      {/* Main Grid */}
       <div className={`container ${styles.content}`}>
-        {/* Left Column */}
         <div className={styles.left}>
           <PromptInput
             onSubmit={send}
@@ -59,7 +83,6 @@ export default function PlaygroundPage() {
           />
         </div>
 
-        {/* Right Column: Routing Pipeline & Benchmark Examples */}
         <div className={styles.right}>
           <RoutingViz status={state.status} metadata={state.metadata} />
 
@@ -91,24 +114,3 @@ export default function PlaygroundPage() {
     </div>
   );
 }
-
-const EXAMPLE_PROMPTS = [
-  {
-    tier: 'low',
-    category: 'General knowledge',
-    label: 'What is a REST API?',
-    prompt: 'What is a REST API? Give a brief summary.',
-  },
-  {
-    tier: 'medium',
-    category: 'Data structures',
-    label: 'Implement an LRU Cache with O(1) operations in TypeScript',
-    prompt: 'Implement a generic LRU (Least Recently Used) Cache class in TypeScript with O(1) get and put time complexity using a Doubly Linked List and a Map. Include capacity eviction and unit test assertions.',
-  },
-  {
-    tier: 'high',
-    category: 'Architecture',
-    label: 'Refactor payment service with Strategy pattern and idempotency',
-    prompt: 'Refactor the following TypeScript payment processor to use the Strategy pattern with strict types, idempotency keys, distributed locking via Redis, and transactional outbox event publishing. Provide architecture diagrams in ASCII, failure handling, and test fixtures:\n\n```typescript\nclass PaymentProcessor {\n  async process(type: "card" | "crypto" | "wire", amount: number, accountId: string) {\n    if (type === "card") { await stripe.charge(amount); }\n    else if (type === "crypto") { await web3.transfer(amount); }\n    else { await bank.wire(amount); }\n  }\n}\n```',
-  },
-];

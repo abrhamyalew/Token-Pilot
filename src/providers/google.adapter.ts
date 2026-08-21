@@ -1,12 +1,3 @@
-/**
- * Google AI Studio Provider Adapter — Gemini on the free tier or BYOK.
- *
- * Uses the @google/generative-ai SDK. Normalizes response to the OpenAI shape.
- * Supports server-side GOOGLE_API_KEY and per-request user_api_keys.google.
- *
- * SECURITY: Caught errors are sanitized so secret keys are never logged.
- */
-
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -158,7 +149,7 @@ export class GoogleAdapter implements ProviderAdapter {
       }
     }
 
-    // Final chunk with finish_reason and usage
+    // Emit a final chunk with finish_reason and usage so consumers can close the stream cleanly.
     yield {
       id,
       object: 'chat.completion.chunk',

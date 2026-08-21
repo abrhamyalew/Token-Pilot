@@ -1,11 +1,3 @@
-/**
- * Provider Registry Service — resolves a tier or provider name to an adapter.
- *
- * Acts as the single lookup point for all provider adapters. The router
- * asks "give me the adapter for tier X" and gets back the correct adapter
- * without knowing which concrete class it is.
- */
-
 import { Injectable, Logger } from '@nestjs/common';
 import { ProviderAdapter } from './provider.interface';
 import { MockAdapter } from './mock.adapter';
@@ -40,7 +32,6 @@ export class ProviderRegistryService {
     ]);
   }
 
-  /** Get an adapter by provider name */
   getAdapter(providerName: string): ProviderAdapter {
     const adapter = this.adapters.get(providerName);
     if (!adapter) {
@@ -57,7 +48,7 @@ export class ProviderRegistryService {
     return adapter;
   }
 
-  /** Get the adapter for a specific tier (resolves tier → provider → adapter, respecting optional override) */
+  /** Resolves tier to provider to adapter, with optional model/provider override. */
   getAdapterForTier(
     tier: Tier,
     override?: { model: string; provider: string },
@@ -80,7 +71,6 @@ export class ProviderRegistryService {
     };
   }
 
-  /** Get all registered adapter names */
   getRegisteredProviders(): string[] {
     return Array.from(this.adapters.keys());
   }

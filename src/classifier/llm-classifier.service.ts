@@ -175,11 +175,7 @@ export class LlmClassifierService {
     ]);
   }
 
-  /**
-   * Classify prompt complexity using the specified LLM provider and model.
-   * Supports Google, Groq, OpenAI, Anthropic, and DeepSeek with user-supplied
-   * or server fallback API keys.
-   */
+  // Server key is used as fallback when no user key is supplied.
   async classify(
     promptText: string,
     options?: LlmClassifyOptions,

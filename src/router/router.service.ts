@@ -1,12 +1,3 @@
-/**
- * Router Service - the orchestration core of Token Pilot.
- *
- * Flow: classify prompt -> resolve tier & model (with overrides) -> validate BYOK requirements -> call provider -> collect metrics -> log.
- *
- * For streaming requests, the service returns an async iterable of chunks
- * plus a callback to log the completed request after streaming finishes.
- */
-
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import {
   ChatRequest,
@@ -24,8 +15,6 @@ import { ProviderChatResponse } from '../providers/provider.interface';
 import { estimateTokens } from '../shared/token-estimator';
 import { isByokRequired } from '../providers/provider-tiers';
 
-// Response Types
-
 export interface RouteResult {
   response: ChatResponse;
   classification: ClassifierResult;
@@ -40,12 +29,8 @@ export interface StreamRouteResult {
   finalize: (collectedContent: string, usage: TokenUsage | null, error?: Error) => void;
 }
 
-// Constants
-
 const MAX_RETRIES = 1;
 const RETRY_DELAY_MS = 500;
-
-// Service
 
 @Injectable()
 export class RouterService {
@@ -65,7 +50,6 @@ export class RouterService {
   async handleRequest(request: ChatRequest): Promise<RouteResult> {
     const startTime = Date.now();
 
-    // 1. Classify (rules or llm classifier)
     const classification = await this.classifier.classify(request.messages, {
       classifierType: request.classifier ?? 'rules',
       provider: request.classifier_provider,
@@ -79,7 +63,7 @@ export class RouterService {
     const { adapter, model, provider } =
       this.providerRegistry.getAdapterForTier(classification.tier, override);
 
-    // 3. Guard: If resolved provider requires BYOK and user supplied an override without an API key, reject immediately
+    // Reject immediately if a BYOK-required provider was overridden without a key.
     if (isByokRequired(provider) && override) {
       const userKey = request.user_api_keys?.[provider];
       if (!userKey || userKey.trim().length === 0) {
@@ -95,7 +79,6 @@ export class RouterService {
       }
     }
 
-    // 4. Call provider with retry
     const requestedMaxTokens = request.max_tokens ?? this.MAX_DEMO_TOKENS;
     const effectiveMaxTokens = Math.min(requestedMaxTokens, this.MAX_DEMO_TOKENS);
     const wasCapped = requestedMaxTokens > this.MAX_DEMO_TOKENS;
@@ -138,14 +121,12 @@ export class RouterService {
 
     const latencyMs = Date.now() - startTime;
 
-    // 5. Calculate costs
     const costs = this.costCalculator.calculate(
       model,
       result.usage.prompt_tokens,
       result.usage.completion_tokens,
     );
 
-    // 6. Attach routing metadata
     const routing: RoutingMetadata = {
       tier: classification.tier,
       classifier: classification.classifier,
@@ -169,7 +150,6 @@ export class RouterService {
 
     result.response.routing = routing;
 
-    // 7. Log asynchronously
     this.logAsync({
       promptText,
       classification,
@@ -198,7 +178,6 @@ export class RouterService {
   async handleStreamRequest(request: ChatRequest): Promise<StreamRouteResult> {
     const startTime = Date.now();
 
-    // 1. Classify (rules or llm classifier)
     const classification = await this.classifier.classify(request.messages, {
       classifierType: request.classifier ?? 'rules',
       provider: request.classifier_provider,
@@ -207,12 +186,11 @@ export class RouterService {
       userApiKeys: request.user_api_keys,
     });
 
-    // 2. Resolve provider & model (with optional tier overrides)
     const override = request.tier_model_overrides?.[classification.tier];
     const { adapter, model, provider } =
       this.providerRegistry.getAdapterForTier(classification.tier, override);
 
-    // 3. Guard: If resolved provider requires BYOK and user supplied an override without an API key, reject immediately
+    // Reject immediately if a BYOK-required provider was overridden without a key.
     if (isByokRequired(provider) && override) {
       const userKey = request.user_api_keys?.[provider];
       if (!userKey || userKey.trim().length === 0) {
@@ -228,7 +206,6 @@ export class RouterService {
       }
     }
 
-    // 4. Create stream
     const providerRequest = {
       ...request,
       model,
@@ -238,13 +215,11 @@ export class RouterService {
 
     const stream = adapter.chatStream(providerRequest);
 
-    // 5. Finalize callback - called by the controller after streaming ends
     const finalize = (collectedContent: string, usage: TokenUsage | null, error?: Error) => {
       const latencyMs = Date.now() - startTime;
       const promptText = request.messages.map((m) => m.content).join('\n');
 
       if (error) {
-        // Log failed stream
         this.logAsync({
           promptText,
           classification,
@@ -292,11 +267,6 @@ export class RouterService {
   }
 
   // Private Helpers
-
-  /**
-   * Call a provider function with retry logic.
-   * Retries up to MAX_RETRIES times with a fixed delay between attempts.
-   */
   private async callWithRetry<T>(
     fn: () => Promise<T>,
     providerName: string,

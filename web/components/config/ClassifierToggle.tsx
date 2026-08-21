@@ -148,7 +148,6 @@ export function ClassifierToggle() {
         </button>
       </div>
 
-      {/* Model & API Key Configuration Panel for LLM Classifier */}
       {classifierMode === 'llm' && (
         <div className={styles.settingsPanel}>
           <div className={styles.settingsHeader}>

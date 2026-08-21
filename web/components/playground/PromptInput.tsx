@@ -141,6 +141,17 @@ export function PromptInput({ onSubmit, isLoading, requestsRemaining }: Props) {
           >
             Payment Refactor (High)
           </button>
+          <button
+            type="button"
+            className={styles.snippetBtn}
+            onClick={() =>
+              applySnippet(
+                'Provide a formal TLA+ specification for the Raft consensus algorithm leader election and log replication with dynamic cluster membership changes. Include the formal safety invariants, an inductive proof sketch for StateMachineSafety, and complete pseudocode handling network partitions, split votes, and Byzantine failure mitigations.',
+              )
+            }
+          >
+            Raft Consensus (Ultra)
+          </button>
         </div>
 
         {/* Footer with BYOK status & Shortcuts */}
