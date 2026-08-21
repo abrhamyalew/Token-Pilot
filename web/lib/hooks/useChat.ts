@@ -205,7 +205,7 @@ export function useChat() {
         error: (err as Error).message ?? 'Unknown error',
       }));
     }
-  }, [getActiveUserApiKeys, getTierModelOverrides, classifierMode]);
+  }, [getActiveUserApiKeys, getTierModelOverrides, classifierMode, llmClassifierProvider, llmClassifierModel, getEffectiveClassifierKey]);
 
   const reset = useCallback(() => {
     abortRef.current?.abort();

@@ -161,6 +161,8 @@ export class RouterService {
       max_tokens_capped: wasCapped,
       reasoning: classification.reasoning,
       classify_latency_ms: classification.classifyLatencyMs,
+      classifier_provider: classification.llmClassification?.classifierProvider,
+      classifier_model: classification.llmClassification?.classifierModel,
       fallback_from: classification.fallbackFrom,
       fallback_reason: classification.fallbackReason,
     };

@@ -93,6 +93,10 @@ export interface RoutingMetadata {
   reasoning?: string;
   /** Classification latency in ms */
   classify_latency_ms?: number;
+  /** Which provider was used for LLM classification (e.g. 'google', 'groq') */
+  classifier_provider?: string;
+  /** Which model was used for LLM classification (e.g. 'gemini-3.6-flash') */
+  classifier_model?: string;
   /** If fallback occurred (e.g. from llm to rules) */
   fallback_from?: string;
   fallback_reason?: string;

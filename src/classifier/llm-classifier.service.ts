@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import Groq from 'groq-sdk';
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
@@ -21,6 +21,52 @@ const DEFAULT_MODELS: Record<ByokProvider, string> = {
   anthropic: 'claude-3-5-haiku',
   deepseek: 'deepseek-chat',
 };
+
+/**
+ * Extract balanced JSON object substrings from a raw string using brace-depth counting.
+ * Handles curly braces inside quoted strings correctly (e.g. {"reasoning": "needs {complex} work"}).
+ */
+function extractJsonObjects(text: string): string[] {
+  const results: string[] = [];
+  let depth = 0;
+  let start = -1;
+  let inString = false;
+  let escaped = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+
+    if (ch === '\\' && inString) {
+      escaped = true;
+      continue;
+    }
+
+    if (ch === '"') {
+      inString = !inString;
+      continue;
+    }
+
+    if (inString) continue;
+
+    if (ch === '{') {
+      if (depth === 0) start = i;
+      depth++;
+    } else if (ch === '}') {
+      depth--;
+      if (depth === 0 && start >= 0) {
+        results.push(text.slice(start, i + 1));
+        start = -1;
+      }
+    }
+  }
+
+  return results;
+}
 
 function parseJsonResponse(raw: string): { tier?: unknown; confidence?: unknown; reasoning?: unknown } {
   // Strip <think>...</think> blocks produced by reasoning models (Qwen, DeepSeek-R1, etc.)
@@ -43,12 +89,11 @@ function parseJsonResponse(raw: string): { tier?: unknown; confidence?: unknown;
     // Continue
   }
 
-  // 3. Extract JSON object substring { ... } - take the LAST match to skip any
-  //    JSON-like fragments inside <think> blocks that weren't fully stripped
-  const allMatches = [...trimmed.matchAll(/\{[\s\S]*?\}/g)];
-  for (const match of allMatches.reverse()) {
+  // 3. Extract JSON objects using brace-depth counting (handles braces inside string values)
+  const jsonCandidates = extractJsonObjects(trimmed);
+  for (const candidate of jsonCandidates.reverse()) {
     try {
-      const parsed = JSON.parse(match[0]);
+      const parsed = JSON.parse(candidate);
       // Require at least a tier field to be a valid classification response
       if (parsed && (parsed.tier || parsed.Tier)) return parsed;
     } catch {
@@ -86,9 +131,26 @@ function normalizeConfidence(raw: unknown): number {
 @Injectable()
 export class LlmClassifierService {
   private readonly logger = new Logger(LlmClassifierService.name);
-  private readonly TIMEOUT_MS = 10000;
+  private readonly TIMEOUT_MS = 10_000;
 
   constructor(private readonly config: ConfigService) {}
+
+  /**
+   * Race an async operation against a timeout.
+   * Uses Promise.race instead of AbortController because SDK support for
+   * abort signals varies across providers.
+   */
+  private withTimeout<T>(promise: Promise<T>, label: string): Promise<T> {
+    return Promise.race([
+      promise,
+      new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new Error(`${label} classification timed out after ${this.TIMEOUT_MS}ms`)),
+          this.TIMEOUT_MS,
+        ),
+      ),
+    ]);
+  }
 
   /**
    * Classify prompt complexity using the specified LLM provider and model.
@@ -173,15 +235,13 @@ export class LlmClassifierService {
       `Analyze and classify the complexity of the following prompt:\n\n` +
       `"""\n${promptText}\n"""`;
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.TIMEOUT_MS);
-
     try {
-      const result = await model.generateContent({
-        contents: [{ role: 'user', parts: [{ text: classificationPrompt }] }],
-      });
-
-      clearTimeout(timeoutId);
+      const result = await this.withTimeout(
+        model.generateContent({
+          contents: [{ role: 'user', parts: [{ text: classificationPrompt }] }],
+        }),
+        'Google',
+      );
 
       const responseText = result.response.text();
       const parsed = parseJsonResponse(responseText);
@@ -208,7 +268,6 @@ export class LlmClassifierService {
         },
       };
     } catch (error) {
-      clearTimeout(timeoutId);
       this.logger.warn(`Google classification failed: ${(error as Error)?.message ?? error}`);
       throw error;
     }
@@ -233,28 +292,34 @@ export class LlmClassifierService {
       let usage: any;
 
       try {
-        const completion = await client.chat.completions.create({
-          model: modelName,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          response_format: { type: 'json_object' },
-          temperature: 0.1,
-          max_tokens: 512,
-        });
+        const completion = await this.withTimeout(
+          client.chat.completions.create({
+            model: modelName,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt },
+            ],
+            response_format: { type: 'json_object' },
+            temperature: 0.1,
+            max_tokens: 512,
+          }),
+          'Groq',
+        );
         raw = completion.choices[0]?.message?.content || '{}';
         usage = completion.usage;
       } catch (jsonErr) {
-        const completion = await client.chat.completions.create({
-          model: modelName,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          temperature: 0.1,
-          max_tokens: 512,
-        });
+        const completion = await this.withTimeout(
+          client.chat.completions.create({
+            model: modelName,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt },
+            ],
+            temperature: 0.1,
+            max_tokens: 512,
+          }),
+          'Groq',
+        );
         raw = completion.choices[0]?.message?.content || '{}';
         usage = completion.usage;
       }
@@ -302,28 +367,34 @@ export class LlmClassifierService {
       let usage: any;
 
       try {
-        const completion = await client.chat.completions.create({
-          model: modelName,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          response_format: { type: 'json_object' },
-          temperature: 0.1,
-          max_tokens: 512,
-        });
+        const completion = await this.withTimeout(
+          client.chat.completions.create({
+            model: modelName,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt },
+            ],
+            response_format: { type: 'json_object' },
+            temperature: 0.1,
+            max_tokens: 512,
+          }),
+          'OpenAI',
+        );
         raw = completion.choices[0]?.message?.content || '{}';
         usage = completion.usage;
       } catch (jsonErr) {
-        const completion = await client.chat.completions.create({
-          model: modelName,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          temperature: 0.1,
-          max_tokens: 512,
-        });
+        const completion = await this.withTimeout(
+          client.chat.completions.create({
+            model: modelName,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt },
+            ],
+            temperature: 0.1,
+            max_tokens: 512,
+          }),
+          'OpenAI',
+        );
         raw = completion.choices[0]?.message?.content || '{}';
         usage = completion.usage;
       }
@@ -360,21 +431,24 @@ export class LlmClassifierService {
     const client = new Anthropic({ apiKey });
 
     try {
-      const response = await client.messages.create({
-        model: modelName,
-        max_tokens: 512,
-        temperature: 0.1,
-        system:
-          'You are a prompt complexity classifier for an LLM routing system. ' +
-          'Analyze user prompts and classify their complexity into low, medium, or high tier. ' +
-          'Output ONLY a valid JSON object with keys: "tier" ("low" | "medium" | "high"), "confidence" (number 0.0 to 1.0), and "reasoning" (string single sentence). Do not include markdown fences.',
-        messages: [
-          {
-            role: 'user',
-            content: `Analyze and classify the complexity of the following prompt:\n\n"""\n${promptText}\n"""`,
-          },
-        ],
-      });
+      const response = await this.withTimeout(
+        client.messages.create({
+          model: modelName,
+          max_tokens: 512,
+          temperature: 0.1,
+          system:
+            'You are a prompt complexity classifier for an LLM routing system. ' +
+            'Analyze user prompts and classify their complexity into low, medium, or high tier. ' +
+            'Output ONLY a valid JSON object with keys: "tier" ("low" | "medium" | "high"), "confidence" (number 0.0 to 1.0), and "reasoning" (string single sentence). Do not include markdown fences.',
+          messages: [
+            {
+              role: 'user',
+              content: `Analyze and classify the complexity of the following prompt:\n\n"""\n${promptText}\n"""`,
+            },
+          ],
+        }),
+        'Anthropic',
+      );
 
       const text = response.content
         .filter((block): block is Anthropic.TextBlock => block.type === 'text')
@@ -427,28 +501,34 @@ export class LlmClassifierService {
       let usage: any;
 
       try {
-        const completion = await client.chat.completions.create({
-          model: modelName,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          response_format: { type: 'json_object' },
-          temperature: 0.1,
-          max_tokens: 512,
-        });
+        const completion = await this.withTimeout(
+          client.chat.completions.create({
+            model: modelName,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt },
+            ],
+            response_format: { type: 'json_object' },
+            temperature: 0.1,
+            max_tokens: 512,
+          }),
+          'DeepSeek',
+        );
         raw = completion.choices[0]?.message?.content || '{}';
         usage = completion.usage;
       } catch (jsonErr) {
-        const completion = await client.chat.completions.create({
-          model: modelName,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          temperature: 0.1,
-          max_tokens: 512,
-        });
+        const completion = await this.withTimeout(
+          client.chat.completions.create({
+            model: modelName,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt },
+            ],
+            temperature: 0.1,
+            max_tokens: 512,
+          }),
+          'DeepSeek',
+        );
         raw = completion.choices[0]?.message?.content || '{}';
         usage = completion.usage;
       }
