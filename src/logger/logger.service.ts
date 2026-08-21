@@ -90,6 +90,8 @@ export class RequestLoggerService {
         promptLength: entry.usage.prompt_tokens,
         tier: entry.classification.tier,
         classifier: entry.classification.classifier,
+        classifierProvider: entry.classification.llmClassification?.classifierProvider,
+        classifierModel: entry.classification.llmClassification?.classifierModel,
         confidence: entry.classification.confidence,
         features: features as any,
         reasoning: entry.reasoning ?? entry.classification.reasoning,

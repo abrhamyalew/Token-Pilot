@@ -6,7 +6,7 @@ import {
   PromptFeatures,
 } from '../shared/types';
 import { extractFeatures } from './feature-extractor';
-import { scorePrompt } from './scoring-engine';
+import { scorePrompt, DEFAULT_THRESHOLDS } from './scoring-engine';
 import { LlmClassifierService, LlmClassifyOptions } from './llm-classifier.service';
 
 export interface ClassifierOptions {
@@ -108,16 +108,16 @@ export class ClassifierService {
         `LLM classified prompt -> tier=${llmResult.tier} (${llmResult.classifierProvider || 'llm'}/${llmResult.classifierModel || 'default'}) confidence=${llmResult.confidence.toFixed(2)} in ${classifyLatencyMs}ms`,
       );
 
-      // Map the LLM tier to a canonical midpoint score so the displayed number
-      // sits inside the correct threshold band shown in the UI tooltip.
-      // Rules thresholds: low 0-0.08, medium 0.08-0.20, high 0.20-0.42, ultra >0.42
+      // Derive the score from real threshold midpoints so the displayed number
+      // sits inside the correct band shown in the UI tooltip even if thresholds are tuned.
+      const t = DEFAULT_THRESHOLDS;
       const TIER_SCORE_MIDPOINTS: Record<string, number> = {
-        low: 0.040,
-        medium: 0.140,
-        high: 0.310,
-        high_alt: 0.550,
+        low:      (0 + t.medium) / 2,
+        medium:   (t.medium + t.high) / 2,
+        high:     (t.high + t.ultra) / 2,
+        high_alt: t.ultra + (t.ultra - t.high) / 2,
       };
-      const derivedScore = TIER_SCORE_MIDPOINTS[llmResult.tier] ?? 0.140;
+      const derivedScore = TIER_SCORE_MIDPOINTS[llmResult.tier] ?? TIER_SCORE_MIDPOINTS.medium;
 
       return {
         tier: llmResult.tier,
@@ -132,7 +132,11 @@ export class ClassifierService {
     } catch (error) {
       const classifyLatencyMs = Date.now() - startMs;
       const errorMsg = (error as Error)?.message ?? String(error);
-      this.logger.warn(`LLM classifier failed (${errorMsg}); defaulting to rules classifier.`);
+      // Sanitize before logging/storing: provider SDKs can include key fragments in error messages
+      const safeErrorMsg = errorMsg.replace(/([A-Za-z0-9_\-]{20,})/g, (m) =>
+        /^[A-Za-z0-9_\-]+$/.test(m) && m.length > 30 ? '[REDACTED]' : m,
+      );
+      this.logger.warn(`LLM classifier failed (${safeErrorMsg}); defaulting to rules classifier.`);
 
       const rulesResult = scorePrompt(features);
       return {
@@ -141,10 +145,10 @@ export class ClassifierService {
         confidence: rulesResult.confidence,
         classifier: 'rules',
         features,
-        reasoning: `LLM classifier unavailable; defaulted to rules. Error: ${errorMsg}`,
+        reasoning: `LLM classifier unavailable; defaulted to rules. Error: ${safeErrorMsg}`,
         classifyLatencyMs,
         fallbackFrom: 'llm',
-        fallbackReason: errorMsg,
+        fallbackReason: safeErrorMsg,
       };
     }
   }

@@ -30,6 +30,8 @@ export const requestLogs = pgTable(
     // Classification
     tier: text('tier').notNull(),
     classifier: text('classifier').notNull(),
+    classifierProvider: text('classifier_provider'),
+    classifierModel: text('classifier_model'),
     confidence: real('confidence'),
     features: jsonb('features'),
     reasoning: text('reasoning'),

@@ -128,10 +128,33 @@ function normalizeConfidence(raw: unknown): number {
   return 0.85; // Sensible default when model omits or zeroes the confidence field
 }
 
+/**
+ * System prompt shared by all 5 provider implementations.
+ * Defines the 4-tier schema including high_alt so the model can route
+ * ultra-complex prompts correctly (formal proofs, distributed systems, etc.).
+ */
+const CLASSIFIER_SYSTEM_PROMPT =
+  'You are a prompt complexity classifier for an LLM routing system. ' +
+  'Classify the given user prompt into exactly one of 4 tiers:\n' +
+  '  - "low": simple tasks (translate, summarize, list, format, reword)\n' +
+  '  - "medium": explanations, short essays, code snippets, product copy\n' +
+  '  - "high": refactoring, architecture, debugging complex systems, multi-step reasoning\n' +
+  '  - "high_alt": formal proofs, distributed systems design, advanced math, cutting-edge research\n' +
+  'Output ONLY a valid JSON object: {"tier": "low" | "medium" | "high" | "high_alt", ' +
+  '"confidence": 0.0 to 1.0, "reasoning": "brief single sentence"}. No markdown, no preamble.';
+
 @Injectable()
 export class LlmClassifierService {
   private readonly logger = new Logger(LlmClassifierService.name);
   private readonly TIMEOUT_MS = 10_000;
+
+  // Client caches keyed by API key - reuses connections for server-side keys.
+  // BYOK keys from different users will create new clients but that is unavoidable.
+  private readonly googleClients = new Map<string, GoogleGenerativeAI>();
+  private readonly groqClients = new Map<string, Groq>();
+  private readonly openAiClients = new Map<string, OpenAI>();
+  private readonly anthropicClients = new Map<string, Anthropic>();
+  private readonly deepseekClients = new Map<string, OpenAI>();
 
   constructor(private readonly config: ConfigService) {}
 
@@ -215,15 +238,14 @@ export class LlmClassifierService {
     apiKey: string,
     modelName: string,
   ): Promise<LlmClassificationOutput> {
-    const genAI = new GoogleGenerativeAI(apiKey);
+    if (!this.googleClients.has(apiKey)) {
+      this.googleClients.set(apiKey, new GoogleGenerativeAI(apiKey));
+    }
+    const genAI = this.googleClients.get(apiKey)!;
 
     const model = genAI.getGenerativeModel({
       model: modelName,
-      systemInstruction:
-        'You are a prompt complexity classifier for an LLM routing system. ' +
-        'Analyze user prompts and classify their complexity into low, medium, or high tier. ' +
-        'Output ONLY a valid JSON object without any commentary, preamble, or markdown formatting.\n' +
-        'JSON Schema: {"tier": "low" | "medium" | "high", "confidence": 0.0 to 1.0, "reasoning": "brief single sentence"}',
+      systemInstruction: CLASSIFIER_SYSTEM_PROMPT,
       generationConfig: {
         responseMimeType: 'application/json',
         temperature: 0.1,
@@ -278,12 +300,10 @@ export class LlmClassifierService {
     apiKey: string,
     modelName: string,
   ): Promise<LlmClassificationOutput> {
-    const client = new Groq({ apiKey });
-
-    const systemPrompt =
-      'You are a prompt complexity classifier for an LLM routing system. ' +
-      'Analyze user prompts and classify their complexity into low, medium, or high tier. ' +
-      'Respond ONLY with a valid JSON object in this exact schema: {"tier": "low" | "medium" | "high", "confidence": 0.0 to 1.0, "reasoning": "brief single sentence"}';
+    if (!this.groqClients.has(apiKey)) {
+      this.groqClients.set(apiKey, new Groq({ apiKey }));
+    }
+    const client = this.groqClients.get(apiKey)!;
 
     const userPrompt = `Analyze and classify the complexity of the following prompt:\n\n"""\n${promptText}\n"""`;
 
@@ -296,7 +316,7 @@ export class LlmClassifierService {
           client.chat.completions.create({
             model: modelName,
             messages: [
-              { role: 'system', content: systemPrompt },
+              { role: 'system', content: CLASSIFIER_SYSTEM_PROMPT },
               { role: 'user', content: userPrompt },
             ],
             response_format: { type: 'json_object' },
@@ -312,7 +332,7 @@ export class LlmClassifierService {
           client.chat.completions.create({
             model: modelName,
             messages: [
-              { role: 'system', content: systemPrompt },
+              { role: 'system', content: CLASSIFIER_SYSTEM_PROMPT },
               { role: 'user', content: userPrompt },
             ],
             temperature: 0.1,
@@ -353,12 +373,10 @@ export class LlmClassifierService {
     apiKey: string,
     modelName: string,
   ): Promise<LlmClassificationOutput> {
-    const client = new OpenAI({ apiKey });
-
-    const systemPrompt =
-      'You are a prompt complexity classifier for an LLM routing system. ' +
-      'Analyze user prompts and classify their complexity into low, medium, or high tier. ' +
-      'Respond ONLY with a valid JSON object in this exact schema: {"tier": "low" | "medium" | "high", "confidence": 0.0 to 1.0, "reasoning": "brief single sentence"}';
+    if (!this.openAiClients.has(apiKey)) {
+      this.openAiClients.set(apiKey, new OpenAI({ apiKey }));
+    }
+    const client = this.openAiClients.get(apiKey)!;
 
     const userPrompt = `Analyze and classify the complexity of the following prompt:\n\n"""\n${promptText}\n"""`;
 
@@ -371,7 +389,7 @@ export class LlmClassifierService {
           client.chat.completions.create({
             model: modelName,
             messages: [
-              { role: 'system', content: systemPrompt },
+              { role: 'system', content: CLASSIFIER_SYSTEM_PROMPT },
               { role: 'user', content: userPrompt },
             ],
             response_format: { type: 'json_object' },
@@ -387,7 +405,7 @@ export class LlmClassifierService {
           client.chat.completions.create({
             model: modelName,
             messages: [
-              { role: 'system', content: systemPrompt },
+              { role: 'system', content: CLASSIFIER_SYSTEM_PROMPT },
               { role: 'user', content: userPrompt },
             ],
             temperature: 0.1,
@@ -428,7 +446,10 @@ export class LlmClassifierService {
     apiKey: string,
     modelName: string,
   ): Promise<LlmClassificationOutput> {
-    const client = new Anthropic({ apiKey });
+    if (!this.anthropicClients.has(apiKey)) {
+      this.anthropicClients.set(apiKey, new Anthropic({ apiKey }));
+    }
+    const client = this.anthropicClients.get(apiKey)!;
 
     try {
       const response = await this.withTimeout(
@@ -436,10 +457,7 @@ export class LlmClassifierService {
           model: modelName,
           max_tokens: 512,
           temperature: 0.1,
-          system:
-            'You are a prompt complexity classifier for an LLM routing system. ' +
-            'Analyze user prompts and classify their complexity into low, medium, or high tier. ' +
-            'Output ONLY a valid JSON object with keys: "tier" ("low" | "medium" | "high"), "confidence" (number 0.0 to 1.0), and "reasoning" (string single sentence). Do not include markdown fences.',
+          system: CLASSIFIER_SYSTEM_PROMPT,
           messages: [
             {
               role: 'user',
@@ -484,15 +502,10 @@ export class LlmClassifierService {
     apiKey: string,
     modelName: string,
   ): Promise<LlmClassificationOutput> {
-    const client = new OpenAI({
-      apiKey,
-      baseURL: 'https://api.deepseek.com',
-    });
-
-    const systemPrompt =
-      'You are a prompt complexity classifier for an LLM routing system. ' +
-      'Analyze user prompts and classify their complexity into low, medium, or high tier. ' +
-      'Respond ONLY with a valid JSON object with keys: "tier" ("low" | "medium" | "high"), "confidence" (number 0.0 to 1.0), and "reasoning" (string single sentence).';
+    if (!this.deepseekClients.has(apiKey)) {
+      this.deepseekClients.set(apiKey, new OpenAI({ apiKey, baseURL: 'https://api.deepseek.com' }));
+    }
+    const client = this.deepseekClients.get(apiKey)!;
 
     const userPrompt = `Analyze and classify the complexity of the following prompt:\n\n"""\n${promptText}\n"""`;
 
@@ -505,10 +518,9 @@ export class LlmClassifierService {
           client.chat.completions.create({
             model: modelName,
             messages: [
-              { role: 'system', content: systemPrompt },
+              { role: 'system', content: CLASSIFIER_SYSTEM_PROMPT },
               { role: 'user', content: userPrompt },
             ],
-            response_format: { type: 'json_object' },
             temperature: 0.1,
             max_tokens: 512,
           }),
@@ -521,7 +533,7 @@ export class LlmClassifierService {
           client.chat.completions.create({
             model: modelName,
             messages: [
-              { role: 'system', content: systemPrompt },
+              { role: 'system', content: CLASSIFIER_SYSTEM_PROMPT },
               { role: 'user', content: userPrompt },
             ],
             temperature: 0.1,
