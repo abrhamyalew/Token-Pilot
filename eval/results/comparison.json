@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-08-21T11:47:31.547Z",
+  "timestamp": "2026-08-21T12:57:02.154Z",
   "totalPrompts": 60,
   "summary": {
     "rules": {
@@ -22,14 +22,14 @@
         "tier": "low",
         "score": 0,
         "confidence": 0,
-        "latencyMs": 10,
+        "latencyMs": 14,
         "match": true
       },
       "llmResult": {
         "tier": "low",
         "confidence": 0,
         "reasoning": "Offline simulated classification based on feature vector.",
-        "latencyMs": 51,
+        "latencyMs": 52,
         "match": true
       }
     },
@@ -257,7 +257,7 @@
         "tier": "medium",
         "confidence": 0.2884848484848485,
         "reasoning": "Offline simulated classification based on feature vector.",
-        "latencyMs": 45,
+        "latencyMs": 46,
         "match": false
       }
     },
@@ -276,7 +276,7 @@
         "tier": "low",
         "confidence": 0,
         "reasoning": "Offline simulated classification based on feature vector.",
-        "latencyMs": 45,
+        "latencyMs": 46,
         "match": true
       }
     },
@@ -295,7 +295,7 @@
         "tier": "low",
         "confidence": 0.20606060606060608,
         "reasoning": "Offline simulated classification based on feature vector.",
-        "latencyMs": 46,
+        "latencyMs": 45,
         "match": true
       }
     },
@@ -352,7 +352,7 @@
         "tier": "low",
         "confidence": 0.2678787878787879,
         "reasoning": "Offline simulated classification based on feature vector.",
-        "latencyMs": 46,
+        "latencyMs": 45,
         "match": true
       }
     },
@@ -383,14 +383,14 @@
         "tier": "medium",
         "score": 0.14946666666666666,
         "confidence": 0.4593939393939395,
-        "latencyMs": 2,
+        "latencyMs": 1,
         "match": false
       },
       "llmResult": {
         "tier": "medium",
         "confidence": 0.4593939393939395,
         "reasoning": "Offline simulated classification based on feature vector.",
-        "latencyMs": 46,
+        "latencyMs": 45,
         "match": false
       }
     },
@@ -409,7 +409,7 @@
         "tier": "medium",
         "confidence": 0.06303030303030316,
         "reasoning": "Offline simulated classification based on feature vector.",
-        "latencyMs": 46,
+        "latencyMs": 45,
         "match": true
       }
     },
@@ -428,7 +428,7 @@
         "tier": "medium",
         "confidence": 0.31515151515151524,
         "reasoning": "Offline simulated classification based on feature vector.",
-        "latencyMs": 46,
+        "latencyMs": 45,
         "match": true
       }
     },
@@ -466,7 +466,7 @@
         "tier": "medium",
         "confidence": 0.31515151515151524,
         "reasoning": "Offline simulated classification based on feature vector.",
-        "latencyMs": 45,
+        "latencyMs": 46,
         "match": true
       }
     },
@@ -523,7 +523,7 @@
         "tier": "medium",
         "confidence": 0.47969696969696984,
         "reasoning": "Offline simulated classification based on feature vector.",
-        "latencyMs": 45,
+        "latencyMs": 46,
         "match": true
       }
     },
@@ -542,7 +542,7 @@
         "tier": "medium",
         "confidence": 0.042424242424242545,
         "reasoning": "Offline simulated classification based on feature vector.",
-        "latencyMs": 45,
+        "latencyMs": 46,
         "match": true
       }
     },
@@ -561,7 +561,7 @@
         "tier": "high",
         "confidence": 0.13090909090909061,
         "reasoning": "Offline simulated classification based on feature vector.",
-        "latencyMs": 45,
+        "latencyMs": 46,
         "match": false
       }
     },
@@ -580,7 +580,7 @@
         "tier": "high",
         "confidence": 0.06575757575757558,
         "reasoning": "Offline simulated classification based on feature vector.",
-        "latencyMs": 46,
+        "latencyMs": 45,
         "match": false
       }
     },
@@ -599,7 +599,7 @@
         "tier": "medium",
         "confidence": 0.25333333333333347,
         "reasoning": "Offline simulated classification based on feature vector.",
-        "latencyMs": 46,
+        "latencyMs": 45,
         "match": true
       }
     },
@@ -618,7 +618,7 @@
         "tier": "low",
         "confidence": 0.2678787878787879,
         "reasoning": "Offline simulated classification based on feature vector.",
-        "latencyMs": 46,
+        "latencyMs": 45,
         "match": false
       }
     },
@@ -770,7 +770,7 @@
         "tier": "low",
         "confidence": 0.2533333333333333,
         "reasoning": "Offline simulated classification based on feature vector.",
-        "latencyMs": 46,
+        "latencyMs": 45,
         "match": false
       }
     },
@@ -846,7 +846,7 @@
         "tier": "high",
         "confidence": 0.0334545454545451,
         "reasoning": "Offline simulated classification based on feature vector.",
-        "latencyMs": 45,
+        "latencyMs": 46,
         "match": true
       }
     },
@@ -922,7 +922,7 @@
         "tier": "high",
         "confidence": 0.356363636363636,
         "reasoning": "Offline simulated classification based on feature vector.",
-        "latencyMs": 45,
+        "latencyMs": 46,
         "match": true
       }
     },
@@ -1029,7 +1029,7 @@
         "tier": "medium",
         "score": 0.14048888888888889,
         "confidence": 0.5410101010101012,
-        "latencyMs": 4,
+        "latencyMs": 1,
         "match": false
       },
       "llmResult": {
@@ -1055,7 +1055,7 @@
         "tier": "high",
         "confidence": 0.48545454545454547,
         "reasoning": "Offline simulated classification based on feature vector.",
-        "latencyMs": 45,
+        "latencyMs": 46,
         "match": true
       }
     },
@@ -1093,7 +1093,7 @@
         "tier": "medium",
         "confidence": 0.28393939393939394,
         "reasoning": "Offline simulated classification based on feature vector.",
-        "latencyMs": 46,
+        "latencyMs": 45,
         "match": false
       }
     },
@@ -1131,7 +1131,7 @@
         "tier": "low",
         "confidence": 0.24515151515151515,
         "reasoning": "Offline simulated classification based on feature vector.",
-        "latencyMs": 46,
+        "latencyMs": 45,
         "match": false
       }
     },
@@ -1150,7 +1150,7 @@
         "tier": "low",
         "confidence": 0.08727272727272725,
         "reasoning": "Offline simulated classification based on feature vector.",
-        "latencyMs": 46,
+        "latencyMs": 45,
         "match": false
       }
     }

@@ -1,6 +1,18 @@
 # Token Pilot
 
-> **Deterministic Sub-2ms Intelligent Prompt Router & Cost Optimizer for Large Language Models**
+![Site Image](Token_Pilot.png)
+
+<p align="center">
+  <a href="https://github.com/abrhamyalew/Token-Pilot"><img src="https://img.shields.io/badge/tests-131%20passing-brightgreen?style=flat-square&logo=vitest&logoColor=white" alt="Tests" /></a>
+  <a href="https://github.com/abrhamyalew/Token-Pilot"><img src="https://img.shields.io/badge/classification_latency-1.2ms-blue?style=flat-square&logo=speedtest&logoColor=white" alt="Classification Latency" /></a>
+  <a href="https://github.com/abrhamyalew/Token-Pilot"><img src="https://img.shields.io/badge/cost_reduction-74.2%25-success?style=flat-square" alt="Cost Reduction" /></a>
+  <a href="https://github.com/abrhamyalew/Token-Pilot"><img src="https://img.shields.io/badge/API-OpenAI%20Compatible-412991?style=flat-square&logo=openai&logoColor=white" alt="API" /></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" /></a>
+  <a href="https://nestjs.com/"><img src="https://img.shields.io/badge/NestJS-10-E0234E?style=flat-square&logo=nestjs&logoColor=white" alt="NestJS" /></a>
+  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js&logoColor=white" alt="Next.js" /></a>
+</p>
+
+> **Deterministic Sub-5ms Intelligent Prompt Router & Cost Optimizer for Large Language Models**
 
 Token Pilot is an open-source, drop-in LLM gateway that analyzes prompt complexity in real time and routes requests to the cheapest capable model tier. By evaluating prompts across a 12-signal heuristic vector in **1.2ms average latency** (verified by benchmark), Token Pilot eliminates the latency and API cost of using an LLM to classify another LLM while cutting downstream inference bills by **74.2%** (measured against a frontier baseline).
 
@@ -360,7 +372,3 @@ docker run -d \
 ```
 
 ---
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
