@@ -70,6 +70,24 @@ function makeService(adapterOverrides: Partial<ProviderAdapter> = {}) {
         provider: 'groq',
       };
     }),
+    getAdapterWithFallback: vi.fn().mockImplementation((tier, override) => {
+      if (override?.provider && override?.model) {
+        return {
+          adapter,
+          model: override.model,
+          provider: override.provider,
+          isFallback: false,
+        };
+      }
+      return {
+        adapter,
+        model: 'llama-3.3-70b-versatile',
+        provider: 'groq',
+        isFallback: false,
+      };
+    }),
+    recordSuccess: vi.fn(),
+    recordFailure: vi.fn(),
   };
   const requestLogger = { log: vi.fn().mockResolvedValue(undefined) };
   const costCalculator = {

@@ -76,7 +76,7 @@ export class RouterController {
   async health(): Promise<{
     status: string;
     timestamp: string;
-    providers: Record<string, boolean>;
+    providers: Record<string, { healthy: boolean; circuitState: string }>;
   }> {
     const providers = await this.providerRegistry.checkAllHealth();
     return {

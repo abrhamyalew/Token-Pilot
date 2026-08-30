@@ -161,13 +161,13 @@ describe('RouterController', () => {
 
   it('returns health and model metadata', async () => {
     const providerRegistry = {
-      checkAllHealth: vi.fn().mockResolvedValue({ mock: true }),
+      checkAllHealth: vi.fn().mockResolvedValue({ mock: { healthy: true, circuitState: 'CLOSED' } }),
     };
     const controller = new RouterController({} as any, providerRegistry as any, costCalculator as any);
 
     await expect(controller.health()).resolves.toMatchObject({
       status: 'ok',
-      providers: { mock: true },
+      providers: { mock: { healthy: true, circuitState: 'CLOSED' } },
     });
     expect(controller.listModels().data.length).toBeGreaterThan(0);
   });

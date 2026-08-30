@@ -32,13 +32,8 @@ export interface StreamRouteResult {
 const MAX_RETRIES = 2;
 const BASE_DELAY_MS = 500;
 
-/** HTTP status codes worth retrying. 429 = rate-limited, 5xx = server fault. */
 const RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503, 504]);
 
-/**
- * Extract an HTTP status code from a provider SDK error, if present.
- * Groq/OpenAI SDKs set `.status`, Google SDK sets `.httpCode` or wraps in `.status`.
- */
 function extractStatusCode(error: unknown): number | undefined {
   if (error && typeof error === 'object') {
     const e = error as Record<string, unknown>;
@@ -49,13 +44,11 @@ function extractStatusCode(error: unknown): number | undefined {
   return undefined;
 }
 
-/** Returns true if the error is worth retrying (transient). */
 function isRetryable(error: unknown): boolean {
   const status = extractStatusCode(error);
   if (status !== undefined) {
     return RETRYABLE_STATUS_CODES.has(status);
   }
-  // Network errors (ECONNREFUSED, ETIMEDOUT, etc.) are always retryable
   if (error instanceof Error) {
     const msg = error.message.toLowerCase();
     return (
@@ -96,10 +89,12 @@ export class RouterService {
       userApiKeys: request.user_api_keys,
     });
 
-    // 2. Resolve provider & model (with optional tier overrides)
+    // 2. Resolve provider & model (with fallback chain if primary is down)
     const override = request.tier_model_overrides?.[classification.tier];
-    const { adapter, model, provider } =
-      this.providerRegistry.getAdapterForTier(classification.tier, override);
+    const resolution =
+      this.providerRegistry.getAdapterWithFallback(classification.tier, override);
+    const { adapter, model, provider, isFallback, fallbackFrom: providerFallbackFrom } = resolution;
+
 
     // Reject immediately if a BYOK-required provider was overridden without a key.
     if (isByokRequired(provider) && override) {
@@ -136,7 +131,9 @@ export class RouterService {
         () => adapter.chat(providerRequest),
         provider,
       );
+      this.providerRegistry.recordSuccess(provider);
     } catch (error) {
+      this.providerRegistry.recordFailure(provider);
       // Log the failed request before re-throwing
       const latencyMs = Date.now() - startTime;
       this.logAsync({
@@ -152,7 +149,7 @@ export class RouterService {
         reasoning: classification.reasoning,
         classifyLatencyMs: classification.classifyLatencyMs,
         fallbackFrom: classification.fallbackFrom,
-        fallbackReason: classification.fallbackReason,
+        fallbackReason: classification.fallbackReason ?? (isFallback ? 'circuit_open' : undefined),
       });
       throw error;
     }
@@ -182,8 +179,8 @@ export class RouterService {
       classify_latency_ms: classification.classifyLatencyMs,
       classifier_provider: classification.llmClassification?.classifierProvider,
       classifier_model: classification.llmClassification?.classifierModel,
-      fallback_from: classification.fallbackFrom,
-      fallback_reason: classification.fallbackReason,
+      fallback_from: classification.fallbackFrom ?? (isFallback ? providerFallbackFrom : undefined),
+      fallback_reason: classification.fallbackReason ?? (isFallback ? 'circuit_open' : undefined),
     };
 
     result.response.routing = routing;
@@ -199,7 +196,7 @@ export class RouterService {
       reasoning: classification.reasoning,
       classifyLatencyMs: classification.classifyLatencyMs,
       fallbackFrom: classification.fallbackFrom,
-      fallbackReason: classification.fallbackReason,
+      fallbackReason: classification.fallbackReason ?? (isFallback ? 'circuit_open' : undefined),
     });
 
     return {
@@ -225,8 +222,10 @@ export class RouterService {
     });
 
     const override = request.tier_model_overrides?.[classification.tier];
-    const { adapter, model, provider } =
-      this.providerRegistry.getAdapterForTier(classification.tier, override);
+    const resolution =
+      this.providerRegistry.getAdapterWithFallback(classification.tier, override);
+    const { adapter, model, provider, isFallback, fallbackFrom: providerFallbackFrom } = resolution;
+
 
     // Reject immediately if a BYOK-required provider was overridden without a key.
     if (isByokRequired(provider) && override) {
@@ -258,6 +257,7 @@ export class RouterService {
       const promptText = request.messages.map((m) => m.content).join('\n');
 
       if (error) {
+        this.providerRegistry.recordFailure(provider);
         this.logAsync({
           promptText,
           classification,
@@ -271,10 +271,12 @@ export class RouterService {
           reasoning: classification.reasoning,
           classifyLatencyMs: classification.classifyLatencyMs,
           fallbackFrom: classification.fallbackFrom,
-          fallbackReason: classification.fallbackReason,
+          fallbackReason: classification.fallbackReason ?? (isFallback ? 'circuit_open' : undefined),
         });
         return;
       }
+
+      this.providerRegistry.recordSuccess(provider);
 
       const finalUsage = usage ?? {
         prompt_tokens: estimateTokens(
@@ -297,7 +299,7 @@ export class RouterService {
         reasoning: classification.reasoning,
         classifyLatencyMs: classification.classifyLatencyMs,
         fallbackFrom: classification.fallbackFrom,
-        fallbackReason: classification.fallbackReason,
+        fallbackReason: classification.fallbackReason ?? (isFallback ? 'circuit_open' : undefined),
       });
     };
 
@@ -323,25 +325,17 @@ export class RouterService {
           `Provider "${providerName}" failed${statusInfo} (attempt ${attempt + 1}/${MAX_RETRIES + 1}): ${lastError.message}`,
         );
 
-        // Non-retryable errors (auth, validation, etc.) fail immediately
         if (!isRetryable(error)) {
-          this.logger.debug(
-            `Error is non-retryable${statusInfo}; skipping remaining ${MAX_RETRIES - attempt} retries.`,
-          );
           break;
         }
 
         if (attempt < MAX_RETRIES) {
-          const delayMs = BASE_DELAY_MS * Math.pow(2, attempt); // 500, 1000, 2000...
-          this.logger.debug(
-            `Retrying "${providerName}" in ${delayMs}ms (attempt ${attempt + 2}/${MAX_RETRIES + 1})`,
-          );
+          const delayMs = BASE_DELAY_MS * Math.pow(2, attempt);
           await this.delay(delayMs);
         }
       }
     }
 
-    // All retries exhausted or non-retryable error
     throw lastError;
   }
 
