@@ -65,13 +65,13 @@ export function CostComparison({ metadata }: Props) {
         {/* Frontier Cost */}
         <div className={`${styles.costBox} ${styles.baselineBox}`}>
           <div className={styles.costBoxHeader}>
-            <span className={styles.costLabel}>Without Pilot (GPT-4o Baseline)</span>
+            <span className={styles.costLabel}>Without Pilot (Claude Opus Baseline)</span>
             <div className={styles.tooltipTrigger}>
               <span className={styles.infoIcon} aria-label="Baseline info">?</span>
               <div className={styles.tooltip}>
-                <span className={styles.tooltipTitle}>Frontier Baseline (GPT-4o)</span>
+                <span className={styles.tooltipTitle}>Frontier Baseline (Claude Opus)</span>
                 <p className={styles.tooltipText}>
-                  The hypothetical cost if this prompt were sent directly to GPT-4o ($2.50 / 1M input, $10.00 / 1M output) without intelligent routing.
+                  The hypothetical cost if this prompt were sent directly to Claude Opus ($15.00 / 1M input, $75.00 / 1M output) without intelligent routing.
                 </p>
               </div>
             </div>
@@ -82,7 +82,7 @@ export function CostComparison({ metadata }: Props) {
           </div>
 
           <div className={styles.costFooter}>
-            <span className={styles.modelTag}>gpt-4o</span>
+            <span className={styles.modelTag}>claude-opus-4-8</span>
             <span className={styles.providerTag}>Standard API rate</span>
           </div>
         </div>

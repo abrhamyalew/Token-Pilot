@@ -3,7 +3,7 @@
 ![Site Image](Token_Pilot.png)
 
 <p align="center">
-  <a href="https://github.com/abrhamyalew/Token-Pilot"><img src="https://img.shields.io/badge/tests-131%20passing-brightgreen?style=flat-square&logo=vitest&logoColor=white" alt="Tests" /></a>
+  <a href="https://github.com/abrhamyalew/Token-Pilot"><img src="https://img.shields.io/badge/tests-153%20passing-brightgreen?style=flat-square&logo=vitest&logoColor=white" alt="Tests" /></a>
   <a href="https://github.com/abrhamyalew/Token-Pilot"><img src="https://img.shields.io/badge/classification_latency-1.2ms-blue?style=flat-square&logo=speedtest&logoColor=white" alt="Classification Latency" /></a>
   <a href="https://github.com/abrhamyalew/Token-Pilot"><img src="https://img.shields.io/badge/cost_reduction-74.2%25-success?style=flat-square" alt="Cost Reduction" /></a>
   <a href="https://github.com/abrhamyalew/Token-Pilot"><img src="https://img.shields.io/badge/API-OpenAI%20Compatible-412991?style=flat-square&logo=openai&logoColor=white" alt="API" /></a>
@@ -26,7 +26,7 @@ Every metric and latency claim in this repository is backed by automated test su
 
 Evaluated against the 60-prompt multi-domain dataset in [eval/prompts/eval-set.json](file:///d:/Projects/token-pilot/eval/prompts/eval-set.json) across low, medium, and high complexity prompts:
 
-| Metric | Heuristic Rules Engine | LLM Classifier (Gemini Flash) | Frontier Baseline (GPT-5.5 Pro) | Evidence Source |
+| Metric | Heuristic Rules Engine | LLM Classifier (Gemini Flash) | Frontier Baseline (Claude Opus) | Evidence Source |
 |:-------|:-----------------------|:------------------------------|:--------------------------------|:----------------|
 | **Classification Latency** | **1.2 ms** (avg) | 45.7 ms (avg) | N/A (routes all to max tier) | [eval/results/comparison.json](file:///d:/Projects/token-pilot/eval/results/comparison.json#L7) |
 | **Cost Savings vs Baseline** | **74.2%** | **78.6%** | 0.0% (baseline) | [eval/results/pareto.svg](file:///d:/Projects/token-pilot/eval/results/pareto.svg#L70) |
@@ -45,7 +45,7 @@ Evaluated against the 60-prompt multi-domain dataset in [eval/prompts/eval-set.j
 
 ### 2. Unit & Integration Test Suite (`npm test`)
 
-**131 automated tests across 20 test files** verify correctness across feature extraction, scoring bounds, pricing calculators, rate limiters, and provider adapters:
+**153 automated tests across 21 test files** verify correctness across feature extraction, scoring bounds, pricing calculators, rate limiters, resilience primitives, and provider adapters:
 
 | Component | Tests | What is Formally Verified | Test File |
 |:----------|:------|:--------------------------|:----------|
@@ -53,7 +53,9 @@ Evaluated against the 60-prompt multi-domain dataset in [eval/prompts/eval-set.j
 | **Scoring Engine** | 14 passed | Clamped output ranges $[0.0, 1.0]$, low/medium/high/high_alt threshold assignments, formal language multipliers, and boundary confidence formulas. | [scoring-engine.spec.ts](file:///d:/Projects/token-pilot/src/classifier/scoring-engine.spec.ts) |
 | **Cost Registry** | 5 passed | Exact dollar formulas, pricing rates per 1k tokens, tier-to-model resolution, and frontier delta calculations. | [registry.spec.ts](file:///d:/Projects/token-pilot/src/shared/cost-registry/registry.spec.ts) |
 | **BYOK Validator** | 6 passed | Key prefixes for OpenAI (`sk-`), Anthropic (`sk-ant-`), DeepSeek (`sk-`), Google AI Studio (`AIza`), and Groq (`gsk_`). | [byok-validator.spec.ts](file:///d:/Projects/token-pilot/src/providers/byok-validator.spec.ts) |
-| **Router Service** | 8 passed | SSE chunk streaming, non-blocking asynchronous logging, retry backoffs, and demo token ceiling (2048). | [router.service.spec.ts](file:///d:/Projects/token-pilot/src/router/router.service.spec.ts) |
+| **Router Service** | 11 passed | SSE chunk streaming, non-blocking asynchronous logging, exponential backoff retries, 30s provider timeout, non-retryable error fast-fail, and demo token ceiling (2048). | [router.service.spec.ts](file:///d:/Projects/token-pilot/src/router/router.service.spec.ts) |
+| **Circuit Breaker** | 13 passed | CLOSED/OPEN/HALF_OPEN state transitions, timer-based recovery, execute() wrapper, concurrent probe behavior, and force-reset. | [circuit-breaker.spec.ts](file:///d:/Projects/token-pilot/src/providers/circuit-breaker.spec.ts) |
+| **Provider Registry** | 11 passed | Adapter resolution, tier mapping, fallback chain activation when primary circuit is OPEN, all-providers-down error, skip-unhealthy fallbacks, and recovery after success. | [provider-registry.service.spec.ts](file:///d:/Projects/token-pilot/src/providers/provider-registry.service.spec.ts) |
 | **Validation Pipe** | 17 passed | Message array structures, role validation, temperature limits $[0.0, 2.0]$, and max token enforcement. | [chat-request-validation.pipe.spec.ts](file:///d:/Projects/token-pilot/src/router/chat-request-validation.pipe.spec.ts) |
 | **Rate Limiter** | 8 passed | Sliding-window IP tracking, header injection (`X-RateLimit-*`), and 429 status enforcement. | [rate-limiter.service.spec.ts](file:///d:/Projects/token-pilot/src/rate-limiter/rate-limiter.service.spec.ts) |
 | **API Key Guard** | 5 passed | Master Bearer authentication and header/query extraction. | [api-key.guard.spec.ts](file:///d:/Projects/token-pilot/src/auth/api-key.guard.spec.ts) |
@@ -70,8 +72,8 @@ Rates are defined in [src/shared/cost-registry/registry.ts](file:///d:/Projects/
 | **LOW (Alt)** | `llama-3.3-70b-versatile` | Groq | **$0.00** (Free Tier) | **$0.00** (Free Tier) | 32,768 | 128,000 |
 | **MEDIUM** | `gemini-3.6-flash` | Google | **$0.00** (Free Tier) | **$0.00** (Free Tier) | 65,536 | 1,000,000 |
 | **MEDIUM (Alt)** | `deepseek-v4-flash` | DeepSeek | **$0.14** | **$0.28** | 384,000 | 1,000,000 |
-| **HIGH** | `gpt-5.5-pro` | OpenAI | **$30.00** | **$180.00** | 128,000 | 1,050,000 |
-| **HIGH_ALT** | `claude-opus-4-8` | Anthropic | **$5.00** | **$25.00** | 128,000 | 1,000,000 |
+| **HIGH** | `gpt-5.5-pro` | OpenAI | **$15.00** | **$60.00** | 128,000 | 1,050,000 |
+| **HIGH_ALT** | `claude-opus-4-8` | Anthropic | **$15.00** | **$75.00** | 128,000 | 1,000,000 |
 
 ### Mathematical Cost Calculation
 
@@ -79,9 +81,43 @@ For every request processed by Token Pilot, exact costs and savings are computed
 
 $$\text{Actual Cost} = \left(\frac{\text{prompt\_tokens}}{1000} \times \text{InputRate}\right) + \left(\frac{\text{completion\_tokens}}{1000} \times \text{OutputRate}\right)$$
 
-$$\text{Frontier Baseline Cost} = \left(\frac{\text{prompt\_tokens}}{1000} \times 0.030\right) + \left(\frac{\text{completion\_tokens}}{1000} \times 0.180\right)$$
+$$\text{Frontier Baseline Cost} = \left(\frac{\text{prompt\_tokens}}{1000} \times 0.015\right) + \left(\frac{\text{completion\_tokens}}{1000} \times 0.075\right)$$
 
 $$\text{Savings} = \text{Frontier Baseline Cost} - \text{Actual Cost}$$
+
+---
+
+## Resilience
+
+Token Pilot implements production-grade fault tolerance across the entire request pipeline:
+
+```mermaid
+flowchart LR
+    A[Incoming Request] --> B[Request Context\nUUID + X-Request-Id]
+    B --> C[Classifier]
+    C --> D{Circuit\nBreaker}
+    D -->|CLOSED| E[Primary Provider]
+    D -->|OPEN| F[Fallback Chain]
+    F --> G[Next Healthy Provider]
+    E --> H{Success?}
+    G --> H
+    H -->|Yes| I[Record Success\nClose Circuit]
+    H -->|No| J[Retry with Backoff]
+    J -->|Retryable| K{Attempts\nLeft?}
+    K -->|Yes| E
+    K -->|No| L[Record Failure\nMay Open Circuit]
+    J -->|Non-retryable| L
+    I --> M[Response + Routing Metadata]
+```
+
+| Layer | Behavior |
+|:------|:---------|
+| **Circuit Breaker** | Per-provider 3-state machine (CLOSED / OPEN / HALF_OPEN). Opens after 3 consecutive failures, stays open for 60s, then allows one probe request. |
+| **Fallback Chain** | When the primary provider's circuit is open, requests are routed to the next healthy provider in the tier's chain: `low: [groq, google]`, `medium: [google, groq]`, `high: [openai, anthropic, deepseek]`. |
+| **Retry + Backoff** | Up to 2 retries (3 total attempts) with exponential backoff (500ms, 1000ms). Only retries transient errors (429, 5xx, network faults). Auth errors (401/403) fail immediately. |
+| **Request Timeout** | 30s hard limit on provider calls via `Promise.race`. Streaming requests timeout between chunks. |
+| **Structured Logging** | JSON log lines in production, pretty-print in development. Every log entry includes a `requestId` (UUID) propagated via `AsyncLocalStorage` for end-to-end tracing. |
+| **Error Boundaries** | Next.js `error.tsx` at root and dashboard levels. `global-error.tsx` catches layout crashes. Dashboard boundary detects gateway offline vs generic errors. |
 
 ---
 

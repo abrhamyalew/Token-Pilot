@@ -2,9 +2,12 @@ import { NestFactory } from '@nestjs/core';
 import { Logger } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
+import { StructuredLogger } from './shared/structured-logger';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    logger: new StructuredLogger(),
+  });
   const logger = new Logger('Bootstrap');
 
   // Trust proxy must be set before any middleware reads req.ip.
@@ -43,7 +46,8 @@ async function bootstrap() {
   app.enableCors({
     origin: corsOrigin,
     methods: 'GET,POST,OPTIONS',
-    allowedHeaders: 'Content-Type,Authorization,X-API-Key',
+    allowedHeaders: 'Content-Type,Authorization,X-API-Key,X-Request-Id',
+    exposedHeaders: 'X-Request-Id',
   });
 
   // Graceful Shutdown

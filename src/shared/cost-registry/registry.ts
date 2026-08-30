@@ -31,15 +31,21 @@ const models: Record<string, ModelConfig> = {
   },
   'gpt-5.5-pro': {
     provider: 'openai',
-    inputCostPer1kTokens: 0.03,       // $30.00/1M tokens
-    outputCostPer1kTokens: 0.18,      // $180.00/1M tokens
+    inputCostPer1kTokens: 0.015,      // $15.00/1M tokens
+    outputCostPer1kTokens: 0.060,     // $60.00/1M tokens
     maxTokens: 128_000,               // 128K max output, 1.05M context window
   },
   'claude-opus-4-8': {
     provider: 'anthropic',
-    inputCostPer1kTokens: 0.005,      // $5.00/1M tokens
-    outputCostPer1kTokens: 0.025,     // $25.00/1M tokens
+    inputCostPer1kTokens: 0.015,      // $15.00/1M tokens
+    outputCostPer1kTokens: 0.075,     // $75.00/1M tokens
     maxTokens: 128_000,               // 128K max output, 1M context window
+  },
+  'claude-sonnet-5': {
+    provider: 'anthropic',
+    inputCostPer1kTokens: 0.002,      // $2.00/1M tokens
+    outputCostPer1kTokens: 0.010,     // $10.00/1M tokens
+    maxTokens: 64_000,                // 64K max output, 1M context window
   },
   // Legacy models kept for reference / future config swapping
   'gemini-3.6-flash': {
@@ -110,12 +116,14 @@ export function calculateCost(
   );
 }
 
+// Frontier baseline: what would it cost to send everything to a single capable model?
+const FRONTIER_MODEL = 'claude-opus-4-8';
+
 export function calculateFrontierCost(
   inputTokens: number,
   outputTokens: number,
 ): number {
-  const frontierModel = tiers.high.model;
-  return calculateCost(frontierModel, inputTokens, outputTokens);
+  return calculateCost(FRONTIER_MODEL, inputTokens, outputTokens);
 }
 
 export function calculateSavings(
