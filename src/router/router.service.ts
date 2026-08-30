@@ -31,6 +31,7 @@ export interface StreamRouteResult {
 
 const MAX_RETRIES = 2;
 const BASE_DELAY_MS = 500;
+const PROVIDER_TIMEOUT_MS = 30_000;
 
 const RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503, 504]);
 
@@ -61,6 +62,13 @@ function isRetryable(error: unknown): boolean {
     );
   }
   return false;
+}
+
+export class ProviderTimeoutError extends Error {
+  constructor(provider: string, timeoutMs: number) {
+    super(`Provider "${provider}" timed out after ${timeoutMs}ms`);
+    this.name = 'ProviderTimeoutError';
+  }
 }
 
 @Injectable()
@@ -128,7 +136,7 @@ export class RouterService {
     let result: ProviderChatResponse;
     try {
       result = await this.callWithRetry(
-        () => adapter.chat(providerRequest),
+        () => this.withTimeout(adapter.chat(providerRequest), provider),
         provider,
       );
       this.providerRegistry.recordSuccess(provider);
@@ -250,7 +258,7 @@ export class RouterService {
       stream: true,
     };
 
-    const stream = adapter.chatStream(providerRequest);
+    const stream = this.withStreamTimeout(adapter.chatStream(providerRequest), provider);
 
     const finalize = (collectedContent: string, usage: TokenUsage | null, error?: Error) => {
       const latencyMs = Date.now() - startTime;
@@ -337,6 +345,33 @@ export class RouterService {
     }
 
     throw lastError;
+  }
+
+  private withTimeout<T>(promise: Promise<T>, providerName: string): Promise<T> {
+    return Promise.race([
+      promise,
+      new Promise<never>((_, reject) => {
+        setTimeout(
+          () => reject(new ProviderTimeoutError(providerName, PROVIDER_TIMEOUT_MS)),
+          PROVIDER_TIMEOUT_MS,
+        );
+      }),
+    ]);
+  }
+
+  private async *withStreamTimeout(
+    stream: AsyncIterable<ChatChunk>,
+    providerName: string,
+  ): AsyncIterable<ChatChunk> {
+    const iterator = stream[Symbol.asyncIterator]();
+    while (true) {
+      const result = await this.withTimeout(
+        iterator.next() as Promise<IteratorResult<ChatChunk>>,
+        providerName,
+      );
+      if (result.done) break;
+      yield result.value;
+    }
   }
 
   /**

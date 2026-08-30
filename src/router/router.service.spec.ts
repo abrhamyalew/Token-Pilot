@@ -283,6 +283,21 @@ describe('RouterService', () => {
     expect(chat).toHaveBeenCalledTimes(3);
   });
 
+  it('times out after 30s if the provider is too slow', async () => {
+    const chat = vi.fn().mockImplementation(
+      () => new Promise(() => {}), // never resolves
+    );
+    const { service } = makeService({ chat });
+
+    const promise = service.handleRequest(request).catch((e) => e);
+    await vi.advanceTimersByTimeAsync(30_000);
+    const error = await promise;
+
+    expect(error.name).toBe('ProviderTimeoutError');
+    expect(error.message).toContain('timed out after 30000ms');
+    expect(chat).toHaveBeenCalledTimes(1);
+  });
+
   it('builds stream requests and logs fallback usage on finalize', async () => {
     async function* stream() {
       yield {
