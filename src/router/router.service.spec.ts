@@ -199,7 +199,7 @@ describe('RouterService', () => {
   it('retries a failed provider call once before succeeding', async () => {
     const chat = vi
       .fn()
-      .mockRejectedValueOnce(new Error('temporary outage'))
+      .mockRejectedValueOnce(Object.assign(new Error('rate limited'), { status: 429 }))
       .mockResolvedValueOnce(makeProviderResponse('llama-3.3-70b-versatile'));
     const { service, requestLogger } = makeService({ chat });
 
@@ -214,7 +214,7 @@ describe('RouterService', () => {
   });
 
   it('logs and rethrows after retry exhaustion', async () => {
-    const error = new Error('provider down');
+    const error = Object.assign(new Error('provider down'), { status: 503 });
     const chat = vi.fn().mockRejectedValue(error);
     const { service, requestLogger } = makeService({ chat });
 
@@ -222,7 +222,8 @@ describe('RouterService', () => {
     await vi.runAllTimersAsync();
     await expect(promise).resolves.toBe(error);
 
-    expect(chat).toHaveBeenCalledTimes(2);
+    // MAX_RETRIES = 2, so 3 total attempts
+    expect(chat).toHaveBeenCalledTimes(3);
     expect(requestLogger.log).toHaveBeenCalledWith(
       expect.objectContaining({
         promptText: 'Hello there',
@@ -231,6 +232,37 @@ describe('RouterService', () => {
         usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
       }),
     );
+  });
+
+  it('does not retry non-retryable errors (e.g. 401 auth)', async () => {
+    const error = Object.assign(new Error('Invalid API key'), { status: 401 });
+    const chat = vi.fn().mockRejectedValue(error);
+    const { service } = makeService({ chat });
+
+    const promise = service.handleRequest(request).catch((caught) => caught);
+    await vi.runAllTimersAsync();
+    await expect(promise).resolves.toBe(error);
+
+    // Should fail fast: only 1 attempt, no retries
+    expect(chat).toHaveBeenCalledTimes(1);
+  });
+
+  it('retries 429 errors with exponential backoff delays', async () => {
+    const error = Object.assign(new Error('rate limited'), { status: 429 });
+    const chat = vi
+      .fn()
+      .mockRejectedValueOnce(error)
+      .mockRejectedValueOnce(error)
+      .mockResolvedValueOnce(makeProviderResponse('llama-3.3-70b-versatile'));
+    const { service } = makeService({ chat });
+
+    const promise = service.handleRequest(request);
+    // Advance through backoff delays: 500ms (attempt 1), 1000ms (attempt 2)
+    await vi.advanceTimersByTimeAsync(500);
+    await vi.advanceTimersByTimeAsync(1000);
+    await expect(promise).resolves.toMatchObject({ classification });
+
+    expect(chat).toHaveBeenCalledTimes(3);
   });
 
   it('builds stream requests and logs fallback usage on finalize', async () => {

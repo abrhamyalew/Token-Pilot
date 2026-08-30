@@ -29,8 +29,46 @@ export interface StreamRouteResult {
   finalize: (collectedContent: string, usage: TokenUsage | null, error?: Error) => void;
 }
 
-const MAX_RETRIES = 1;
-const RETRY_DELAY_MS = 500;
+const MAX_RETRIES = 2;
+const BASE_DELAY_MS = 500;
+
+/** HTTP status codes worth retrying. 429 = rate-limited, 5xx = server fault. */
+const RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503, 504]);
+
+/**
+ * Extract an HTTP status code from a provider SDK error, if present.
+ * Groq/OpenAI SDKs set `.status`, Google SDK sets `.httpCode` or wraps in `.status`.
+ */
+function extractStatusCode(error: unknown): number | undefined {
+  if (error && typeof error === 'object') {
+    const e = error as Record<string, unknown>;
+    if (typeof e.status === 'number') return e.status;
+    if (typeof e.statusCode === 'number') return e.statusCode;
+    if (typeof e.httpCode === 'number') return e.httpCode;
+  }
+  return undefined;
+}
+
+/** Returns true if the error is worth retrying (transient). */
+function isRetryable(error: unknown): boolean {
+  const status = extractStatusCode(error);
+  if (status !== undefined) {
+    return RETRYABLE_STATUS_CODES.has(status);
+  }
+  // Network errors (ECONNREFUSED, ETIMEDOUT, etc.) are always retryable
+  if (error instanceof Error) {
+    const msg = error.message.toLowerCase();
+    return (
+      msg.includes('econnrefused') ||
+      msg.includes('etimedout') ||
+      msg.includes('enotfound') ||
+      msg.includes('socket hang up') ||
+      msg.includes('network') ||
+      msg.includes('fetch failed')
+    );
+  }
+  return false;
+}
 
 @Injectable()
 export class RouterService {
@@ -278,17 +316,32 @@ export class RouterService {
         return await fn();
       } catch (error) {
         lastError = error as Error;
+        const status = extractStatusCode(error);
+        const statusInfo = status ? ` (HTTP ${status})` : '';
+
         this.logger.warn(
-          `Provider "${providerName}" failed (attempt ${attempt + 1}/${MAX_RETRIES + 1}): ${lastError.message}`,
+          `Provider "${providerName}" failed${statusInfo} (attempt ${attempt + 1}/${MAX_RETRIES + 1}): ${lastError.message}`,
         );
 
+        // Non-retryable errors (auth, validation, etc.) fail immediately
+        if (!isRetryable(error)) {
+          this.logger.debug(
+            `Error is non-retryable${statusInfo}; skipping remaining ${MAX_RETRIES - attempt} retries.`,
+          );
+          break;
+        }
+
         if (attempt < MAX_RETRIES) {
-          await this.delay(RETRY_DELAY_MS);
+          const delayMs = BASE_DELAY_MS * Math.pow(2, attempt); // 500, 1000, 2000...
+          this.logger.debug(
+            `Retrying "${providerName}" in ${delayMs}ms (attempt ${attempt + 2}/${MAX_RETRIES + 1})`,
+          );
+          await this.delay(delayMs);
         }
       }
     }
 
-    // All retries exhausted
+    // All retries exhausted or non-retryable error
     throw lastError;
   }
 
