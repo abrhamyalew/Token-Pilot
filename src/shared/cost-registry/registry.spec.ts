@@ -22,13 +22,13 @@ describe('cost registry', () => {
   });
 
   it('calculates model cost from input and output token rates', () => {
-    expect(calculateCost('gpt-5.5-pro', 1000, 1000)).toBeCloseTo(0.21);
+    expect(calculateCost('gpt-5.5-pro', 1000, 1000)).toBeCloseTo(0.075);
     expect(calculateCost('deepseek-v4-flash', 1000, 2000)).toBeCloseTo(0.0007);
   });
 
-  it('uses the high tier model as the frontier baseline', () => {
+  it('uses claude-opus-4-8 as the frontier baseline', () => {
     expect(calculateFrontierCost(1000, 1000)).toBeCloseTo(
-      calculateCost('gpt-5.5-pro', 1000, 1000),
+      calculateCost('claude-opus-4-8', 1000, 1000),
     );
   });
 
@@ -36,8 +36,8 @@ describe('cost registry', () => {
     const savings = calculateSavings('llama-3.3-70b-versatile', 1000, 1000);
 
     expect(savings.actualCost).toBe(0);
-    expect(savings.frontierCost).toBeCloseTo(0.21);
-    expect(savings.savings).toBeCloseTo(0.21);
+    expect(savings.frontierCost).toBeCloseTo(0.09);
+    expect(savings.savings).toBeCloseTo(0.09);
     expect(savings.savingsPercent).toBe(100);
   });
 

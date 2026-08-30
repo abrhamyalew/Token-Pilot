@@ -29,8 +29,47 @@ export interface StreamRouteResult {
   finalize: (collectedContent: string, usage: TokenUsage | null, error?: Error) => void;
 }
 
-const MAX_RETRIES = 1;
-const RETRY_DELAY_MS = 500;
+const MAX_RETRIES = 2;
+const BASE_DELAY_MS = 500;
+const PROVIDER_TIMEOUT_MS = 30_000;
+
+const RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503, 504]);
+
+function extractStatusCode(error: unknown): number | undefined {
+  if (error && typeof error === 'object') {
+    const e = error as Record<string, unknown>;
+    if (typeof e.status === 'number') return e.status;
+    if (typeof e.statusCode === 'number') return e.statusCode;
+    if (typeof e.httpCode === 'number') return e.httpCode;
+  }
+  return undefined;
+}
+
+function isRetryable(error: unknown): boolean {
+  const status = extractStatusCode(error);
+  if (status !== undefined) {
+    return RETRYABLE_STATUS_CODES.has(status);
+  }
+  if (error instanceof Error) {
+    const msg = error.message.toLowerCase();
+    return (
+      msg.includes('econnrefused') ||
+      msg.includes('etimedout') ||
+      msg.includes('enotfound') ||
+      msg.includes('socket hang up') ||
+      msg.includes('network') ||
+      msg.includes('fetch failed')
+    );
+  }
+  return false;
+}
+
+export class ProviderTimeoutError extends Error {
+  constructor(provider: string, timeoutMs: number) {
+    super(`Provider "${provider}" timed out after ${timeoutMs}ms`);
+    this.name = 'ProviderTimeoutError';
+  }
+}
 
 @Injectable()
 export class RouterService {
@@ -58,10 +97,12 @@ export class RouterService {
       userApiKeys: request.user_api_keys,
     });
 
-    // 2. Resolve provider & model (with optional tier overrides)
+    // 2. Resolve provider & model (with fallback chain if primary is down)
     const override = request.tier_model_overrides?.[classification.tier];
-    const { adapter, model, provider } =
-      this.providerRegistry.getAdapterForTier(classification.tier, override);
+    const resolution =
+      this.providerRegistry.getAdapterWithFallback(classification.tier, override);
+    const { adapter, model, provider, isFallback, fallbackFrom: providerFallbackFrom } = resolution;
+
 
     // Reject immediately if a BYOK-required provider was overridden without a key.
     if (isByokRequired(provider) && override) {
@@ -95,10 +136,12 @@ export class RouterService {
     let result: ProviderChatResponse;
     try {
       result = await this.callWithRetry(
-        () => adapter.chat(providerRequest),
+        () => this.withTimeout(adapter.chat(providerRequest), provider),
         provider,
       );
+      this.providerRegistry.recordSuccess(provider);
     } catch (error) {
+      this.providerRegistry.recordFailure(provider);
       // Log the failed request before re-throwing
       const latencyMs = Date.now() - startTime;
       this.logAsync({
@@ -114,7 +157,7 @@ export class RouterService {
         reasoning: classification.reasoning,
         classifyLatencyMs: classification.classifyLatencyMs,
         fallbackFrom: classification.fallbackFrom,
-        fallbackReason: classification.fallbackReason,
+        fallbackReason: classification.fallbackReason ?? (isFallback ? 'circuit_open' : undefined),
       });
       throw error;
     }
@@ -144,8 +187,8 @@ export class RouterService {
       classify_latency_ms: classification.classifyLatencyMs,
       classifier_provider: classification.llmClassification?.classifierProvider,
       classifier_model: classification.llmClassification?.classifierModel,
-      fallback_from: classification.fallbackFrom,
-      fallback_reason: classification.fallbackReason,
+      fallback_from: classification.fallbackFrom ?? (isFallback ? providerFallbackFrom : undefined),
+      fallback_reason: classification.fallbackReason ?? (isFallback ? 'circuit_open' : undefined),
     };
 
     result.response.routing = routing;
@@ -161,7 +204,7 @@ export class RouterService {
       reasoning: classification.reasoning,
       classifyLatencyMs: classification.classifyLatencyMs,
       fallbackFrom: classification.fallbackFrom,
-      fallbackReason: classification.fallbackReason,
+      fallbackReason: classification.fallbackReason ?? (isFallback ? 'circuit_open' : undefined),
     });
 
     return {
@@ -187,8 +230,10 @@ export class RouterService {
     });
 
     const override = request.tier_model_overrides?.[classification.tier];
-    const { adapter, model, provider } =
-      this.providerRegistry.getAdapterForTier(classification.tier, override);
+    const resolution =
+      this.providerRegistry.getAdapterWithFallback(classification.tier, override);
+    const { adapter, model, provider, isFallback, fallbackFrom: providerFallbackFrom } = resolution;
+
 
     // Reject immediately if a BYOK-required provider was overridden without a key.
     if (isByokRequired(provider) && override) {
@@ -213,13 +258,14 @@ export class RouterService {
       stream: true,
     };
 
-    const stream = adapter.chatStream(providerRequest);
+    const stream = this.withStreamTimeout(adapter.chatStream(providerRequest), provider);
 
     const finalize = (collectedContent: string, usage: TokenUsage | null, error?: Error) => {
       const latencyMs = Date.now() - startTime;
       const promptText = request.messages.map((m) => m.content).join('\n');
 
       if (error) {
+        this.providerRegistry.recordFailure(provider);
         this.logAsync({
           promptText,
           classification,
@@ -233,10 +279,12 @@ export class RouterService {
           reasoning: classification.reasoning,
           classifyLatencyMs: classification.classifyLatencyMs,
           fallbackFrom: classification.fallbackFrom,
-          fallbackReason: classification.fallbackReason,
+          fallbackReason: classification.fallbackReason ?? (isFallback ? 'circuit_open' : undefined),
         });
         return;
       }
+
+      this.providerRegistry.recordSuccess(provider);
 
       const finalUsage = usage ?? {
         prompt_tokens: estimateTokens(
@@ -259,7 +307,7 @@ export class RouterService {
         reasoning: classification.reasoning,
         classifyLatencyMs: classification.classifyLatencyMs,
         fallbackFrom: classification.fallbackFrom,
-        fallbackReason: classification.fallbackReason,
+        fallbackReason: classification.fallbackReason ?? (isFallback ? 'circuit_open' : undefined),
       });
     };
 
@@ -278,18 +326,52 @@ export class RouterService {
         return await fn();
       } catch (error) {
         lastError = error as Error;
+        const status = extractStatusCode(error);
+        const statusInfo = status ? ` (HTTP ${status})` : '';
+
         this.logger.warn(
-          `Provider "${providerName}" failed (attempt ${attempt + 1}/${MAX_RETRIES + 1}): ${lastError.message}`,
+          `Provider "${providerName}" failed${statusInfo} (attempt ${attempt + 1}/${MAX_RETRIES + 1}): ${lastError.message}`,
         );
 
+        if (!isRetryable(error)) {
+          break;
+        }
+
         if (attempt < MAX_RETRIES) {
-          await this.delay(RETRY_DELAY_MS);
+          const delayMs = BASE_DELAY_MS * Math.pow(2, attempt);
+          await this.delay(delayMs);
         }
       }
     }
 
-    // All retries exhausted
     throw lastError;
+  }
+
+  private withTimeout<T>(promise: Promise<T>, providerName: string): Promise<T> {
+    return Promise.race([
+      promise,
+      new Promise<never>((_, reject) => {
+        setTimeout(
+          () => reject(new ProviderTimeoutError(providerName, PROVIDER_TIMEOUT_MS)),
+          PROVIDER_TIMEOUT_MS,
+        );
+      }),
+    ]);
+  }
+
+  private async *withStreamTimeout(
+    stream: AsyncIterable<ChatChunk>,
+    providerName: string,
+  ): AsyncIterable<ChatChunk> {
+    const iterator = stream[Symbol.asyncIterator]();
+    while (true) {
+      const result = await this.withTimeout(
+        iterator.next() as Promise<IteratorResult<ChatChunk>>,
+        providerName,
+      );
+      if (result.done) break;
+      yield result.value;
+    }
   }
 
   /**
